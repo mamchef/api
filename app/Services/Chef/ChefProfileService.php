@@ -84,7 +84,12 @@ class ChefProfileService implements ChefProfileServiceInterface
         if ($chef->status == ChefStatusEnum::PersonalInfoFilled) {
             $chef->status = ChefStatusEnum::DocumentUploaded;
         } elseif ($chef->status == ChefStatusEnum::ContractSigned) {
-            $chef->status = ChefStatusEnum::NeedAdminApproval;
+            #TODO FOR TEST
+            if (env('AUTO_APPROVE')){
+                $chef->status = ChefStatusEnum::Approved;
+            }else{
+                $chef->status = ChefStatusEnum::NeedAdminApproval;
+            }
         }
 
         $chef->save();
@@ -111,7 +116,12 @@ class ChefProfileService implements ChefProfileServiceInterface
         if ($chef->status == ChefStatusEnum::PersonalInfoFilled) {
             $chef->status = ChefStatusEnum::ContractSigned;
         } elseif ($chef->status == ChefStatusEnum::DocumentUploaded) {
-            $chef->status = ChefStatusEnum::NeedAdminApproval;
+            #TODO FOR TEST
+            if (env('AUTO_APPROVE')){
+                $chef->status = ChefStatusEnum::Approved;
+            }else{
+                $chef->status = ChefStatusEnum::NeedAdminApproval;
+            }
         }
 
         $chef->save();
