@@ -15,8 +15,6 @@ class NormalizeResponseMiddleware
 
     public function handle(Request $request, Closure $next): ResponseAlias
     {
-        $response = $next($request);
-        return $response;
         // Skip normalization for broadcasting auth
         if ($request->is('api/broadcasting/auth')) {
             return $next($request);

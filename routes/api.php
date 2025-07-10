@@ -15,3 +15,8 @@ Route::post('/broadcasting/auth', [BroadcastAuthController::class, 'authenticate
 
 Route::post('/user/broadcasting/auth', [BroadcastAuthController::class, 'userAuthenticate'])
     ->middleware('user-auth');
+
+
+Route::get('app-version',function(Request $request){
+    return  new \App\Http\Resources\V1\AppVersionResponse();
+});
