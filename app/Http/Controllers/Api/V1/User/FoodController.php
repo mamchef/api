@@ -72,7 +72,8 @@ class FoodController extends Controller
             $this->foodService->getFoodsByChefStoreID(
                 chefStoreID: $chefStoreId,
                 filters: [
-                    'user_search' => $request->search ?? ''
+                    'user_search' => $request->search ?? '',
+                    'in_stock' => true,
                 ],
                 relations: (['chefStore', 'tags']),
                 pagination: null,

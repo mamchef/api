@@ -61,4 +61,9 @@ class FoodFilter extends ModelFilter
         }
         return $this;
     }
+
+    public function inStock(bool $inStock = true): self
+    {
+        return  $this->inStock();
+    }
 }

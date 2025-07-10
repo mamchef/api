@@ -29,7 +29,6 @@ class FoodService implements FoodServiceInterface
         ?int $userId = null
     ): Collection|LengthAwarePaginator {
         $foods = Food::query()->chefStoreFoods($chefStoreID)
-            ->inStock()
             ->filter($filters)
             ->with($relations);
         $foods = $pagination ? $foods->paginate($pagination) : $foods->get();
