@@ -59,6 +59,10 @@ Route::get('/test-notification', function () {
     return response()->json(['message' => 'Notification sent']);
 });
 
+Route::get('/test-otp', function () {
+    \App\Services\OtpCacheService::sendOtpSms('rh.soroosh@gmail.com', rand(111111, 999999));
+});
+
 Route::get('test', [DocusignController::class, 'register'])->name('docusign');
 Route::get('docusign', [DocusignController::class, 'index'])->name('docusign');
 Route::get('connect-docusign', [DocusignController::class, 'connectDocusign'])->name('connect.docusign');

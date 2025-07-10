@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Jobs\SendOtpEmailJob;
 use App\Jobs\SendOtpSmsJob;
 use App\Mail\OtpMail;
+use App\Models\SlackNotifier;
+use App\Notifications\OtpSlackNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Random\RandomException;
@@ -53,21 +56,34 @@ class OtpCacheService
 
     public static function sendOtpEmail(string $email, string $otpCode): mixed
     {
-        return dispatch(
+        $emailJob = dispatch(
             new SendOtpEmailJob(
                 email: $email,
                 otpCode: $otpCode
             )
         );
+
+        // Send to Slack
+        $slackNotifier = new SlackNotifier();
+        Notification::send($slackNotifier, new OtpSlackNotification($otpCode, 'email', $email));
+
+        return $emailJob;
+
     }
 
     public static function sendOtpSms(string $phoneNumber, string $otpCode): mixed
     {
-        return dispatch(
+        $smsJob = dispatch(
             new SendOtpSmsJob(
                 phoneNumber: $phoneNumber,
                 otpCode: $otpCode
             )
         );
+
+        // Send to Slack
+        $slackNotifier = new SlackNotifier();
+        Notification::send($slackNotifier, new OtpSlackNotification($otpCode, 'sms', $phoneNumber));
+
+        return $smsJob;
     }
 }
