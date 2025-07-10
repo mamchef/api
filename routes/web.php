@@ -60,7 +60,8 @@ Route::get('/test-notification', function () {
 });
 
 Route::get('/test-otp', function () {
-    \App\Services\OtpCacheService::sendOtpSms('rh.soroosh@gmail.com', rand(111111, 999999));
+    \App\Services\OtpCacheService::sendOtpSms('61234567', rand(111111, 999999));
+    \App\Services\OtpCacheService::sendOtpEmail('rh.soroosh@gmail.com', rand(111111, 999999));
 });
 
 Route::get('test', [DocusignController::class, 'register'])->name('docusign');
