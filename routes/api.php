@@ -1,0 +1,17 @@
+<?php
+
+use App\Http\Controllers\BroadcastAuthController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Route;
+
+require __DIR__.'/api/chef.php';
+require __DIR__.'/api/user.php';
+require __DIR__.'/api/public.php';
+
+
+Route::post('/broadcasting/auth', [BroadcastAuthController::class, 'authenticate'])
+    ->middleware('chef-auth');
+
+Route::post('/user/broadcasting/auth', [BroadcastAuthController::class, 'userAuthenticate'])
+    ->middleware('user-auth');
