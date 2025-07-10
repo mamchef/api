@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\V1\SuccessResponse;
 use App\Services\Interfaces\Chef\ChefProfileServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,12 +15,12 @@ class DocuSignController extends Controller
     {
     }
 
-    public function handle(Request $request): JsonResponse
+    public function handle(Request $request): SuccessResponse
     {
         $payload = json_decode($request->getContent(), true);
         Log::info($payload);
         $envelopeId = $payload['data']['envelopeId'];
         $this->chefProfileService->fetchChefSignedContract($envelopeId);
-        return response()->json(['status' => 'ok'], 200);
+        return new SuccessResponse();
     }
 }

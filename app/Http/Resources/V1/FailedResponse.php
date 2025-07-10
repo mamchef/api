@@ -24,7 +24,7 @@ class FailedResponse extends JsonResource
         return [
             'code' => $this->code,
             'success' => false,
-            'message' => $this->message ?? __('public.operation_successful'),
+            'message' => $this->message ?? __('public.operation_unsuccessful'),
             'result' => []
         ];
     }
