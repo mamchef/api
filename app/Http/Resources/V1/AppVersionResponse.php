@@ -28,7 +28,7 @@ class AppVersionResponse extends JsonResource
                 'android' => [
                     'version' => env('APP_ANDROID_VERSION'),
                     'force_update' => env('APP_ANDROID_FORCE_UPDATE'),
-                    "update_url" => "https://mamchef.com?id=com.mamchef.app",
+                    "update_url" => "https://api.mamchef.com/storage/app/mamchef.apk",
                 ],
                 'ios' => [
                     'version' => env('APP_IOS_VERSION'),
