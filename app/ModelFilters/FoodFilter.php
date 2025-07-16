@@ -64,6 +64,6 @@ class FoodFilter extends ModelFilter
 
     public function inStock(bool $inStock = true): self
     {
-        return  $this->inStock();
+        return  $this->where('available_qty', '>', 0);
     }
 }

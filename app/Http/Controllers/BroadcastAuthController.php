@@ -64,7 +64,8 @@ class BroadcastAuthController extends Controller
             );
 
             return response()->json([
-                'auth' => config('broadcasting.connections.reverb.key') . ':' . $signature
+                'auth' => config('broadcasting.connections.reverb.key') . ':' . $signature,
+                'code' => 200
             ]);
         }
 

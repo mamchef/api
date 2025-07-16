@@ -188,7 +188,14 @@ class FoodService implements FoodServiceInterface
             )
             ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
             ->where('foods.status', true)
-            ->where('chef_stores.is_open', true);
+            ->where('chef_stores.is_open', true)
+            ->whereRaw(
+                "
+        TIME(NOW()) BETWEEN 
+        chef_stores.start_daily_time AND 
+        chef_stores.end_daily_time
+    "
+            );
 
         // Add tag filter if provided
         if ($tagId) {
@@ -250,7 +257,14 @@ class FoodService implements FoodServiceInterface
                     ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
                     ->where('foods.status', true)
                     ->where('foods.deleted_at', null)
-                    ->where('chef_stores.is_open', true);
+                    ->where('chef_stores.is_open', true)
+                    ->whereRaw(
+                        "
+        TIME(NOW()) BETWEEN 
+        chef_stores.start_daily_time AND 
+        chef_stores.end_daily_time
+    "
+                    );
             }, 'food_filtered')
             ->where('row_num', '<=', $limitPerChef);
 

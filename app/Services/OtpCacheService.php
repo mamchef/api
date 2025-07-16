@@ -4,12 +4,10 @@ namespace App\Services;
 
 use App\Jobs\SendOtpEmailJob;
 use App\Jobs\SendOtpSmsJob;
-use App\Mail\OtpMail;
 use App\Models\SlackNotifier;
 use App\Notifications\OtpSlackNotification;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Random\RandomException;
 
 
@@ -23,7 +21,11 @@ class OtpCacheService
      */
     public static function generate($key, int $ttl = 120): int
     {
-        $code = random_int(111111, 999999);
+        if (env('APP_ENV') === 'production') {
+            $code = random_int(111111, 999999);
+        } else {
+            $code = 123456;
+        }
         Cache::put(key: "otp:{$key}", value: $code, ttl: $ttl);
         return $code;
     }
@@ -68,7 +70,6 @@ class OtpCacheService
         Notification::send($slackNotifier, new OtpSlackNotification($otpCode, 'email', $email));
 
         return $emailJob;
-
     }
 
     public static function sendOtpSms(string $phoneNumber, string $otpCode): mixed

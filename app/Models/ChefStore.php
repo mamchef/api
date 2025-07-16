@@ -53,13 +53,6 @@ class ChefStore extends Model
         "delivery_method" => DeliveryOptionEnum::class
     ];
 
-    // ====================== MIXED ====================== //
-
-    public function hasPickup(): bool
-    {
-        return $this->delivery_method != DeliveryOptionEnum::DeliveryOnly;
-    }
-
     // ====================== Relations ====================== //
 
     public function chef(): BelongsTo
@@ -74,6 +67,27 @@ class ChefStore extends Model
 
 
     // ====================== MIXED ====================== //
+
+    public function hasPickup(): bool
+    {
+        return $this->delivery_method != DeliveryOptionEnum::DeliveryOnly;
+    }
+
+    public function chefStoreTimeAllow() :bool
+    {
+        $chefStoreStartDailyTime = explode(':', $this->start_daily_time);
+        $chefStoreEndDailyTime = explode(':', $this->end_daily_time);
+        $startDaily = now()->startOfDay()->addHours($chefStoreStartDailyTime[0])->addMinutes(
+            $chefStoreStartDailyTime[1]
+        );
+        $endDaily = now()->startOfDay()->addHours($chefStoreEndDailyTime[0])->addMinutes($chefStoreEndDailyTime[1]);
+
+        if (now()->between($startDaily, $endDaily)) {
+            return true;
+        }
+        return false;
+    }
+
     public function sluggable(): array
     {
         return [

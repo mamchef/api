@@ -24,6 +24,8 @@ class FoodResource extends BaseResource
         }
 
         $chefStore = $food->chefStore;
+
+
         return [
             'id' => $food->id,
             'name' => $food->name,
@@ -56,7 +58,8 @@ class FoodResource extends BaseResource
                 "delivery_cost" => $chefStore->delivery_cost,
                 "is_open" => (bool)$chefStore->is_open ?? false,
                 "rating" => $chefStore->rating ?? null,
-            ]
+                "time_allow" => $chefStore->chefStoreTimeAllow(),
+            ],
         ];
     }
 }

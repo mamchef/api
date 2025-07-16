@@ -38,6 +38,7 @@ class ChefStoreResource extends BaseResource
             "is_open" => (bool)$chefStore->is_open ?? false,
             "since_year" => $chefStore->created_at?->year,
             "chef" => $chefStore->chef,
+            "time_allow" => $chefStore->chefStoreTimeAllow(),
         ];
     }
 }

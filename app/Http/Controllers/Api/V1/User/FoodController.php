@@ -73,7 +73,6 @@ class FoodController extends Controller
                 chefStoreID: $chefStoreId,
                 filters: [
                     'user_search' => $request->search ?? '',
-                    'in_stock' => true,
                 ],
                 relations: (['chefStore', 'tags']),
                 pagination: null,
