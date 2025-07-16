@@ -77,10 +77,10 @@ class ChefStore extends Model
     {
         $chefStoreStartDailyTime = explode(':', $this->start_daily_time);
         $chefStoreEndDailyTime = explode(':', $this->end_daily_time);
-        $startDaily = now()->startOfDay()->addHours($chefStoreStartDailyTime[0])->addMinutes(
-            $chefStoreStartDailyTime[1]
+        $startDaily = now()->startOfDay()->addHours((int)$chefStoreStartDailyTime[0])->addMinutes(
+            (int)$chefStoreStartDailyTime[1]
         );
-        $endDaily = now()->startOfDay()->addHours($chefStoreEndDailyTime[0])->addMinutes($chefStoreEndDailyTime[1]);
+        $endDaily = now()->startOfDay()->addHours((int)$chefStoreEndDailyTime[0])->addMinutes((int)$chefStoreEndDailyTime[1]);
 
         if (now()->between($startDaily, $endDaily)) {
             return true;
