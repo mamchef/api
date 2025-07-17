@@ -73,19 +73,14 @@ class ChefStore extends Model
         return $this->delivery_method != DeliveryOptionEnum::DeliveryOnly;
     }
 
-    public function chefStoreTimeAllow() :bool
+    public function chefStoreTimeAllow(): bool
     {
-        $chefStoreStartDailyTime = explode(':', $this->start_daily_time);
-        $chefStoreEndDailyTime = explode(':', $this->end_daily_time);
-        $startDaily = now()->startOfDay()->addHours((int)$chefStoreStartDailyTime[0])->addMinutes(
-            (int)$chefStoreStartDailyTime[1]
-        );
-        $endDaily = now()->startOfDay()->addHours((int)$chefStoreEndDailyTime[0])->addMinutes((int)$chefStoreEndDailyTime[1]);
+        if (!$this->start_daily_time || !$this->end_daily_time) return false;
 
-        if (now()->between($startDaily, $endDaily)) {
-            return true;
-        }
-        return false;
+        $now = now()->format('H:i');
+        return $this->start_daily_time > $this->end_daily_time
+            ? ($now >= $this->start_daily_time || $now <= $this->end_daily_time)
+            : ($now >= $this->start_daily_time && $now <= $this->end_daily_time);
     }
 
     public function sluggable(): array
