@@ -17,10 +17,8 @@ class ChangePasswordRequest extends BaseFormRequest
         return  [
             'current_password' => ['required'],
             'password' => ['required', 'confirmed', Password::min(8)
-                ->mixedCase()
                 ->letters()
                 ->numbers()
-                ->symbols()
             ],
             "password_confirmation" => ["required", "min:8", "same:password"],
         ];

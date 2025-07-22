@@ -24,11 +24,8 @@ class RegisterByEmailRequest extends BaseFormRequest
         return [
             "email" => ["required", "email", "unique:chefs,email"],
             'password' => ['required', 'confirmed', Password::min(8)
-                ->mixedCase()
                 ->letters()
-                ->numbers()
-                ->symbols()
-                ->uncompromised()],
+                ->numbers()],
             "password_confirmation" => ["required", "min:8", "same:password"],
             "code" => ["required", "string", new CheckOtpRule(AuthController::$REGISTER_PREFIX_KEY . $this->email)],
             "fcm_token" => ["sometimes", "nullable", "string"],

@@ -20,11 +20,9 @@ class ForgotPasswordRequest extends BaseFormRequest
         return [
             "email" => ["required", "email", "exists:chefs,email"],
             'password' => ['required', 'confirmed', Password::min(8)
-                ->mixedCase()
                 ->letters()
                 ->numbers()
-                ->symbols()
-                ->uncompromised()],
+                ],
             "password_confirmation" => ["required", "min:8", "same:password"],
             "code" => ["required", "string", new CheckOtpRule(AuthController::$FORGOT_PASSWORD_PREFIX_KEY . $this->email)],
         ];
