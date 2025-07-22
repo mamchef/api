@@ -4,7 +4,7 @@ namespace App\DTOs\User\Auth;
 
 use App\DTOs\BaseDTO;
 use App\Enums\RegisterSourceEnum;
-use App\Models\Chef;
+use App\Models\User;
 use Ramsey\Uuid\Uuid;
 
 readonly class RegisterDTO extends BaseDTO
@@ -30,7 +30,7 @@ readonly class RegisterDTO extends BaseDTO
 
     public function getPassword(): string
     {
-        return Chef::generatePassword($this->password);
+        return User::generatePassword($this->password);
     }
 
     public function getUUid(): string

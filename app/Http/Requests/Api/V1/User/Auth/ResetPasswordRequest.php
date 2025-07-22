@@ -13,7 +13,7 @@ use Illuminate\Validation\Rules\Password;
  * @property string $phone_number
  * @property string $password
  */
-class RegisterRequest extends BaseFormRequest
+class ResetPasswordRequest extends BaseFormRequest
 {
 
     public function rules(): array
@@ -26,7 +26,7 @@ class RegisterRequest extends BaseFormRequest
                 ->numbers()
             ],
             "password_confirmation" => ["required", "min:8", "same:password"],
-            "code" => ["required", "string", new CheckOtpRule(AuthController::$REGISTER_PREFIX_KEY . $this->phone_number)],
+            "code" => ["required", "string", new CheckOtpRule(AuthController::$FORGOT_PREFIX_KEY . $this->phone_number)],
         ];
     }
 }

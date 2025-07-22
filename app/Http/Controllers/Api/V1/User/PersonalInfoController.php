@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api\V1\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\User\Profile\ChangePasswordRequest;
 use App\Http\Requests\Api\V1\User\Profile\SendEmailOTPlRequest;
 use App\Http\Requests\Api\V1\User\Profile\SetEmailRequest;
 use App\Http\Requests\Api\V1\User\Profile\UserProfileUpdateInfoRequest;
 use App\Http\Resources\V1\SuccessResponse;
+use App\Models\User;
 use App\Services\Interfaces\User\UserAuthServiceInterface;
 use App\Services\Interfaces\User\UserProfileServiceInterface;
 use App\Services\RateLimitService;
@@ -56,6 +58,19 @@ class PersonalInfoController extends Controller
         $this->profileService->updateEmail(
             userId: Auth::id(),
             email: $request->email,
+        );
+        return new SuccessResponse();
+    }
+
+
+    public function changePassword(ChangePasswordRequest $request): SuccessResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $this->profileService->changePassword(
+            user: $user,
+            currentPassword: $request->current_password,
+            newPassword: $request->password
         );
         return new SuccessResponse();
     }

@@ -3,9 +3,8 @@
 namespace App\DTOs\User\Ticket;
 
 use App\DTOs\BaseDTO;
-use App\Enums\Ticket\TicketItemCreateByEnum;
 use App\Enums\Ticket\TicketStatusEnum;
-use App\Models\Chef;
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
 
 readonly class UserStoreTicketDTO extends BaseDTO
@@ -49,7 +48,7 @@ readonly class UserStoreTicketDTO extends BaseDTO
     {
         return [
             'title' => $this->getTitle(),
-            'ticketable_type' => Chef::class,
+            'ticketable_type' => User::class,
             'ticketable_id' => $this->getUserId(),
             'status' => TicketStatusEnum::USER_CREATED,
             "priority" => $this->getPriority(),

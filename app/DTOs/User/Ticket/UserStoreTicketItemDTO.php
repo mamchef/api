@@ -5,6 +5,7 @@ namespace App\DTOs\User\Ticket;
 use App\DTOs\BaseDTO;
 use App\Enums\Ticket\TicketItemCreateByEnum;
 use App\Models\Chef;
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
 
 readonly class UserStoreTicketItemDTO extends BaseDTO
@@ -43,7 +44,7 @@ readonly class UserStoreTicketItemDTO extends BaseDTO
         return [
             'ticket_id' => $this->getTicketId(),
             'itemable_id' => $this->getUserId(),
-            'itemable_type' => Chef::class,
+            'itemable_type' => User::class,
             'description' => $this->getDescription(),
             'created_by' => TicketItemCreateByEnum::CHEF,
         ];

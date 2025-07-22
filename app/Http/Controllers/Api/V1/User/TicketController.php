@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1\User;
 
-use App\DTOs\Chef\Ticket\ChefStoreTicketItemDTO;
 use App\DTOs\User\Ticket\UserStoreTicketDTO;
 use App\DTOs\User\Ticket\UserStoreTicketItemDTO;
 use App\Http\Controllers\Controller;
@@ -25,8 +24,8 @@ class TicketController extends Controller
 
     public function index(Request $request)
     {
-        $tickets = $this->ticketService->getChefTickets(
-            chefId: Auth::id(),
+        $tickets = $this->ticketService->getUserTickets(
+            userId: Auth::id(),
             filters: [],
             relations: [
                 'items.itemable'
@@ -40,8 +39,8 @@ class TicketController extends Controller
 
     public function show(int $ticketId): TicketResource
     {
-        $ticket = $this->ticketService->getChefTicket(
-            chefId: Auth::id(),
+        $ticket = $this->ticketService->getUserTicket(
+            userId: Auth::id(),
             ticketId: $ticketId,
             relations: [
                 'items.itemable'
@@ -81,7 +80,7 @@ class TicketController extends Controller
     public function getTicketItemAttachment(int $ticketItemId)
     {
         // Verify ownership and get ticket item
-        $ticketItem = TicketItem::forChef(Auth::id())->where('id', $ticketItemId)->firstOrFail();
+        $ticketItem = TicketItem::forUser(Auth::id())->where('id', $ticketItemId)->firstOrFail();
 
         // Check if attachment exists
         if (!$ticketItem->attachment || !Storage::disk('private')->exists($ticketItem->attachment)) {

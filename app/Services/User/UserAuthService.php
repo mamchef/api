@@ -28,7 +28,7 @@ class UserAuthService implements UserAuthServiceInterface
         );
     }
 
-    public function sendEmailOtp(string $key,string $email): mixed
+    public function sendEmailOtp(string $key, string $email): mixed
     {
         return OtpCacheService::sendOtpEmail(
             email: $email,
@@ -41,13 +41,12 @@ class UserAuthService implements UserAuthServiceInterface
 
     public function loginOrRegister(string $countryCode, string $phoneNumber): string
     {
-       $user = User::query()->where('country_code', $countryCode)
-           ->where('phone_number',$phoneNumber)->first();
+        $user = User::query()->where('country_code', $countryCode)
+            ->where('phone_number', $phoneNumber)->first();
 
         if ($user) {
-           return 'login';
-       }
-
+            return 'login';
+        }
 
 
         RateLimitService::enforce(
@@ -59,11 +58,11 @@ class UserAuthService implements UserAuthServiceInterface
 
 
         $this->sendOtp(
-           key:AuthController::$REGISTER_PREFIX_KEY,
-           phoneNumber: $countryCode.$phoneNumber,
-       );
+            key: AuthController::$REGISTER_PREFIX_KEY,
+            phoneNumber: $countryCode . $phoneNumber,
+        );
 
-       return 'register';
+        return 'register';
     }
 
 
@@ -76,10 +75,10 @@ class UserAuthService implements UserAuthServiceInterface
     }
 
 
-    public function login(string $countryCode, string $phoneNumber , string $password): string
+    public function login(string $countryCode, string $phoneNumber, string $password): string
     {
-        $user = User::query()->where('country_code',$countryCode)
-            ->where('phone_number',$phoneNumber)->first();
+        $user = User::query()->where('country_code', $countryCode)
+            ->where('phone_number', $phoneNumber)->first();
 
         if (!$user || !$user->passwordCheck($password)) {
             throw ValidationException::withMessages([
@@ -88,5 +87,50 @@ class UserAuthService implements UserAuthServiceInterface
         }
 
         return $user->createToken(User::$TOKEN_NAME)->plainTextToken;
+    }
+
+    public function forgotPasswordRequest(string $countryCode, string $phoneNumber): void
+    {
+        $user = User::query()->where('country_code', $countryCode)
+            ->where('phone_number', $phoneNumber)->first();
+
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'user' => "phone number is incorrect",
+            ]);
+        }
+
+
+        RateLimitService::enforce(
+            AuthController::$FORGOT_PREFIX_KEY . $countryCode . $phoneNumber,
+            1,
+            120,
+            'Too many OTP requests. Please try again later.'
+        );
+
+
+        $this->sendOtp(
+            key: AuthController::$FORGOT_PREFIX_KEY,
+            phoneNumber: $countryCode . $phoneNumber,
+        );
+    }
+
+    public function resetPassword(string $countryCode, string $phoneNumber, string $password): void
+    {
+        $user = User::query()->where('country_code', $countryCode)
+            ->where('phone_number', $phoneNumber)->first();
+
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'user' => "phone number is incorrect",
+            ]);
+        }
+
+        $user->password = User::generatePassword($password);
+        $user->save();
+
+        $user->tokens()->update([
+            "expires_at" => now()
+        ]);
     }
 }

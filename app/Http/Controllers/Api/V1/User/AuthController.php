@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api\V1\User;
 
 use App\DTOs\User\Auth\RegisterDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\User\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\User\Auth\LoginOrRegisterRequest;
 use App\Http\Requests\Api\V1\User\Auth\LoginRequest;
 use App\Http\Requests\Api\V1\User\Auth\RegisterRequest;
+use App\Http\Requests\Api\V1\User\Auth\ResetPasswordRequest;
 use App\Http\Resources\V1\SuccessResponse;
 use App\Http\Resources\V1\User\UserTokenResponse;
 use App\Services\Interfaces\User\UserAuthServiceInterface;
@@ -19,6 +21,7 @@ class AuthController extends Controller
 
     public static string $REGISTER_PREFIX_KEY = "register-";
     public static string $LOGIN_PREFIX_KEY = "login-";
+    public static string $FORGOT_PREFIX_KEY = "forgot-";
 
     public function __construct(private readonly UserAuthServiceInterface $authService)
     {
@@ -29,8 +32,7 @@ class AuthController extends Controller
      */
     public function loginOrRegister(LoginOrRegisterRequest $request): SuccessResponse
     {
-
-       $result =  $this->authService->loginOrRegister(
+        $result = $this->authService->loginOrRegister(
             countryCode: $request->country_code,
             phoneNumber: $request->phone_number,
         );
@@ -50,7 +52,7 @@ class AuthController extends Controller
             )
         );
 
-        RateLimitService::reset('register-send-otp:' . $request->email);
+        RateLimitService::reset('register-send-otp:' . $request->phone_number);
 
         return new UserTokenResponse(
             token: $token
@@ -95,6 +97,25 @@ class AuthController extends Controller
         return new UserTokenResponse(
             token: $token
         );
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request): SuccessResponse
+    {
+        $this->authService->sendOtp(
+            key: AuthController::$REGISTER_PREFIX_KEY,
+            phoneNumber: $request->country_code . $request->phone_number,
+        );
+        return new SuccessResponse();
+    }
+
+    public function resetPassword(ResetPasswordRequest $request): SuccessResponse
+    {
+        $this->authService->resetPassword(
+            countryCode: $request->country_code,
+            phoneNumber: $request->phone_number,
+            password: $request->password,
+        );
+        return new SuccessResponse();
     }
 
 }

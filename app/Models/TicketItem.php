@@ -52,6 +52,10 @@ class TicketItem extends Model
         return $query->where('itemable_type', Chef::class)->where('itemable_id', $chefId);
     }
 
+    public function scopeForUser($query, $userId)
+    {
+        return $query->where('itemable_type', User::class)->where('itemable_id', $userId);
+    }
 
     // ================= MISC ==================== //
 }

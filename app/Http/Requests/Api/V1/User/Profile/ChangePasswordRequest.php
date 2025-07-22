@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Api\V1\Chef\Profile;
+namespace App\Http\Requests\Api\V1\User\Profile;
 
 use App\Http\Requests\BaseFormRequest;
 use Illuminate\Validation\Rules\Password;
@@ -17,10 +17,8 @@ class ChangePasswordRequest extends BaseFormRequest
         return  [
             'current_password' => ['required'],
             'password' => ['required', 'confirmed', Password::min(8)
-                ->mixedCase()
                 ->letters()
                 ->numbers()
-                ->symbols()
             ],
             "password_confirmation" => ["required", "min:8", "same:password"],
         ];

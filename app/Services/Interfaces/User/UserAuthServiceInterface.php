@@ -16,5 +16,9 @@ interface UserAuthServiceInterface
 
     public function sendEmailOtp(string $key, string $email): mixed;
 
+    public function forgotPasswordRequest(string $countryCode, string $phoneNumber): void;
+
+    public function resetPassword(string $countryCode, string $phoneNumber,string $password): void;
+
 
 }

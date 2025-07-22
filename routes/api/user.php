@@ -22,6 +22,10 @@ Route::prefix('user')->name("user.")->group(function () {
         Route::post("register", [AuthController::class, 'register'])->name("register");
         Route::post("login", [AuthController::class, 'login'])->name("login-by-google");
         Route::get('logout', [AuthController::class, 'logout'])->middleware("user-auth")->name("logout");
+
+        Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name("forgot-password");
+        Route::post('reset-password', [AuthController::class, 'resetPassword'])->name("reset-password");
+
         Route::get('me', [AuthController::class, 'me'])->middleware("user-auth")->name("me");
     });
 
@@ -30,6 +34,7 @@ Route::prefix('user')->name("user.")->group(function () {
         Route::post('update-info', [PersonalInfoController::class, 'updateInfo'])->name("update-name");
         Route::post('set-email-otp', [PersonalInfoController::class, 'setEmailOTP'])->name("set-email-otp");
         Route::post('set-email', [PersonalInfoController::class, 'setEmail'])->name("set-email");
+        Route::post('change-password', [PersonalInfoController::class, 'changePassword'])->name("change-password");
     });
 
     //Address
@@ -107,8 +112,8 @@ Route::prefix('user')->name("user.")->group(function () {
 
     //Notifications
     Route::prefix("notifications")->name("notifications.")->middleware(["user-auth"])->group(function () {
-        Route::get('',[NotificationController::class, 'index'])->name("index");
-        Route::post('read/{id}',[NotificationController::class, 'markAsRead'])->name("read");
-        Route::post('read-all',[NotificationController::class, 'markAllAsRead'])->name("read-all");
+        Route::get('', [NotificationController::class, 'index'])->name("index");
+        Route::post('read/{id}', [NotificationController::class, 'markAsRead'])->name("read");
+        Route::post('read-all', [NotificationController::class, 'markAllAsRead'])->name("read-all");
     });
 });
