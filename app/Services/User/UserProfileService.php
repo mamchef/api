@@ -22,6 +22,7 @@ class UserProfileService implements UserProfileServiceInterface
 
     public function changePassword(User $user, string $currentPassword, string $newPassword): void
     {
+        $user->refresh();
         if ($currentPassword === $newPassword) {
             throw ValidationException::withMessages([
                 'password' => __('validation.attributes.different_password'),

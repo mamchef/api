@@ -19,6 +19,7 @@ class ChefProfileService implements ChefProfileServiceInterface
     /** @inheritDoc */
     public function changePassword(Chef $chef, string $currentPassword, string $newPassword): void
     {
+        $chef->refresh();
         if ($currentPassword === $newPassword) {
             throw ValidationException::withMessages([
                 'password' => __('validation.attributes.different_password'),
@@ -31,8 +32,9 @@ class ChefProfileService implements ChefProfileServiceInterface
             ]);
         }
 
-        $chef->password = Chef::generatePassword($newPassword);
-        $chef->save();
+        $chef->update([
+            'password' => Chef::generatePassword($newPassword)
+        ]);
     }
 
     public function updateProfileByChef(int $chefID, UpdateProfileByChefDTO $DTO): Chef
@@ -85,9 +87,9 @@ class ChefProfileService implements ChefProfileServiceInterface
             $chef->status = ChefStatusEnum::DocumentUploaded;
         } elseif ($chef->status == ChefStatusEnum::ContractSigned) {
             #TODO FOR TEST
-            if (env('AUTO_APPROVE')){
+            if (env('AUTO_APPROVE')) {
                 $chef->status = ChefStatusEnum::Approved;
-            }else{
+            } else {
                 $chef->status = ChefStatusEnum::NeedAdminApproval;
             }
         }
@@ -117,9 +119,9 @@ class ChefProfileService implements ChefProfileServiceInterface
             $chef->status = ChefStatusEnum::ContractSigned;
         } elseif ($chef->status == ChefStatusEnum::DocumentUploaded) {
             #TODO FOR TEST
-            if (env('AUTO_APPROVE')){
+            if (env('AUTO_APPROVE')) {
                 $chef->status = ChefStatusEnum::Approved;
-            }else{
+            } else {
                 $chef->status = ChefStatusEnum::NeedAdminApproval;
             }
         }
