@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\Admin\AuthController;
 use App\Http\Controllers\Api\V1\Admin\ChefController;
+use App\Http\Controllers\Api\V1\Admin\ChefStoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name("admin.")->group(function () {
@@ -15,7 +16,7 @@ Route::prefix('admin')->name("admin.")->group(function () {
     });
 
 
-    //Chef Lists
+    //Chef
     Route::prefix("chefs")->name("chefs.")->middleware("admin-auth")->group(function () {
         Route::get('', [ChefController::class, 'index'])->name("index");
         Route::get('get-doc/{chefId}/{fieldName}', [ChefController::class, 'getChefDocumentByFieldName'])->name("get-doc");
@@ -23,6 +24,12 @@ Route::prefix('admin')->name("admin.")->group(function () {
         Route::post('{chefId}', [ChefController::class, 'update'])->name("update");
     });
 
+    //Chef Store
+    Route::prefix("chef-stores")->name("chef-stores.")->middleware("admin-auth")->group(function () {
+        Route::get('', [ChefStoreController::class, 'index'])->name("index");
+        Route::get('{chefStoreId}', [ChefStoreController::class, 'show'])->name("show");
+        Route::post('{chefStoreId}', [ChefStoreController::class, 'update'])->name("update");
+    });
 
 
     //User Lists

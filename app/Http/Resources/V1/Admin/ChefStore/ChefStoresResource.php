@@ -6,7 +6,7 @@ use App\Http\Resources\V1\BaseResource;
 use App\Models\Chef;
 use App\Models\ChefStore;
 
-class ChefStoreResource extends BaseResource
+class ChefStoresResource extends BaseResource
 {
 
     public function prePareData($request): array

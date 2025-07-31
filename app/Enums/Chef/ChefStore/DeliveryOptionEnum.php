@@ -16,4 +16,15 @@ enum DeliveryOptionEnum: string
             self::DeliveryAndPickup->value,
         ];
     }
+
+    public static function getEnum(string $value):self
+    {
+        return match ($value) {
+            self::DeliveryOnly->value => self::DeliveryOnly,
+            self::PickupOnly->value => self::PickupOnly,
+            self::DeliveryAndPickup->value => self::DeliveryAndPickup,
+        };
+    }
+
+
 }
