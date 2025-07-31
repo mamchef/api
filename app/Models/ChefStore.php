@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $main_street
  * @property bool $is_open
  * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property Carbon $deleted_at
  * @property DeliveryOptionEnum $delivery_method
  * @property float $delivery_cost

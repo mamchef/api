@@ -2,14 +2,18 @@
 
 namespace App\Providers;
 
+use App\Services\Admin\AdminAuthService;
 use App\Services\Chef\ChefAuthService;
 use App\Services\Chef\ChefProfileService;
+use App\Services\Chef\ChefService;
 use App\Services\ChefStoreService;
 use App\Services\FoodOptionGroupService;
 use App\Services\FoodOptionService;
 use App\Services\FoodService;
+use App\Services\Interfaces\Admin\AdminAuthServiceInterface;
 use App\Services\Interfaces\Chef\ChefAuthServiceInterface;
 use App\Services\Interfaces\Chef\ChefProfileServiceInterface;
+use App\Services\Interfaces\Chef\ChefServiceInterface;
 use App\Services\Interfaces\ChefStoreServiceInterface;
 use App\Services\Interfaces\FoodOptionGroupServiceInterface;
 use App\Services\Interfaces\FoodOptionServiceInterface;
@@ -44,12 +48,16 @@ class AppServiceProvider extends ServiceProvider
         FoodServiceInterface::class => FoodService::class,
         FoodOptionServiceInterface::class => FoodOptionService::class,
         FoodOptionGroupServiceInterface::class => FoodOptionGroupService::class,
-
+        ChefServiceInterface::class => ChefService::class,
 
         //USER
         UserAUthServiceInterface::class => UserAuthService::class,
         UserAddressServiceInterface::class => UserAddressService::class,
         UserProfileServiceInterface::class => UserProfileService::class,
+
+
+        //Admin
+        AdminAuthServiceInterface::class => AdminAuthService::class,
 
 
         //Common
