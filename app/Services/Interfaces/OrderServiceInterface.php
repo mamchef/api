@@ -2,13 +2,12 @@
 
 namespace App\Services\Interfaces;
 
+use App\DTOs\Admin\User\UserUpdateByAdminDTO;
 use App\DTOs\Chef\Order\AcceptOrderDTO;
 use App\DTOs\Chef\Order\DeliveryChangeDTO;
 use App\DTOs\Chef\Order\OrderStatisticDTO;
 use App\DTOs\Chef\Order\RefuseOrderDTO;
-use App\DTOs\User\Order\AcceptDeliveryChangeDTO;
 use App\DTOs\User\Order\RateOrderDTO;
-use App\DTOs\User\Order\RefuseDeliveryChangeDTO;
 use App\DTOs\User\Order\UserStoreOrderResponseDTO;
 use App\Enums\Order\OrderCompleteByEnum;
 use App\Http\Requests\Api\V1\User\Order\StoreOrderRequest;
@@ -88,4 +87,18 @@ interface OrderServiceInterface
 
 
     public function rateOrderByUser(RateOrderDTO $DTO): Order;
+
+
+    public function all(
+        ?array $filters = null,
+        array $relations = [],
+        $pagination = null
+    ): Collection|LengthAwarePaginator;
+
+
+    public function show(int $userId, array $relations = []): Order;
+
+
+    public function update(int $userId ,UserUpdateByAdminDTO $DTO): Order;
+
 }

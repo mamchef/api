@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Enums\RegisterSourceEnum;
 use App\Enums\User\UserStatusEnum;
+use App\ModelFilters\UserFilter;
+use App\Traits\GetTableColumn;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -47,7 +49,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens, SoftDeletes;
+    use HasFactory, Notifiable, HasApiTokens, SoftDeletes, Filterable, GetTableColumn;
 
     public static string $TOKEN_NAME = "user-token";
 
@@ -172,5 +174,9 @@ class User extends Authenticatable
         return UserTransaction::forUser($this->id)->completed()->sum('amount');
     }
 
+    public function getModelFilterClass(): string
+    {
+        return UserFilter::class;
+    }
 
 }

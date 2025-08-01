@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTOs\Admin\User\UserUpdateByAdminDTO;
 use App\DTOs\Chef\Order\AcceptOrderDTO;
 use App\DTOs\Chef\Order\DeliveryChangeDTO;
 use App\DTOs\Chef\Order\OrderStatisticDTO;
@@ -723,5 +724,23 @@ class OrderService implements OrderServiceInterface
         }
 
         return $order;
+    }
+
+    public function all(
+        ?array $filters = null,
+        array $relations = [],
+        $pagination = null
+    ): Collection|LengthAwarePaginator {
+        // TODO: Implement all() method.
+    }
+
+    public function show(int $userId, array $relations = []): Order
+    {
+        // TODO: Implement show() method.
+    }
+
+    public function update(int $userId, UserUpdateByAdminDTO $DTO): Order
+    {
+        // TODO: Implement update() method.
     }
 }

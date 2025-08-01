@@ -25,6 +25,7 @@ use App\Services\Interfaces\TicketServiceInterface;
 use App\Services\Interfaces\User\UserAddressServiceInterface;
 use App\Services\Interfaces\User\UserAuthServiceInterface;
 use App\Services\Interfaces\User\UserProfileServiceInterface;
+use App\Services\Interfaces\User\UserServiceInterface;
 use App\Services\NotificationService;
 use App\Services\OrderService;
 use App\Services\TagService;
@@ -32,6 +33,7 @@ use App\Services\TicketService;
 use App\Services\User\UserAddressService;
 use App\Services\User\UserAuthService;
 use App\Services\User\UserProfileService;
+use App\Services\User\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\ServiceProvider;
@@ -54,7 +56,7 @@ class AppServiceProvider extends ServiceProvider
         UserAUthServiceInterface::class => UserAuthService::class,
         UserAddressServiceInterface::class => UserAddressService::class,
         UserProfileServiceInterface::class => UserProfileService::class,
-
+        UserServiceInterface::class => UserService::class,
 
         //Admin
         AdminAuthServiceInterface::class => AdminAuthService::class,

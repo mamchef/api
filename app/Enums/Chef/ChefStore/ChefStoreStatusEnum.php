@@ -4,8 +4,8 @@ namespace App\Enums\Chef\ChefStore;
 
 enum ChefStoreStatusEnum: string
 {
-    case NeedCompleteData = "need-complete-data";
-    case UnderReview = "under-review";
+    case NeedCompleteData = "need_complete_data";
+    case UnderReview = "under_review";
     case Approved = "approved";
     case Rejected = "rejected";
 

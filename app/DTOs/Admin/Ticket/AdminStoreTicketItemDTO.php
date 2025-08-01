@@ -1,19 +1,21 @@
 <?php
 
-namespace App\DTOs\User\Ticket;
+namespace App\DTOs\Admin\Ticket;
 
 use App\DTOs\BaseDTO;
 use App\Enums\Ticket\TicketItemCreateByEnum;
+use App\Enums\Ticket\TicketStatusEnum;
+use App\Models\Admin;
 use App\Models\Chef;
-use App\Models\User;
 use Illuminate\Http\UploadedFile;
 
-readonly class UserStoreTicketItemDTO extends BaseDTO
+readonly class AdminStoreTicketItemDTO extends BaseDTO
 {
     public function __construct(
         protected int $ticketId,
-        protected int $userId,
+        protected int $adminId,
         protected string $description,
+        protected TicketStatusEnum $status,
         protected ?UploadedFile $attachment,
     ) {
     }
@@ -23,9 +25,9 @@ readonly class UserStoreTicketItemDTO extends BaseDTO
         return $this->ticketId;
     }
 
-    public function getUserId(): int
+    public function getAdminId(): int
     {
-        return $this->userId;
+        return $this->adminId;
     }
 
     public function getDescription(): string
@@ -39,14 +41,19 @@ readonly class UserStoreTicketItemDTO extends BaseDTO
     }
 
 
+    public function getStatus(): TicketStatusEnum
+    {
+        return $this->status;
+    }
+
     public function toArray(): array
     {
         return [
             'ticket_id' => $this->getTicketId(),
-            'itemable_id' => $this->getUserId(),
-            'itemable_type' => User::class,
+            'itemable_id' => $this->getAdminId(),
+            'itemable_type' => Admin::class,
             'description' => $this->getDescription(),
-            'created_by' => TicketItemCreateByEnum::USER,
+            'created_by' => TicketItemCreateByEnum::ADMIN,
         ];
     }
 

@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\V1\Admin\AuthController;
 use App\Http\Controllers\Api\V1\Admin\ChefController;
 use App\Http\Controllers\Api\V1\Admin\ChefStoreController;
+use App\Http\Controllers\Api\V1\Admin\TicketController;
+use App\Http\Controllers\Api\V1\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name("admin.")->group(function () {
@@ -32,5 +34,30 @@ Route::prefix('admin')->name("admin.")->group(function () {
     });
 
 
-    //User Lists
+    //User
+    Route::prefix("users")->name("users.")->middleware("admin-auth")->group(function () {
+        Route::get('', [UserController::class, 'index'])->name("index");
+        Route::get('{userId}', [UserController::class, 'show'])->name("show");
+        Route::post('{userId}', [UserController::class, 'update'])->name("update");
+    });
+
+    //Orders
+    Route::prefix("orders")->name("orders.")->middleware("admin-auth")->group(function () {
+        Route::get('', [UserController::class, 'index'])->name("index");
+        Route::get('{userId}', [UserController::class, 'show'])->name("show");
+        Route::post('{userId}', [UserController::class, 'update'])->name("update");
+    });
+
+    //Tickets
+    Route::prefix("tickets")->name("tickets.")->middleware("admin-auth")->group(function () {
+        Route::get('',[TicketController::class, 'index'])->name("index");
+        Route::get('get-chef-tickets/{chefId}',[TicketController::class, 'getChefTickets'])->name("chef-tickets");
+        Route::get('get-user-tickets/{userId}',[TicketController::class, 'getUserTickets'])->name("user-tickets");
+        Route::get('{ticketId}',[TicketController::class, 'show'])->name("show");
+        Route::post('',[TicketController::class, 'store'])->name("store");
+        Route::post('items/{ticketId}',[TicketController::class, 'storeTicketItem'])->name("store-ticket-items");
+        Route::post('set-status/{ticketId}',[TicketController::class, 'setStatus'])->name("set-status");
+        Route::get('items/attachment/{ticketItemId}',[TicketController::class, 'getTicketItemAttachment'])->name("get-ticket-item-attachment");
+    });
+
 });
