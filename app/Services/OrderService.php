@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\Admin\Order\AcceptOrderByAdminDTO;
+use App\DTOs\Admin\Order\AdminStoreOrderResponseDTO;
 use App\DTOs\Admin\Order\DeliveryChangeByAdminDTO;
 use App\DTOs\Admin\Order\RefuseOrderByAdminDTO;
 use App\DTOs\Admin\User\UserUpdateByAdminDTO;
@@ -18,6 +19,7 @@ use App\Enums\Order\OrderStatusEnum;
 use App\Enums\User\PaymentMethod;
 use App\Enums\User\TransactionStatus;
 use App\Enums\User\TransactionType;
+use App\Http\Requests\Api\V1\Admin\Order\StoreOrderByAdminRequest;
 use App\Http\Requests\Api\V1\User\Order\StoreOrderRequest;
 use App\Models\ChefStore;
 use App\Models\Food;
@@ -593,7 +595,8 @@ class OrderService implements OrderServiceInterface
     public function markOrderCompleteByAdmin(int $orderId): Order
     {
         $order = $this->show(
-            orderId: $orderId,);
+            orderId: $orderId,
+        );
 
         return $this->makeOrderComplete(
             order: $order,
@@ -644,8 +647,17 @@ class OrderService implements OrderServiceInterface
             orderUuid: $orderUuid,
             userId: $userId
         );
+        return $this->acceptDeliveryChange($order);
+    }
 
+    public function acceptDeliveryChangeByAdmin(int $orderId): Order
+    {
+        $order = $this->show($orderId);
+        return $this->acceptDeliveryChange($order);
+    }
 
+    private function acceptDeliveryChange(Order $order): Order
+    {
         // Ensure order is waiting for delivery change response
         if ($order->status != OrderStatusEnum::DELIVERY_CHANGE_REQUESTED) {
             throw ValidationException::withMessages(
@@ -690,8 +702,17 @@ class OrderService implements OrderServiceInterface
             orderUuid: $orderUuid,
             userId: $userId
         );
+        return $this->refuseChangeDeliveryChange($order);
+    }
 
+    public function refuseChangeDeliveryChangeByAdmin(int $orderId): Order
+    {
+        $order = $this->show($orderId);
+        return $this->refuseChangeDeliveryChange($order);
+    }
 
+    public function refuseChangeDeliveryChange(Order $order): Order
+    {
         if ($order->status != OrderStatusEnum::DELIVERY_CHANGE_REQUESTED) {
             throw ValidationException::withMessages(
                 ['order' => 'No delivery change pending for this order']
@@ -831,5 +852,141 @@ class OrderService implements OrderServiceInterface
     public function update(int $userId, UserUpdateByAdminDTO $DTO): Order
     {
         // TODO: Implement update() method.
+    }
+
+    public function storeOrderByAdmin(StoreOrderByAdminRequest $request, int $userId): AdminStoreOrderResponseDTO
+    {
+        try {
+            DB::beginTransaction();
+
+            /** @var User $user */
+            $user = User::query()->where('id', $userId)->firstOrFail();
+
+            // Reserve food quantities FIRST (decrease available_qty)
+            $this->reserveFoodQuantities($request->items);
+
+            // Get chef store and calculate totals
+            /** @var ChefStore $chefStore */
+            $chefStore = ChefStore::query()->findOrFail($request->chef_store_id);
+            $deliveryCost = $request->delivery_type == DeliveryTypeEnum::DELIVERY->value ? ($chefStore->delivery_cost ?? 0) : 0;
+
+            // Calculate subtotal from items
+            $subtotal = $this->calculateSubtotal($request->items);
+            $totalAmount = $subtotal + $deliveryCost;
+
+            // Get address snapshot if delivery
+            $addressSnapshot = null;
+            if ($request->delivery_type === 'delivery' && $request->user_address) {
+                $addressSnapshot = [
+                    'address' => $request->user_address,
+                ];
+            }
+
+            // Create order
+            $order = Order::query()->create([
+                'user_id' => auth()->id(),
+                'uuid' => Uuid::uuid4()->toString(),
+                'chef_store_id' => $request->chef_store_id,
+                'user_address' => $request->user_address,
+                'status' => OrderStatusEnum::PENDING_PAYMENT,
+                'delivery_type' => $request->delivery_type,
+                'original_delivery_type' => $request->delivery_type,
+                'delivery_cost' => $deliveryCost,
+                'subtotal' => $subtotal,
+                'total_amount' => $totalAmount,
+                'user_notes' => $request->user_notes,
+                'delivery_address_snapshot' => $addressSnapshot,
+            ]);
+
+            // Create order items
+            foreach ($request->items as $itemData) {
+                $food = Food::query()->findOrFail($itemData['food_id']);
+
+                $orderItem = OrderItem::query()->create([
+                    'order_id' => $order->id,
+                    'food_id' => $food->id,
+                    'food_name' => $food->name,
+                    'food_price' => $food->price,
+                    "note" => $itemData['note'] ?? null,
+                    'quantity' => $itemData['quantity'],
+                    'item_subtotal' => $food->price * $itemData['quantity'],
+                    'item_total' => $food->price * $itemData['quantity'], // Will be updated after options
+                ]);
+
+                // Create order item options
+                if (isset($itemData['options'])) {
+                    foreach ($itemData['options'] as $optionData) {
+                        $foodOption = FoodOption::query()->findOrFail($optionData['food_option_id']);
+
+                        OrderItemOption::query()->create([
+                            'order_item_id' => $orderItem->id,
+                            'food_option_group_id' => $optionData['food_option_group_id'],
+                            'food_option_id' => $foodOption->id,
+                            'option_group_name' => $foodOption->optionGroup->name,
+                            'option_name' => $foodOption->name,
+                            'option_price' => $foodOption->price,
+                            'option_type' => $foodOption->type,
+                            'quantity' => $optionData['quantity'],
+                            'option_total' => $foodOption->price * $optionData['quantity'],
+                        ]);
+                    }
+
+                    // Recalculate item total with options
+                    $orderItem->recalculateTotal();
+                }
+            }
+
+            $responseData = [];
+            $paymentMethod = null;
+            $totalAmount = $order->fresh()->total_amount;
+
+            if ($request->has('payment_method')) {
+                $paymentMethod = PaymentMethod::from($request->payment_method);
+                if ($paymentMethod == PaymentMethod::WALLET) {
+                    if ($user->getAvailableCredit() < $totalAmount) {
+                        throw ValidationException::withMessages([
+                            'error' => 'Insufficient credit to pay.'
+                        ]);
+                    }
+
+                    $this->makeOrderPaymentSuccess(
+                        orderUuid: $order->uuid,
+                        amount: $totalAmount,
+                        paymentMethod: PaymentMethod::WALLET
+                    );
+
+                    $responseData = [
+                        'amount' => $totalAmount,
+                        "status" => "payed",
+                        'currency' => "eur",
+                    ];
+                } elseif ($paymentMethod == PaymentMethod::FREE) {
+                    $this->makeOrderPaymentSuccess(
+                        orderUuid: $order->uuid,
+                        amount: $totalAmount,
+                        paymentMethod: PaymentMethod::WALLET
+                    );
+
+                    $responseData = [
+                        'amount' => $totalAmount,
+                        "status" => "payed",
+                        'currency' => "eur",
+                    ];
+                }
+            }
+
+            DB::commit();
+
+            return new AdminStoreOrderResponseDTO(
+                order: $order,
+                paymentIntent: $responseData,
+                paymentMethod: $paymentMethod?->value
+            );
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw ValidationException::withMessages([
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

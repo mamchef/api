@@ -115,12 +115,11 @@ class OrderController extends Controller
      */
     public function complete(int $orderId): OrderResource
     {
-       $order =  $this->orderService->markOrderCompleteByAdmin(
+        $order = $this->orderService->markOrderCompleteByAdmin(
             orderId: $orderId,
         );
         return new OrderResource($order);
     }
-
 
 
     public function store(StoreOrderRequest $request): StoreOrderResponseResource
@@ -132,37 +131,18 @@ class OrderController extends Controller
         return new StoreOrderResponseResource($response);
     }
 
-    public function acceptDeliveryChange(string $orderUuid): SuccessResponse
+    public function acceptDeliveryChange(int $orderId): OrderResource
     {
-        $this->orderService->acceptDeliveryChangeByUser(
-            orderUuid: $orderUuid,
-            userId: Auth::id(),
-        );
-        return new SuccessResponse();
+        $order = $this->orderService->acceptDeliveryChangeByAdmin(orderId: $orderId);
+        return new OrderResource($order);
     }
 
-    public function refuseDeliveryChange(string $orderUuid): SuccessResponse
+    public function refuseDeliveryChange(int $orderId): OrderResource
     {
-        $this->orderService->refuseChangeDeliveryChangeByUser(
-            orderUuid: $orderUuid,
-            userId: Auth::id(),
+        $order = $this->orderService->refuseChangeDeliveryChangeByAdmin(
+            orderId: $orderId
         );
-        return new SuccessResponse();
-    }
-
-
-    public function setRate(SetRateOrderRequest $request, string $orderUuid): SuccessResponse
-    {
-        $DTO = new RateOrderDTO(
-            orderUuid: $orderUuid,
-            userId: Auth::id(),
-            rating: $request->rating,
-            rating_review: $request->rating_review ?? '',
-        );
-
-        $this->orderService->rateOrderByUser($DTO);
-
-        return new SuccessResponse();
+        return new OrderResource($order);
     }
 
 }

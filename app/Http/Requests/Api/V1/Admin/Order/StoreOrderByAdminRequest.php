@@ -8,12 +8,11 @@ use App\Enums\Order\OrderStatusEnum;
 use App\Enums\User\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BaseFormRequest;
+use App\Models\ChefStore;
 use App\Models\Food;
 use App\Models\FoodOption;
 use App\Models\FoodOptionGroup;
-use App\Models\ChefStore;
 use App\Models\Order;
-use App\Models\UserAddress;
 use App\Rules\SafeTextRule;
 use App\Services\OrderService;
 use Illuminate\Validation\Rule;
@@ -28,11 +27,6 @@ use Illuminate\Validation\Rule;
  */
 class StoreOrderByAdminRequest extends BaseFormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function prepareForValidation(): void
     {
         $pendingPaymentOrders = Order::query()->where('status', OrderStatusEnum::PENDING_PAYMENT->value)->get();
@@ -66,7 +60,7 @@ class StoreOrderByAdminRequest extends BaseFormRequest
             'items.*.options.*.food_option_group_id' => ['required', 'exists:food_option_groups,id'],
             'items.*.options.*.food_option_id' => ['required', 'exists:food_options,id'],
             'items.*.options.*.quantity' => ['required', 'integer', 'min:1', 'max:50'],
-            'payment_method' => ['required', Rule::in(PaymentMethod::values())],
+            'payment_method' => ['required', Rule::in(['wallet'])],
         ];
 
         if ($this->delivery_type == DeliveryTypeEnum::DELIVERY->value) {
@@ -79,7 +73,6 @@ class StoreOrderByAdminRequest extends BaseFormRequest
     {
         $validator->after(function ($validator) {
             $this->validateChefStoreConsistency($validator);
-            //$this->validateUserAddress($validator);
             $this->validateFoodAvailability($validator);
             $this->validateOperatingHours($validator);
             $this->validateDeliveryMethod($validator);
@@ -101,16 +94,6 @@ class StoreOrderByAdminRequest extends BaseFormRequest
                     "items.{$index}.food_id",
                     "All foods must belong to the same chef store."
                 );
-            }
-        }
-    }
-
-    protected function validateUserAddress($validator)
-    {
-        if ($this->input('delivery_type') === 'delivery' && $this->input('user_address_id')) {
-            $address = UserAddress::find($this->input('user_address_id'));
-            if ($address && $address->user_id !== auth()->id()) {
-                $validator->errors()->add('user_address_id', 'Invalid address selected.');
             }
         }
     }
