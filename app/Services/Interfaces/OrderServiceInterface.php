@@ -2,6 +2,9 @@
 
 namespace App\Services\Interfaces;
 
+use App\DTOs\Admin\Order\AcceptOrderByAdminDTO;
+use App\DTOs\Admin\Order\DeliveryChangeByAdminDTO;
+use App\DTOs\Admin\Order\RefuseOrderByAdminDTO;
 use App\DTOs\Admin\User\UserUpdateByAdminDTO;
 use App\DTOs\Chef\Order\AcceptOrderDTO;
 use App\DTOs\Chef\Order\DeliveryChangeDTO;
@@ -14,6 +17,7 @@ use App\Http\Requests\Api\V1\User\Order\StoreOrderRequest;
 use App\Models\Order;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Validation\ValidationException;
 
 interface OrderServiceInterface
 {
@@ -42,6 +46,8 @@ interface OrderServiceInterface
 
     public function storeOrderByUser(StoreOrderRequest $request, int $userId): UserStoreOrderResponseDTO;
 
+    public function storeOrderByAdmin(StoreOrderRequest $request, int $userId): UserStoreOrderResponseDTO;
+
     public function makeOrderPaymentSuccess(
         $orderUuid,
         $amount,
@@ -61,17 +67,45 @@ interface OrderServiceInterface
     ): void;
 
 
+    /**
+     * @param AcceptOrderDTO $DTO
+     * @param int $chefStoreId
+     * @return Order
+     * @throws ValidationException
+     */
     public function acceptOrderByChef(AcceptOrderDTO $DTO, int $chefStoreId): Order;
 
+    /**
+     * @param AcceptOrderByAdminDTO $DTO
+     * @return Order
+     * @throws ValidationException
+     */
+    public function acceptOrderByAdmin(AcceptOrderByAdminDTO $DTO): Order;
 
+    /**
+     * @param RefuseOrderDTO $DTO
+     * @param int $chefStoreId
+     * @return Order
+     */
     public function refuseOrderByChef(RefuseOrderDTO $DTO, int $chefStoreId): Order;
+
+    /**
+     * @param RefuseOrderByAdminDTO $DTO
+     * @return Order
+     */
+    public function refuseOrderByAdmin(RefuseOrderByAdminDTO $DTO): Order;
 
     public function changeDeliveryRequestByChef(DeliveryChangeDTO $DTO, int $chefStoreId): Order;
 
+    public function changeDeliveryRequestByAdmin(DeliveryChangeByAdminDTO $DTO): Order;
+
     public function makeOrderReadyByChef(int $orderId, int $chefStoreId): Order;
 
+    public function makeOrderReadyByAdmin(int $orderId): Order;
 
     public function markOrderCompleteByChef(int $orderId, int $chefStoreId): Order;
+
+    public function markOrderCompleteByAdmin(int $orderId): Order;
 
     public function markOrderCompleteByUser(string $orderUuid, int $userId): Order;
 
@@ -96,9 +130,9 @@ interface OrderServiceInterface
     ): Collection|LengthAwarePaginator;
 
 
-    public function show(int $userId, array $relations = []): Order;
+    public function show(int $orderId, array $relations = []): Order;
 
 
-    public function update(int $userId ,UserUpdateByAdminDTO $DTO): Order;
+    public function update(int $orderId ,UserUpdateByAdminDTO $DTO): Order;
 
 }

@@ -15,6 +15,13 @@ class OrderResource extends BaseResource
         /** @var Order $order */
         $order = $this->resource;
 
+        $order->loadMissing([
+            'items.options',
+            'chefStore',
+            'user',
+            'transactions'
+        ]);
+
         $orderItems = [];
 
         foreach ($order->items as $item) {
@@ -46,6 +53,7 @@ class OrderResource extends BaseResource
             "user" => $order->user,
             "chef_store" => $order->chefStore,
             "items" => $orderItems,
+            'transactions' => $order->transactions,
         ];
     }
 

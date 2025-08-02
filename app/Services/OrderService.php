@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\DTOs\Admin\Order\AcceptOrderByAdminDTO;
+use App\DTOs\Admin\Order\DeliveryChangeByAdminDTO;
+use App\DTOs\Admin\Order\RefuseOrderByAdminDTO;
 use App\DTOs\Admin\User\UserUpdateByAdminDTO;
 use App\DTOs\Chef\Order\AcceptOrderDTO;
 use App\DTOs\Chef\Order\DeliveryChangeDTO;
@@ -311,10 +314,7 @@ class OrderService implements OrderServiceInterface
             }
 
             // TODO  Update chef store statistics
-            if ($order->chefStore) {
-                /*                $order->chefStore->increment('total_orders');
-                                $order->chefStore->increment('total_revenue', $order->total_amount);*/
-            }
+
             DB::commit();
         } catch (Exception $exception) {
             DB::rollBack();
@@ -373,6 +373,7 @@ class OrderService implements OrderServiceInterface
         }
     }
 
+    /** @inheritDoc */
     public function acceptOrderByChef(AcceptOrderDTO $DTO, int $chefStoreId): Order
     {
         $order = $this->getOrderByChef(
@@ -380,6 +381,35 @@ class OrderService implements OrderServiceInterface
             chefStoreId: $chefStoreId
         );
 
+        return $this->acceptOrder(
+            order: $order,
+            estimatedReadyTime: $DTO->getEstimatedReadyMinute(),
+            getChefNotes: $DTO->getChefNotes(),
+        );
+    }
+
+    /** @inheritDoc */
+    public function acceptOrderByAdmin(AcceptOrderByAdminDTO $DTO): Order
+    {
+        $order = $this->show(
+            orderId: $DTO->getOrderId(),
+        );
+        return $this->acceptOrder(
+            order: $order,
+            estimatedReadyTime: $DTO->getEstimatedReadyMinute(),
+            getChefNotes: $DTO->getChefNotes(),
+        );
+    }
+
+    /**
+     * @param Order $order
+     * @param string $estimatedReadyTime
+     * @param string|null $getChefNotes
+     * @return Order
+     * @throws ValidationException
+     */
+    private function acceptOrder(Order $order, string $estimatedReadyTime, string|null $getChefNotes): Order
+    {
         // Ensure order is in correct status
         if ($order->status != OrderStatusEnum::PENDING) {
             throw ValidationException::withMessages(
@@ -389,11 +419,11 @@ class OrderService implements OrderServiceInterface
 
         DB::beginTransaction();
         try {
-            $estimatedReadyTime = now()->addMinutes($DTO->getEstimatedReadyMinute());
+            $estimatedReadyTime = now()->addMinutes($estimatedReadyTime);
             $order->update([
                 'status' => OrderStatusEnum::ACCEPTED,
                 'estimated_ready_time' => $estimatedReadyTime,
-                'chef_notes' => $DTO->getChefNotes(),
+                'chef_notes' => $getChefNotes,
                 'accept_at' => now()
             ]);
 
@@ -410,16 +440,30 @@ class OrderService implements OrderServiceInterface
 
     public function refuseOrderByChef(RefuseOrderDTO $DTO, int $chefStoreId): Order
     {
+        $order = $this->getOrderByChef(
+            orderId: $DTO->getOrderId(),
+            chefStoreId: $chefStoreId
+        );
+
+        return $this->refuseOrder(order: $order, reason: $DTO->getReason());
+    }
+
+    public function refuseOrderByAdmin(RefuseOrderByAdminDTO $DTO): Order
+    {
+        $order = $this->show(
+            orderId: $DTO->getOrderId()
+        );
+
+        return $this->refuseOrder(order: $order, reason: $DTO->getReason());
+    }
+
+    private function refuseOrder(Order $order, string|null $reason): Order
+    {
         DB::beginTransaction();
         try {
-            $order = $this->getOrderByChef(
-                orderId: $DTO->getOrderId(),
-                chefStoreId: $chefStoreId
-            );
-
             UserTransaction::createRefund(order: $order);
 
-            $order->update(['status' => OrderStatusEnum::REFUSED_BY_CHEF, 'refused_reason' => $DTO->getReason()]);
+            $order->update(['status' => OrderStatusEnum::REFUSED_BY_CHEF, 'refused_reason' => $reason]);
             self::returnFoodQuantities($order);
 
             DB::commit();
@@ -439,6 +483,27 @@ class OrderService implements OrderServiceInterface
             chefStoreId: $chefStoreId
         );
 
+        return $this->changeDeliveryRequest(
+            order: $order,
+            reason: $DTO->getReason()
+        );
+    }
+
+    public function changeDeliveryRequestByAdmin(DeliveryChangeByAdminDTO $DTO): Order
+    {
+        $order = $this->show(
+            orderId: $DTO->getOrderId(),
+        );
+
+        return $this->changeDeliveryRequest(
+            order: $order,
+            reason: $DTO->getReason()
+        );
+    }
+
+
+    private function changeDeliveryRequest(Order $order, string $reason): Order
+    {
         // Can only change delivery orders to pickup
         if ($order->delivery_type != DeliveryTypeEnum::DELIVERY) {
             throw ValidationException::withMessages(
@@ -462,7 +527,7 @@ class OrderService implements OrderServiceInterface
             $order->update([
                 'status' => OrderStatusEnum::DELIVERY_CHANGE_REQUESTED,
                 'delivery_change_requested_at' => now(),
-                'delivery_change_reason' => $DTO->getReason(),
+                'delivery_change_reason' => $reason,
             ]);
 
             $order->user->notify(new DeliveryChangeRequestNotification($order));
@@ -482,7 +547,20 @@ class OrderService implements OrderServiceInterface
             orderId: $orderId,
             chefStoreId: $chefStoreId
         );
+        return $this->makeOrderReady(order: $order);
+    }
 
+    public function makeOrderReadyByAdmin(int $orderId): Order
+    {
+        $order = $this->show(
+            orderId: $orderId,
+        );
+
+        return $this->makeOrderReady(order: $order);
+    }
+
+    private function makeOrderReady(Order $order): Order
+    {
         if ($order->status !== OrderStatusEnum::ACCEPTED) {
             throw ValidationException::withMessages(
                 ['order' => 'Order cannot be ready in current status']
@@ -509,6 +587,17 @@ class OrderService implements OrderServiceInterface
         return $this->makeOrderComplete(
             order: $order,
             completeType: OrderCompleteByEnum::CHEF
+        );
+    }
+
+    public function markOrderCompleteByAdmin(int $orderId): Order
+    {
+        $order = $this->show(
+            orderId: $orderId,);
+
+        return $this->makeOrderComplete(
+            order: $order,
+            completeType: OrderCompleteByEnum::ADMIN
         );
     }
 
@@ -712,7 +801,7 @@ class OrderService implements OrderServiceInterface
 
         if ($order->completed_at->addDays(3)->isPast()) {
             throw ValidationException::withMessages([
-                'order' =>'You cannot rate for this order'
+                'order' => 'You cannot rate for this order'
             ]);
         }
 
@@ -734,9 +823,9 @@ class OrderService implements OrderServiceInterface
         // TODO: Implement all() method.
     }
 
-    public function show(int $userId, array $relations = []): Order
+    public function show(int $orderId, array $relations = []): Order
     {
-        // TODO: Implement show() method.
+        return Order::query()->with($relations)->findOrFail($orderId);
     }
 
     public function update(int $userId, UserUpdateByAdminDTO $DTO): Order

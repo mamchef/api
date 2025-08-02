@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Enums\Order\OrderStatusChangeByEnum;
+use App\Models\Admin;
 use App\Models\Chef;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
@@ -33,12 +34,15 @@ class OrderObserver
                 $changeBy = OrderStatusChangeByEnum::CHEF;
             } elseif ($changer instanceof User) {
                 $changeBy = OrderStatusChangeByEnum::USER;
+            } elseif ($changer instanceof Admin) {
+                $changeBy = OrderStatusChangeByEnum::ADMIN;
             }
             OrderStatusHistory::query()->create([
                 'order_id' => $order->id,
                 'old_status' => $order->getOriginal('status'),
                 'new_status' => $order->status,
                 "change_by" => $changeBy,
+                'changer_id' => Auth::id() ?? null,
             ]);
         }
     }

@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string("old_status")->nullable();
             $table->string("new_status")->nullable();
             $table->string("change_by")->nullable();
+            $table->unsignedBigInteger("changer_id")->nullable();
             $table->timestamps();
         });
     }
