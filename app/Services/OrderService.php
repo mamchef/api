@@ -5,8 +5,8 @@ namespace App\Services;
 use App\DTOs\Admin\Order\AcceptOrderByAdminDTO;
 use App\DTOs\Admin\Order\AdminStoreOrderResponseDTO;
 use App\DTOs\Admin\Order\DeliveryChangeByAdminDTO;
+use App\DTOs\Admin\Order\OrderStatsDTO;
 use App\DTOs\Admin\Order\RefuseOrderByAdminDTO;
-use App\DTOs\Admin\User\UserUpdateByAdminDTO;
 use App\DTOs\Chef\Order\AcceptOrderDTO;
 use App\DTOs\Chef\Order\DeliveryChangeDTO;
 use App\DTOs\Chef\Order\OrderStatisticDTO;
@@ -433,7 +433,7 @@ class OrderService implements OrderServiceInterface
 
             DB::commit();
 
-            return $order->fresh();
+            return $order->fresh()->loadMissing(["items.options", "statusHistories"]);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -471,7 +471,7 @@ class OrderService implements OrderServiceInterface
             DB::commit();
             $order->user->notify(new ChefRefusedOrderNotification($order));
 
-            return $order->fresh();
+            return $order->fresh()->loadMissing(["items.options", "statusHistories"]);
         } catch (Exception $exception) {
             DB::rollBack();
             throw $exception;
@@ -536,7 +536,7 @@ class OrderService implements OrderServiceInterface
 
             DB::commit();
 
-            return $order->fresh();
+            return $order->fresh()->loadMissing(["items.options", "statusHistories"]);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -576,7 +576,7 @@ class OrderService implements OrderServiceInterface
 
         $order->user->notify(new OrderReadyNotification($order));
 
-        return $order->fresh();
+        return $order->fresh()->loadMissing(["items.options", "statusHistories"]);
     }
 
     public function markOrderCompleteByChef(int $orderId, int $chefStoreId): Order
@@ -689,7 +689,7 @@ class OrderService implements OrderServiceInterface
 
             DB::commit();
 
-            return $order->fresh();
+            return $order->fresh()->loadMissing(["items.options", "statusHistories"]);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -841,17 +841,15 @@ class OrderService implements OrderServiceInterface
         array $relations = [],
         $pagination = null
     ): Collection|LengthAwarePaginator {
-        // TODO: Implement all() method.
+        $orders = Order::query()->when($relations, fn($q) => $q->with($relations))
+            ->when($filters, fn($q) => $q->filter($filters));
+
+        return $pagination ? $orders->paginate($pagination) : $orders->get();
     }
 
     public function show(int $orderId, array $relations = []): Order
     {
         return Order::query()->with($relations)->findOrFail($orderId);
-    }
-
-    public function update(int $userId, UserUpdateByAdminDTO $DTO): Order
-    {
-        // TODO: Implement update() method.
     }
 
     public function storeOrderByAdmin(StoreOrderByAdminRequest $request, int $userId): AdminStoreOrderResponseDTO
@@ -954,24 +952,12 @@ class OrderService implements OrderServiceInterface
                         amount: $totalAmount,
                         paymentMethod: PaymentMethod::WALLET
                     );
-
-                    $responseData = [
-                        'amount' => $totalAmount,
-                        "status" => "payed",
-                        'currency' => "eur",
-                    ];
                 } elseif ($paymentMethod == PaymentMethod::FREE) {
                     $this->makeOrderPaymentSuccess(
                         orderUuid: $order->uuid,
                         amount: $totalAmount,
                         paymentMethod: PaymentMethod::WALLET
                     );
-
-                    $responseData = [
-                        'amount' => $totalAmount,
-                        "status" => "payed",
-                        'currency' => "eur",
-                    ];
                 }
             }
 
@@ -979,7 +965,6 @@ class OrderService implements OrderServiceInterface
 
             return new AdminStoreOrderResponseDTO(
                 order: $order,
-                paymentIntent: $responseData,
                 paymentMethod: $paymentMethod?->value
             );
         } catch (Exception $e) {
@@ -988,5 +973,24 @@ class OrderService implements OrderServiceInterface
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    public function stats(array $filters = []): OrderStatsDTO
+    {
+        $canceledStatus = [];
+        $activeStatus = [];
+        foreach (OrderStatusEnum::canceledStatuses() as $status) {
+            $canceledStatus[] = $status->value;
+        }
+
+        foreach (OrderStatusEnum::activeStatuses() as $status) {
+            $activeStatus[] = $status->value;
+        }
+        return new OrderStatsDTO(
+            total: Order::query()->filter($filters)->count(),
+            completed: Order::query()->filter($filters)->where('status', OrderStatusEnum::COMPLETED)->count(),
+            active: Order::query()->filter($filters)->whereIn('status', $activeStatus)->count(),
+            cancelled: Order::query()->filter($filters)->whereIn('status', $canceledStatus)->count(),
+        );
     }
 }

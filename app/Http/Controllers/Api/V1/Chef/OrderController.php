@@ -161,4 +161,5 @@ class OrderController extends Controller
         );
         return OrdersStatisticResource::make($statistics);
     }
+
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Admin\AuthController;
 use App\Http\Controllers\Api\V1\Admin\ChefController;
 use App\Http\Controllers\Api\V1\Admin\ChefStoreController;
+use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\TicketController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +22,9 @@ Route::prefix('admin')->name("admin.")->group(function () {
     //Chef
     Route::prefix("chefs")->name("chefs.")->middleware("admin-auth")->group(function () {
         Route::get('', [ChefController::class, 'index'])->name("index");
-        Route::get('get-doc/{chefId}/{fieldName}', [ChefController::class, 'getChefDocumentByFieldName'])->name("get-doc");
+        Route::get('get-doc/{chefId}/{fieldName}', [ChefController::class, 'getChefDocumentByFieldName'])->name(
+            "get-doc"
+        );
         Route::get('{chefId}', [ChefController::class, 'show'])->name("show");
         Route::post('{chefId}', [ChefController::class, 'update'])->name("update");
     });
@@ -43,21 +46,53 @@ Route::prefix('admin')->name("admin.")->group(function () {
 
     //Orders
     Route::prefix("orders")->name("orders.")->middleware("admin-auth")->group(function () {
-        Route::get('', [UserController::class, 'index'])->name("index");
-        Route::get('{userId}', [UserController::class, 'show'])->name("show");
-        Route::post('{userId}', [UserController::class, 'update'])->name("update");
+        Route::get('', [OrderController::class, 'index'])->name("index");
+        Route::get('statistics', [OrderController::class, 'stats'])->name("stats");
+        Route::get('{orderId}', [OrderController::class, 'show'])->name("show");
+        Route::get('get-user-orders/{orderId}', [OrderController::class, 'getUserOrders'])->name("get-user-orders");
+        Route::get('get-chef-store-orders/{chefStoreId}', [OrderController::class, 'getChefStoreOrders'])->name(
+            "get-chef-store-orders"
+        );
+
+        Route::post('store', [OrderController::class, 'store'])->name(
+            "store"
+        );
+        Route::post('accept/{orderId}', [OrderController::class, 'accept'])->name("accept");
+        Route::post('refuse/{orderId}', [OrderController::class, 'refuse'])->name("refuse");
+        Route::post('request-delivery-change/{$orderId}', [OrderController::class, 'requestDeliveryChange'])->name(
+            "request-delivery-change"
+        );
+        Route::post('mark-as-ready/{orderId}', [OrderController::class, 'markAsReady'])->name(
+            "mark-as-ready"
+        );
+
+        Route::post('complete/{orderId}', [OrderController::class, 'complete'])->name(
+            "complete"
+        );
+
+        Route::post('accept-delivery-change/{orderId}', [OrderController::class, 'acceptDeliveryChange'])->name(
+            "accept-delivery-change"
+        );
+
+        Route::post('refuse-delivery-change/{orderId}', [OrderController::class, 'refuseDeliveryChange'])->name(
+            "refuse-delivery-change"
+        );
+
+
+
     });
 
     //Tickets
     Route::prefix("tickets")->name("tickets.")->middleware("admin-auth")->group(function () {
-        Route::get('',[TicketController::class, 'index'])->name("index");
-        Route::get('get-chef-tickets/{chefId}',[TicketController::class, 'getChefTickets'])->name("chef-tickets");
-        Route::get('get-user-tickets/{userId}',[TicketController::class, 'getUserTickets'])->name("user-tickets");
-        Route::get('{ticketId}',[TicketController::class, 'show'])->name("show");
-        Route::post('',[TicketController::class, 'store'])->name("store");
-        Route::post('items/{ticketId}',[TicketController::class, 'storeTicketItem'])->name("store-ticket-items");
-        Route::post('set-status/{ticketId}',[TicketController::class, 'setStatus'])->name("set-status");
-        Route::get('items/attachment/{ticketItemId}',[TicketController::class, 'getTicketItemAttachment'])->name("get-ticket-item-attachment");
+        Route::get('', [TicketController::class, 'index'])->name("index");
+        Route::get('get-chef-tickets/{chefId}', [TicketController::class, 'getChefTickets'])->name("chef-tickets");
+        Route::get('get-user-tickets/{userId}', [TicketController::class, 'getUserTickets'])->name("user-tickets");
+        Route::get('{ticketId}', [TicketController::class, 'show'])->name("show");
+        Route::post('', [TicketController::class, 'store'])->name("store");
+        Route::post('items/{ticketId}', [TicketController::class, 'storeTicketItem'])->name("store-ticket-items");
+        Route::post('set-status/{ticketId}', [TicketController::class, 'setStatus'])->name("set-status");
+        Route::get('items/attachment/{ticketItemId}', [TicketController::class, 'getTicketItemAttachment'])->name(
+            "get-ticket-item-attachment"
+        );
     });
-
 });

@@ -75,4 +75,14 @@ class OrderFilter extends ModelFilter
         }
         return $this;
     }
+
+    public function userId(int $userId): self
+    {
+        return $this->where('user_id', $userId);
+    }
+
+    public function chefStoreId(int $chefStoreId): self
+    {
+        return $this->where('chef_store_id', $chefStoreId);
+    }
 }

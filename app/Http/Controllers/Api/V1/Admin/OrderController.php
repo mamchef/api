@@ -5,23 +5,17 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\DTOs\Admin\Order\AcceptOrderByAdminDTO;
 use App\DTOs\Admin\Order\DeliveryChangeByAdminDTO;
 use App\DTOs\Admin\Order\RefuseOrderByAdminDTO;
-use App\DTOs\User\Order\RateOrderDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\Order\AcceptOrderByAdminRequest;
 use App\Http\Requests\Api\V1\Admin\Order\RefuseOrderByAdminRequest;
 use App\Http\Requests\Api\V1\Admin\Order\RequestDeliveryChangeByAdminRequest;
-use App\Http\Requests\Api\V1\User\Order\OrderIndexRequest;
-use App\Http\Requests\Api\V1\User\Order\SetRateOrderRequest;
-use App\Http\Requests\Api\V1\User\Order\StoreOrderRequest;
+use App\Http\Requests\Api\V1\Admin\Order\StoreOrderByAdminRequest;
 use App\Http\Resources\V1\Admin\Order\OrderResource;
-use App\Http\Resources\V1\Admin\User\UserResource;
-use App\Http\Resources\V1\Admin\User\UsersResource;
-use App\Http\Resources\V1\SuccessResponse;
-use App\Http\Resources\V1\User\Order\StoreOrderResponseResource;
+use App\Http\Resources\V1\Admin\Order\OrderStatsResource;
+use App\Http\Resources\V1\Admin\Order\StoreOrderResponseResource;
 use App\Services\Interfaces\OrderServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
@@ -32,20 +26,52 @@ class OrderController extends Controller
 
     public function index(Request $request): ResourceCollection
     {
-        $users = $this->orderService->all(
+        $orders = $this->orderService->all(
             filters: $request->all(),
+            relations: ["items.options", "statusHistories", "chefStore.chef"],
             pagination: self::validPagination()
         );
-        return UsersResource::collection($users);
+        return OrderResource::collection($orders);
+    }
+
+    public function stats(Request $request): OrderStatsResource
+    {
+        $stats = $this->orderService->stats(
+            filters: $request->all(),
+        );
+        return new OrderStatsResource($stats);
     }
 
     public function show(int $orderId): OrderResource
     {
         $order = $this->orderService->show(
-            orderId: $orderId, relations: ["items.options", "statusHistories"]
+            orderId: $orderId,
+            relations: ["items.options", "statusHistories", "chefStore.chef"],
         );
 
         return new OrderResource($order);
+    }
+
+
+    public function getUserOrders(Request $request, int $userId): ResourceCollection
+    {
+        $orders = $this->orderService->all(
+            filters: array_merge($request->query(), ['user_id' => $userId]),
+            relations: ["items.options", "statusHistories", "chefStore.chef"],
+            pagination: self::validPagination()
+        );
+        return OrderResource::collection($orders);
+    }
+
+
+    public function getChefStoreOrders(Request $request, int $chefStoreId): ResourceCollection
+    {
+        $orders = $this->orderService->all(
+            filters: array_merge($request->query(), ['chef_store_id' => $chefStoreId]),
+            relations: ["items.options", "statusHistories", "chefStore.chef"],
+            pagination: self::validPagination()
+        );
+        return OrderResource::collection($orders);
     }
 
     /**
@@ -122,11 +148,11 @@ class OrderController extends Controller
     }
 
 
-    public function store(StoreOrderRequest $request): StoreOrderResponseResource
+    public function store(StoreOrderByAdminRequest $request): StoreOrderResponseResource
     {
-        $response = $this->orderService->storeOrderByUser(
+        $response = $this->orderService->storeOrderByAdmin(
             request: $request,
-            userId: Auth::id(),
+            userId: $request->user_id,
         );
         return new StoreOrderResponseResource($response);
     }

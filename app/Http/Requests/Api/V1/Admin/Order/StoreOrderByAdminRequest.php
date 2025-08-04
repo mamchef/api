@@ -18,6 +18,7 @@ use App\Services\OrderService;
 use Illuminate\Validation\Rule;
 
 /**
+ * @property int $user_id
  * @property int $chef_store_id
  * @property string $delivery_type
  * @property string $user_address
@@ -47,6 +48,7 @@ class StoreOrderByAdminRequest extends BaseFormRequest
     public function rules(): array
     {
         $rules = [
+            'user_id' => ['required','exists:users,id'],
             'chef_store_id' => ['required', 'exists:chef_stores,id'],
             'delivery_type' => ['required', Rule::in(DeliveryTypeEnum::values())],
             'user_notes' => ['nullable', 'string', 'max:500', new SafeTextRule(),],

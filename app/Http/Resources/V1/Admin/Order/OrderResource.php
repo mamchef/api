@@ -27,6 +27,17 @@ class OrderResource extends BaseResource
         foreach ($order->items as $item) {
             $orderItems[] = $this->prePareOrderItems($item);
         }
+
+
+        $chefStore = null;
+        if ($order->loadExists('chefStore')) {
+
+            $chefStore = $order->chefStore;
+            $chefStore->profile_image =  config(
+                    "app.url"
+                ) . "/storage/" . $chefStore->getOriginal('profile_image');
+
+        }
         return [
             "id" => $order->id,
             "uuid" => $order->uuid,
@@ -51,9 +62,10 @@ class OrderResource extends BaseResource
             "rating_review" => $order->rating_review,
             "user_address" => $order->user_address,
             "user" => $order->user,
-            "chef_store" => $order->chefStore,
+            "chef_store" => $chefStore,
             "items" => $orderItems,
             'transactions' => $order->transactions,
+            'statusHistories' => $order->loadExists('statusHistories') ? $order->statusHistories : [],
         ];
     }
 

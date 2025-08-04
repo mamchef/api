@@ -5,6 +5,7 @@ namespace App\Services\Interfaces;
 use App\DTOs\Admin\Order\AcceptOrderByAdminDTO;
 use App\DTOs\Admin\Order\AdminStoreOrderResponseDTO;
 use App\DTOs\Admin\Order\DeliveryChangeByAdminDTO;
+use App\DTOs\Admin\Order\OrderStatsDTO;
 use App\DTOs\Admin\Order\RefuseOrderByAdminDTO;
 use App\DTOs\Admin\User\UserUpdateByAdminDTO;
 use App\DTOs\Chef\Order\AcceptOrderDTO;
@@ -136,6 +137,5 @@ interface OrderServiceInterface
     public function show(int $orderId, array $relations = []): Order;
 
 
-    public function update(int $orderId ,UserUpdateByAdminDTO $DTO): Order;
-
+    public function stats(array $filters = []) :OrderStatsDTO;
 }
