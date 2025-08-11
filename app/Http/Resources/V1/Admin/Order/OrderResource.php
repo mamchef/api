@@ -57,7 +57,7 @@ class OrderResource extends BaseResource
             "delivery_change_requested_at" => $order->delivery_change_requested_at?->format('Y-m-d H:i:s'),
             "delivery_change_reason" => $order->delivery_change_reason,
             "created_at" => $order->created_at?->format('Y-m-d H:i:s'),
-            "completed_by" => $order->completed_by,
+            "completed_by" => $order->completed_by?->value,
             "rating" => $order->rating,
             "rating_review" => $order->rating_review,
             "user_address" => $order->user_address,

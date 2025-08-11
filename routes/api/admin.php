@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Admin\ChefStoreController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\TicketController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
+use App\Http\Controllers\Api\V1\Admin\UserTransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name("admin.")->group(function () {
@@ -77,9 +78,6 @@ Route::prefix('admin')->name("admin.")->group(function () {
         Route::post('refuse-delivery-change/{orderId}', [OrderController::class, 'refuseDeliveryChange'])->name(
             "refuse-delivery-change"
         );
-
-
-
     });
 
     //Tickets
@@ -94,5 +92,15 @@ Route::prefix('admin')->name("admin.")->group(function () {
         Route::get('items/attachment/{ticketItemId}', [TicketController::class, 'getTicketItemAttachment'])->name(
             "get-ticket-item-attachment"
         );
+    });
+
+    //UserTransactions
+    Route::prefix("user-transactions")->name("user-transactions.")->middleware("admin-auth")->group(function () {
+        Route::get('', [UserTransactionController::class, 'index'])->name("index");
+        Route::get('{ticketId}', [UserTransactionController::class, 'show'])->name("show");
+        Route::get('get-by-user/{userId}', [UserTransactionController::class, 'getByUser'])->name("get-by-user");
+        Route::get('get-by-order/{orderId}', [UserTransactionController::class, 'getByOrder'])->name("get-by-order");
+        Route::get('get-by-chef-store/{chefStoreId}', [UserTransactionController::class, 'getByChefStore'])->name("get-by-chef-store");
+        Route::get('get-by-chef/{chefId}', [UserTransactionController::class, 'getByChef'])->name("get-by-chef");
     });
 });

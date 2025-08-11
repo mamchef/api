@@ -5,7 +5,10 @@ namespace App\Models;
 use App\Enums\User\PaymentMethod;
 use App\Enums\User\TransactionStatus;
 use App\Enums\User\TransactionType;
+use App\ModelFilters\UserTransactionFilter;
+use App\Traits\GetTableColumn;
 use Carbon\Carbon;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,19 +18,23 @@ use Illuminate\Validation\ValidationException;
  * @property int $id
  * @property int $user_id
  * @property int $order_id
- * @property string $type
+ * @property TransactionType $type
  * @property float $amount
  * @property string $description
- * @property string $status
- * @property string $payment_method
+ * @property TransactionStatus $status
+ * @property PaymentMethod $payment_method
  * @property string $external_transaction_id
  * @property array gateway_response
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ *
+ * @Relations:
+ * @property BelongsTo | User $user
+ * @property BelongsTo | Order $order
  */
 class UserTransaction extends Model
 {
-    use HasFactory;
+    use HasFactory, Filterable, GetTableColumn;
 
     protected $guarded = ['id'];
 
@@ -270,5 +277,11 @@ class UserTransaction extends Model
             'payment_method' => $paymentMethod,
             'external_transaction_id' => $externalId,
         ]);
+    }
+
+
+    public function getModelFilterClass(): string
+    {
+        return UserTransactionFilter::class;
     }
 }

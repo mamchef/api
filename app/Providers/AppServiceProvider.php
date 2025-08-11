@@ -26,6 +26,7 @@ use App\Services\Interfaces\User\UserAddressServiceInterface;
 use App\Services\Interfaces\User\UserAuthServiceInterface;
 use App\Services\Interfaces\User\UserProfileServiceInterface;
 use App\Services\Interfaces\User\UserServiceInterface;
+use App\Services\Interfaces\UserTransactionServiceInterface;
 use App\Services\NotificationService;
 use App\Services\OrderService;
 use App\Services\TagService;
@@ -34,6 +35,7 @@ use App\Services\User\UserAddressService;
 use App\Services\User\UserAuthService;
 use App\Services\User\UserProfileService;
 use App\Services\User\UserService;
+use App\Services\UserTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\ServiceProvider;
@@ -61,12 +63,12 @@ class AppServiceProvider extends ServiceProvider
         //Admin
         AdminAuthServiceInterface::class => AdminAuthService::class,
 
-
         //Common
         OrderServiceInterface::class => OrderService::class,
         NotificationsServiceInterface::class => NotificationService::class,
         TicketServiceInterface::class => TICketService::class,
         TagServiceInterface::class => TagService::class,
+        UserTransactionServiceInterface::class => UserTransactionService::class
     ];
 
     /**

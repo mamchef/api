@@ -25,6 +25,7 @@ class UserResource extends BaseResource
             "status" => $user->status->value,
             "created_at" => $user->created_at?->format('Y-m-d H:i:s'),
             "updated_at" => $user->updated_at?->format('Y-m-d H:i:s'),
+            "credit" => $user->getAvailableCredit()
         ];
     }
 
