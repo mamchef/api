@@ -32,4 +32,23 @@ enum PaymentMethod: string
             self::FREE => 'Free',
         };
     }
+
+
+    public static function incomeEnum(): array
+    {
+        return [
+            self::APPLE_PAY,
+            self::STRIPE,
+            self::GOOGLE_PAY,
+        ];
+    }
+
+    public static function incomeEnumValues(): array
+    {
+        return [
+            self::APPLE_PAY->value,
+            self::STRIPE->value,
+            self::GOOGLE_PAY->value,
+        ];
+    }
 }

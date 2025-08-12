@@ -196,7 +196,6 @@ class UserTransaction extends Model
             'amount' => -abs($amount), // Always negative for payments
             'description' => $description ?? "Payment for order #{$order->order_number}",
             'status' => TransactionStatus::COMPLETED,
-            'payment_method' => $paymentMethod,
             'external_transaction_id' => $externalId,
             'gateway_response' => $gatewayResponse,
         ]);

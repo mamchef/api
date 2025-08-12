@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Admin\AuthController;
 use App\Http\Controllers\Api\V1\Admin\ChefController;
 use App\Http\Controllers\Api\V1\Admin\ChefStoreController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
+use App\Http\Controllers\Api\V1\Admin\StatsController;
 use App\Http\Controllers\Api\V1\Admin\TicketController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\UserTransactionController;
@@ -102,5 +103,17 @@ Route::prefix('admin')->name("admin.")->group(function () {
         Route::get('get-by-order/{orderId}', [UserTransactionController::class, 'getByOrder'])->name("get-by-order");
         Route::get('get-by-chef-store/{chefStoreId}', [UserTransactionController::class, 'getByChefStore'])->name("get-by-chef-store");
         Route::get('get-by-chef/{chefId}', [UserTransactionController::class, 'getByChef'])->name("get-by-chef");
+    });
+
+    //Stats
+    Route::prefix("stats")->name("stats.")->middleware("admin-auth")->group(function () {
+        Route::get('dashboard', [StatsController::class, 'dashboard'])->name("dashboard");
+        Route::get('orders', [StatsController::class, 'orders'])->name("orders");
+        Route::get('users', [StatsController::class, 'users'])->name("users");
+        Route::get('chefs', [StatsController::class, 'chefs'])->name("chefs");
+        Route::get('registrations', [StatsController::class, 'registrations'])->name("registrations");
+        Route::get('tickets', [StatsController::class, 'tickets'])->name("tickets");
+        Route::get('transactions', [StatsController::class, 'transactions'])->name("transactions");
+        Route::get('revenue', [StatsController::class, 'revenue'])->name("revenue");
     });
 });
