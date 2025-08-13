@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Admin\ChefController;
 use App\Http\Controllers\Api\V1\Admin\ChefStoreController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\StatsController;
+use App\Http\Controllers\Api\V1\Admin\TagController;
 use App\Http\Controllers\Api\V1\Admin\TicketController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\UserTransactionController;
@@ -101,7 +102,9 @@ Route::prefix('admin')->name("admin.")->group(function () {
         Route::get('{ticketId}', [UserTransactionController::class, 'show'])->name("show");
         Route::get('get-by-user/{userId}', [UserTransactionController::class, 'getByUser'])->name("get-by-user");
         Route::get('get-by-order/{orderId}', [UserTransactionController::class, 'getByOrder'])->name("get-by-order");
-        Route::get('get-by-chef-store/{chefStoreId}', [UserTransactionController::class, 'getByChefStore'])->name("get-by-chef-store");
+        Route::get('get-by-chef-store/{chefStoreId}', [UserTransactionController::class, 'getByChefStore'])->name(
+            "get-by-chef-store"
+        );
         Route::get('get-by-chef/{chefId}', [UserTransactionController::class, 'getByChef'])->name("get-by-chef");
     });
 
@@ -115,5 +118,11 @@ Route::prefix('admin')->name("admin.")->group(function () {
         Route::get('tickets', [StatsController::class, 'tickets'])->name("tickets");
         Route::get('transactions', [StatsController::class, 'transactions'])->name("transactions");
         Route::get('revenue', [StatsController::class, 'revenue'])->name("revenue");
+    });
+
+
+    //tags
+    Route::prefix("tags")->name("tags.")->middleware("admin-auth")->group(function () {
+        Route::apiResource(null, TagController::class)->parameter("", "tagId");
     });
 });
