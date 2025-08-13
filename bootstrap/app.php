@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuthAdminSanctum;
 use App\Http\Middleware\AuthChefSanctum;
 use App\Http\Middleware\AuthUserSanctum;
 use App\Http\Middleware\NormalizeResponseMiddleware;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             "chef-auth" => AuthChefSanctum::class,
             "user-auth" => AuthUserSanctum::class,
+            "admin-auth" => AuthAdminSanctum::class,
             "set-user-auth" => SetUserSanctum::class,
         ]);
     })

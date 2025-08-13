@@ -41,7 +41,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $rating
  * @property string $rating_review
  * @property Carbon $completed_at
- * @property Carbon $completed_by
+ * @property OrderCompleteByEnum $completed_by
  * @property Carbon $deleted_at
  * @property Carbon $updated_at
  * @property Carbon $created_at

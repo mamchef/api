@@ -9,6 +9,8 @@ enum PaymentMethod: string
     case GOOGLE_PAY = 'google_pay';
     case WALLET = 'wallet';
 
+    case FREE = 'free';
+
     public static function values(): array
     {
         return [
@@ -16,6 +18,7 @@ enum PaymentMethod: string
             self::STRIPE->value,
             self::GOOGLE_PAY->value,
             self::WALLET->value,
+            self::FREE->value,
         ];
     }
 
@@ -26,6 +29,26 @@ enum PaymentMethod: string
             self::STRIPE => 'Credit Card',
             self::GOOGLE_PAY => 'Google Pay',
             self::WALLET => 'Wallet',
+            self::FREE => 'Free',
         };
+    }
+
+
+    public static function incomeEnum(): array
+    {
+        return [
+            self::APPLE_PAY,
+            self::STRIPE,
+            self::GOOGLE_PAY,
+        ];
+    }
+
+    public static function incomeEnumValues(): array
+    {
+        return [
+            self::APPLE_PAY->value,
+            self::STRIPE->value,
+            self::GOOGLE_PAY->value,
+        ];
     }
 }

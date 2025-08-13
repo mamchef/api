@@ -4,8 +4,11 @@ namespace App\Models;
 
 use App\Enums\Chef\ChefStore\ChefStoreStatusEnum;
 use App\Enums\Chef\ChefStore\DeliveryOptionEnum;
+use App\ModelFilters\ChefStoreFilter;
+use App\Traits\GetTableColumn;
 use Carbon\Carbon;
 use Cviebrock\EloquentSluggable\Sluggable;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -30,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $main_street
  * @property bool $is_open
  * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property Carbon $deleted_at
  * @property DeliveryOptionEnum $delivery_method
  * @property float $delivery_cost
@@ -42,7 +46,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ChefStore extends Model
 {
 
-    use Sluggable;
+    use Sluggable, Filterable, GetTableColumn;
 
     protected $table = "chef_stores";
 
@@ -75,7 +79,9 @@ class ChefStore extends Model
 
     public function chefStoreTimeAllow(): bool
     {
-        if (!$this->start_daily_time || !$this->end_daily_time) return false;
+        if (!$this->start_daily_time || !$this->end_daily_time) {
+            return false;
+        }
 
         $now = now()->format('H:i');
         return $this->start_daily_time > $this->end_daily_time
@@ -93,5 +99,10 @@ class ChefStore extends Model
                 "onUpdate" => true
             ],
         ];
+    }
+
+    public function getModelFilterClass(): string
+    {
+        return ChefStoreFilter::class;
     }
 }

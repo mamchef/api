@@ -146,8 +146,9 @@ class TagsSeeder extends Seeder
 
         Model::unguard();
         foreach ($tags as $index => $tag) {
-            Tag::query()->create([
+            Tag::query()->firstOrCreate([
                 "id" => $index + 1,
+            ],[
                 "name" => $tag,
                 "status" => 1,
                 'homepage' => 0,

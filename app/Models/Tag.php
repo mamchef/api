@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $slug
  * @property string $description
- * @property int $tag
+ * @property int $tag_id
  * @property bool $status
  * @property bool $homepage
  * @property string $icon
@@ -53,7 +53,7 @@ class Tag extends Model
 
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(self::class);
+        return $this->belongsTo(self::class,'tag_id','id');
     }
 
 
@@ -64,6 +64,9 @@ class Tag extends Model
         return [
             "slug" => [
                 "source" => "name",
+                "separator" => "-",
+                "unique" => true,
+                "onUpdate" => true
             ],
         ];
     }

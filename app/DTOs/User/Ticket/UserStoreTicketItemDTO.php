@@ -46,7 +46,7 @@ readonly class UserStoreTicketItemDTO extends BaseDTO
             'itemable_id' => $this->getUserId(),
             'itemable_type' => User::class,
             'description' => $this->getDescription(),
-            'created_by' => TicketItemCreateByEnum::CHEF,
+            'created_by' => TicketItemCreateByEnum::USER,
         ];
     }
 

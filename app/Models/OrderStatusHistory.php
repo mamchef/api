@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $new_status
  * @property string $old_status
  * @property OrderStatusChangeByEnum $change_by
+ * @property int $changer_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */

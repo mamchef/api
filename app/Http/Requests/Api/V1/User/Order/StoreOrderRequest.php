@@ -28,11 +28,6 @@ use Illuminate\Validation\Rule;
  */
 class StoreOrderRequest extends BaseFormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function prepareForValidation(): void
     {
         $pendingPaymentOrders = Order::query()->where('status', OrderStatusEnum::PENDING_PAYMENT->value)->get();

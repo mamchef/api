@@ -2,6 +2,11 @@
 
 namespace App\Services;
 
+use App\DTOs\Admin\Order\AcceptOrderByAdminDTO;
+use App\DTOs\Admin\Order\AdminStoreOrderResponseDTO;
+use App\DTOs\Admin\Order\DeliveryChangeByAdminDTO;
+use App\DTOs\Admin\Order\OrderStatsDTO;
+use App\DTOs\Admin\Order\RefuseOrderByAdminDTO;
 use App\DTOs\Chef\Order\AcceptOrderDTO;
 use App\DTOs\Chef\Order\DeliveryChangeDTO;
 use App\DTOs\Chef\Order\OrderStatisticDTO;
@@ -14,6 +19,7 @@ use App\Enums\Order\OrderStatusEnum;
 use App\Enums\User\PaymentMethod;
 use App\Enums\User\TransactionStatus;
 use App\Enums\User\TransactionType;
+use App\Http\Requests\Api\V1\Admin\Order\StoreOrderByAdminRequest;
 use App\Http\Requests\Api\V1\User\Order\StoreOrderRequest;
 use App\Models\ChefStore;
 use App\Models\Food;
@@ -310,10 +316,7 @@ class OrderService implements OrderServiceInterface
             }
 
             // TODO  Update chef store statistics
-            if ($order->chefStore) {
-                /*                $order->chefStore->increment('total_orders');
-                                $order->chefStore->increment('total_revenue', $order->total_amount);*/
-            }
+
             DB::commit();
         } catch (Exception $exception) {
             DB::rollBack();
@@ -372,6 +375,7 @@ class OrderService implements OrderServiceInterface
         }
     }
 
+    /** @inheritDoc */
     public function acceptOrderByChef(AcceptOrderDTO $DTO, int $chefStoreId): Order
     {
         $order = $this->getOrderByChef(
@@ -379,6 +383,35 @@ class OrderService implements OrderServiceInterface
             chefStoreId: $chefStoreId
         );
 
+        return $this->acceptOrder(
+            order: $order,
+            estimatedReadyTime: $DTO->getEstimatedReadyMinute(),
+            getChefNotes: $DTO->getChefNotes(),
+        );
+    }
+
+    /** @inheritDoc */
+    public function acceptOrderByAdmin(AcceptOrderByAdminDTO $DTO): Order
+    {
+        $order = $this->show(
+            orderId: $DTO->getOrderId(),
+        );
+        return $this->acceptOrder(
+            order: $order,
+            estimatedReadyTime: $DTO->getEstimatedReadyMinute(),
+            getChefNotes: $DTO->getChefNotes(),
+        );
+    }
+
+    /**
+     * @param Order $order
+     * @param string $estimatedReadyTime
+     * @param string|null $getChefNotes
+     * @return Order
+     * @throws ValidationException
+     */
+    private function acceptOrder(Order $order, string $estimatedReadyTime, string|null $getChefNotes): Order
+    {
         // Ensure order is in correct status
         if ($order->status != OrderStatusEnum::PENDING) {
             throw ValidationException::withMessages(
@@ -388,11 +421,11 @@ class OrderService implements OrderServiceInterface
 
         DB::beginTransaction();
         try {
-            $estimatedReadyTime = now()->addMinutes($DTO->getEstimatedReadyMinute());
+            $estimatedReadyTime = now()->addMinutes($estimatedReadyTime);
             $order->update([
                 'status' => OrderStatusEnum::ACCEPTED,
                 'estimated_ready_time' => $estimatedReadyTime,
-                'chef_notes' => $DTO->getChefNotes(),
+                'chef_notes' => $getChefNotes,
                 'accept_at' => now()
             ]);
 
@@ -400,7 +433,7 @@ class OrderService implements OrderServiceInterface
 
             DB::commit();
 
-            return $order->fresh();
+            return $order->fresh()->loadMissing(["items.options", "statusHistories"]);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -409,22 +442,36 @@ class OrderService implements OrderServiceInterface
 
     public function refuseOrderByChef(RefuseOrderDTO $DTO, int $chefStoreId): Order
     {
+        $order = $this->getOrderByChef(
+            orderId: $DTO->getOrderId(),
+            chefStoreId: $chefStoreId
+        );
+
+        return $this->refuseOrder(order: $order, reason: $DTO->getReason());
+    }
+
+    public function refuseOrderByAdmin(RefuseOrderByAdminDTO $DTO): Order
+    {
+        $order = $this->show(
+            orderId: $DTO->getOrderId()
+        );
+
+        return $this->refuseOrder(order: $order, reason: $DTO->getReason());
+    }
+
+    private function refuseOrder(Order $order, string|null $reason): Order
+    {
         DB::beginTransaction();
         try {
-            $order = $this->getOrderByChef(
-                orderId: $DTO->getOrderId(),
-                chefStoreId: $chefStoreId
-            );
-
             UserTransaction::createRefund(order: $order);
 
-            $order->update(['status' => OrderStatusEnum::REFUSED_BY_CHEF, 'refused_reason' => $DTO->getReason()]);
+            $order->update(['status' => OrderStatusEnum::REFUSED_BY_CHEF, 'refused_reason' => $reason]);
             self::returnFoodQuantities($order);
 
             DB::commit();
             $order->user->notify(new ChefRefusedOrderNotification($order));
 
-            return $order->fresh();
+            return $order->fresh()->loadMissing(["items.options", "statusHistories"]);
         } catch (Exception $exception) {
             DB::rollBack();
             throw $exception;
@@ -438,6 +485,27 @@ class OrderService implements OrderServiceInterface
             chefStoreId: $chefStoreId
         );
 
+        return $this->changeDeliveryRequest(
+            order: $order,
+            reason: $DTO->getReason()
+        );
+    }
+
+    public function changeDeliveryRequestByAdmin(DeliveryChangeByAdminDTO $DTO): Order
+    {
+        $order = $this->show(
+            orderId: $DTO->getOrderId(),
+        );
+
+        return $this->changeDeliveryRequest(
+            order: $order,
+            reason: $DTO->getReason()
+        );
+    }
+
+
+    private function changeDeliveryRequest(Order $order, string $reason): Order
+    {
         // Can only change delivery orders to pickup
         if ($order->delivery_type != DeliveryTypeEnum::DELIVERY) {
             throw ValidationException::withMessages(
@@ -461,14 +529,14 @@ class OrderService implements OrderServiceInterface
             $order->update([
                 'status' => OrderStatusEnum::DELIVERY_CHANGE_REQUESTED,
                 'delivery_change_requested_at' => now(),
-                'delivery_change_reason' => $DTO->getReason(),
+                'delivery_change_reason' => $reason,
             ]);
 
             $order->user->notify(new DeliveryChangeRequestNotification($order));
 
             DB::commit();
 
-            return $order->fresh();
+            return $order->fresh()->loadMissing(["items.options", "statusHistories"]);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -481,7 +549,20 @@ class OrderService implements OrderServiceInterface
             orderId: $orderId,
             chefStoreId: $chefStoreId
         );
+        return $this->makeOrderReady(order: $order);
+    }
 
+    public function makeOrderReadyByAdmin(int $orderId): Order
+    {
+        $order = $this->show(
+            orderId: $orderId,
+        );
+
+        return $this->makeOrderReady(order: $order);
+    }
+
+    private function makeOrderReady(Order $order): Order
+    {
         if ($order->status !== OrderStatusEnum::ACCEPTED) {
             throw ValidationException::withMessages(
                 ['order' => 'Order cannot be ready in current status']
@@ -495,7 +576,7 @@ class OrderService implements OrderServiceInterface
 
         $order->user->notify(new OrderReadyNotification($order));
 
-        return $order->fresh();
+        return $order->fresh()->loadMissing(["items.options", "statusHistories"]);
     }
 
     public function markOrderCompleteByChef(int $orderId, int $chefStoreId): Order
@@ -508,6 +589,18 @@ class OrderService implements OrderServiceInterface
         return $this->makeOrderComplete(
             order: $order,
             completeType: OrderCompleteByEnum::CHEF
+        );
+    }
+
+    public function markOrderCompleteByAdmin(int $orderId): Order
+    {
+        $order = $this->show(
+            orderId: $orderId,
+        );
+
+        return $this->makeOrderComplete(
+            order: $order,
+            completeType: OrderCompleteByEnum::ADMIN
         );
     }
 
@@ -554,8 +647,17 @@ class OrderService implements OrderServiceInterface
             orderUuid: $orderUuid,
             userId: $userId
         );
+        return $this->acceptDeliveryChange($order);
+    }
 
+    public function acceptDeliveryChangeByAdmin(int $orderId): Order
+    {
+        $order = $this->show($orderId);
+        return $this->acceptDeliveryChange($order);
+    }
 
+    private function acceptDeliveryChange(Order $order): Order
+    {
         // Ensure order is waiting for delivery change response
         if ($order->status != OrderStatusEnum::DELIVERY_CHANGE_REQUESTED) {
             throw ValidationException::withMessages(
@@ -587,7 +689,7 @@ class OrderService implements OrderServiceInterface
 
             DB::commit();
 
-            return $order->fresh();
+            return $order->fresh()->loadMissing(["items.options", "statusHistories"]);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -600,8 +702,17 @@ class OrderService implements OrderServiceInterface
             orderUuid: $orderUuid,
             userId: $userId
         );
+        return $this->refuseChangeDeliveryChange($order);
+    }
 
+    public function refuseChangeDeliveryChangeByAdmin(int $orderId): Order
+    {
+        $order = $this->show($orderId);
+        return $this->refuseChangeDeliveryChange($order);
+    }
 
+    public function refuseChangeDeliveryChange(Order $order): Order
+    {
         if ($order->status != OrderStatusEnum::DELIVERY_CHANGE_REQUESTED) {
             throw ValidationException::withMessages(
                 ['order' => 'No delivery change pending for this order']
@@ -711,7 +822,7 @@ class OrderService implements OrderServiceInterface
 
         if ($order->completed_at->addDays(3)->isPast()) {
             throw ValidationException::withMessages([
-                'order' =>'You cannot rate for this order'
+                'order' => 'You cannot rate for this order'
             ]);
         }
 
@@ -723,5 +834,163 @@ class OrderService implements OrderServiceInterface
         }
 
         return $order;
+    }
+
+    public function all(
+        ?array $filters = null,
+        array $relations = [],
+        $pagination = null
+    ): Collection|LengthAwarePaginator {
+        $orders = Order::query()->when($relations, fn($q) => $q->with($relations))
+            ->when($filters, fn($q) => $q->filter($filters));
+
+        return $pagination ? $orders->paginate($pagination) : $orders->get();
+    }
+
+    public function show(int $orderId, array $relations = []): Order
+    {
+        return Order::query()->with($relations)->findOrFail($orderId);
+    }
+
+    public function storeOrderByAdmin(StoreOrderByAdminRequest $request, int $userId): AdminStoreOrderResponseDTO
+    {
+        try {
+            DB::beginTransaction();
+
+            /** @var User $user */
+            $user = User::query()->where('id', $userId)->firstOrFail();
+
+            // Reserve food quantities FIRST (decrease available_qty)
+            $this->reserveFoodQuantities($request->items);
+
+            // Get chef store and calculate totals
+            /** @var ChefStore $chefStore */
+            $chefStore = ChefStore::query()->findOrFail($request->chef_store_id);
+            $deliveryCost = $request->delivery_type == DeliveryTypeEnum::DELIVERY->value ? ($chefStore->delivery_cost ?? 0) : 0;
+
+            // Calculate subtotal from items
+            $subtotal = $this->calculateSubtotal($request->items);
+            $totalAmount = $subtotal + $deliveryCost;
+
+            // Get address snapshot if delivery
+            $addressSnapshot = null;
+            if ($request->delivery_type === 'delivery' && $request->user_address) {
+                $addressSnapshot = [
+                    'address' => $request->user_address,
+                ];
+            }
+
+            // Create order
+            $order = Order::query()->create([
+                'user_id' => auth()->id(),
+                'uuid' => Uuid::uuid4()->toString(),
+                'chef_store_id' => $request->chef_store_id,
+                'user_address' => $request->user_address,
+                'status' => OrderStatusEnum::PENDING_PAYMENT,
+                'delivery_type' => $request->delivery_type,
+                'original_delivery_type' => $request->delivery_type,
+                'delivery_cost' => $deliveryCost,
+                'subtotal' => $subtotal,
+                'total_amount' => $totalAmount,
+                'user_notes' => $request->user_notes,
+                'delivery_address_snapshot' => $addressSnapshot,
+            ]);
+
+            // Create order items
+            foreach ($request->items as $itemData) {
+                $food = Food::query()->findOrFail($itemData['food_id']);
+
+                $orderItem = OrderItem::query()->create([
+                    'order_id' => $order->id,
+                    'food_id' => $food->id,
+                    'food_name' => $food->name,
+                    'food_price' => $food->price,
+                    "note" => $itemData['note'] ?? null,
+                    'quantity' => $itemData['quantity'],
+                    'item_subtotal' => $food->price * $itemData['quantity'],
+                    'item_total' => $food->price * $itemData['quantity'], // Will be updated after options
+                ]);
+
+                // Create order item options
+                if (isset($itemData['options'])) {
+                    foreach ($itemData['options'] as $optionData) {
+                        $foodOption = FoodOption::query()->findOrFail($optionData['food_option_id']);
+
+                        OrderItemOption::query()->create([
+                            'order_item_id' => $orderItem->id,
+                            'food_option_group_id' => $optionData['food_option_group_id'],
+                            'food_option_id' => $foodOption->id,
+                            'option_group_name' => $foodOption->optionGroup->name,
+                            'option_name' => $foodOption->name,
+                            'option_price' => $foodOption->price,
+                            'option_type' => $foodOption->type,
+                            'quantity' => $optionData['quantity'],
+                            'option_total' => $foodOption->price * $optionData['quantity'],
+                        ]);
+                    }
+
+                    // Recalculate item total with options
+                    $orderItem->recalculateTotal();
+                }
+            }
+
+            $responseData = [];
+            $paymentMethod = null;
+            $totalAmount = $order->fresh()->total_amount;
+
+            if ($request->has('payment_method')) {
+                $paymentMethod = PaymentMethod::from($request->payment_method);
+                if ($paymentMethod == PaymentMethod::WALLET) {
+                    if ($user->getAvailableCredit() < $totalAmount) {
+                        throw ValidationException::withMessages([
+                            'error' => 'Insufficient credit to pay.'
+                        ]);
+                    }
+
+                    $this->makeOrderPaymentSuccess(
+                        orderUuid: $order->uuid,
+                        amount: $totalAmount,
+                        paymentMethod: PaymentMethod::WALLET
+                    );
+                } elseif ($paymentMethod == PaymentMethod::FREE) {
+                    $this->makeOrderPaymentSuccess(
+                        orderUuid: $order->uuid,
+                        amount: $totalAmount,
+                        paymentMethod: PaymentMethod::WALLET
+                    );
+                }
+            }
+
+            DB::commit();
+
+            return new AdminStoreOrderResponseDTO(
+                order: $order,
+                paymentMethod: $paymentMethod?->value
+            );
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw ValidationException::withMessages([
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function stats(array $filters = []): OrderStatsDTO
+    {
+        $canceledStatus = [];
+        $activeStatus = [];
+        foreach (OrderStatusEnum::canceledStatuses() as $status) {
+            $canceledStatus[] = $status->value;
+        }
+
+        foreach (OrderStatusEnum::activeStatuses() as $status) {
+            $activeStatus[] = $status->value;
+        }
+        return new OrderStatsDTO(
+            total: Order::query()->filter($filters)->count(),
+            completed: Order::query()->filter($filters)->where('status', OrderStatusEnum::COMPLETED)->count(),
+            active: Order::query()->filter($filters)->whereIn('status', $activeStatus)->count(),
+            cancelled: Order::query()->filter($filters)->whereIn('status', $canceledStatus)->count(),
+        );
     }
 }

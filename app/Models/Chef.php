@@ -5,7 +5,10 @@ namespace App\Models;
 use App\DTOs\BaseDTO;
 use App\Enums\Chef\ChefStatusEnum;
 use App\Enums\RegisterSourceEnum;
+use App\ModelFilters\ChefFilter;
+use App\Traits\GetTableColumn;
 use Carbon\Carbon;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,6 +27,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $last_name
  * @property string $email
  * @property Carbon $email_verified_at
+ * @property RegisterSourceEnum $register_source
  * @property string $password
  * @property string $phone
  * @property int $city_id
@@ -49,7 +53,7 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class Chef extends Authenticatable
 {
-    use HasFactory, HasApiTokens , Notifiable;
+    use HasFactory, HasApiTokens, Notifiable, Filterable, GetTableColumn;
 
     public static string $TOKEN_NAME = "chef-token";
 
@@ -107,7 +111,7 @@ class Chef extends Authenticatable
 
     public function getFullName(): string
     {
-        return  $this->first_name . " " . $this->last_name;
+        return $this->first_name . " " . $this->last_name;
     }
 
     public function routeNotificationForFcm(): array
@@ -148,5 +152,13 @@ class Chef extends Authenticatable
     public function activeFcmTokens(): MorphMany
     {
         return $this->fcmTokens()->where('is_active', true);
+    }
+
+
+    // ================== MISC ===================== //
+
+    public function getModelFilterClass(): string
+    {
+        return ChefFilter::class;
     }
 }

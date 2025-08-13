@@ -65,6 +65,7 @@ class ChefAuthService implements ChefAuthServiceInterface
         $chef = Chef::query()->firstOrCreate(
             ['email' => $email], [
                 "uuid" => $DTO->getUUid(),
+                "email_verified_at" => now()
             ]
         );
 

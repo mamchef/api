@@ -23,7 +23,7 @@ class UserTokenResponse extends JsonResource
     public function toArray(Request $request): array
     {
         $accessToken = PersonalAccessToken::findToken($this->token);
-        /** @var User $chef */
+        /** @var User $user */
         $user = $accessToken->tokenable;
         return [
             'code' => 200,

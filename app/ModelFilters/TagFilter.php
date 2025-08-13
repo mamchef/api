@@ -22,9 +22,19 @@ class TagFilter extends ModelFilter
         return $this->where('status', $param);
     }
 
+    public function status(string $param): self
+    {
+        return $this->where('status', $param);
+    }
+
     public function homepage(bool $param): self
     {
         return $this->where('homepage', $param);
+    }
+
+    public function iconType(string $type): self
+    {
+        return $this->where('icon_type', $type);
     }
 
 
@@ -39,6 +49,8 @@ class TagFilter extends ModelFilter
     public function search(string $param): self
     {
         return $this->where(function ($query) use ($param) {
+            return $query->where('name', 'like', '%' . $param . '%')
+                ->orWhere('name', 'like', '%' . $param . '%');
         });
     }
 

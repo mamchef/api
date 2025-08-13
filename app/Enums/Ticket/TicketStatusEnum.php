@@ -23,4 +23,16 @@ enum TicketStatusEnum: string
             self::CLOSED->value,
         ];
     }
+
+    public static function getEnum(string $value): self
+    {
+        return match ($value) {
+            self::USER_CREATED->value => self::USER_CREATED,
+            self::UNDER_REVIEW->value => self::UNDER_REVIEW,
+            self::ADMIN_ANSWERED->value => self::ADMIN_ANSWERED,
+            self::USER_ANSWERED->value => self::USER_ANSWERED,
+            self::COMPLETED->value => self::COMPLETED,
+            self::CLOSED->value => self::CLOSED,
+        };
+    }
 }

@@ -2,9 +2,13 @@
 
 namespace App\Services;
 
+use App\DTOs\Admin\Chef\ChefUpdateByAdminDTO;
+use App\DTOs\Admin\ChefStore\ChefStoreUpdateByAdminDTO;
 use App\DTOs\Chef\ChefStore\UpdateChefStoreByChefDTO;
 use App\Models\ChefStore;
 use App\Services\Interfaces\ChefStoreServiceInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,7 +24,7 @@ class ChefStoreService implements ChefStoreServiceInterface
         return $chef;
     }
 
-    public function getBySlug(string $slug , array $relations = []): ChefStore
+    public function getBySlug(string $slug, array $relations = []): ChefStore
     {
         return ChefStore::query()->where('slug', $slug)->with($relations)->firstOrFail();
     }
@@ -66,5 +70,40 @@ class ChefStoreService implements ChefStoreServiceInterface
         $chefStore->is_open = $isOpen;
         $chefStore->save();
         return $chefStore->fresh();
+    }
+
+    public function all(
+        ?array $filters = null,
+        array $relations = [],
+        $pagination = null
+    ): Collection|LengthAwarePaginator {
+        $chefStores = ChefStore::query()->when($relations, fn($q) => $q->with($relations))
+            ->when($filters, fn($q) => $q->filter($filters));
+
+        return $pagination ? $chefStores->paginate($pagination) : $chefStores->get();
+    }
+
+    public function show(int $chefStoreId, array $relations = []): ChefStore
+    {
+        return ChefStore::query()->with($relations)->findOrFail($chefStoreId);
+    }
+
+    public function update(int $chefStoreId, ChefStoreUpdateByAdminDTO $DTO): ChefStore
+    {
+       $chefStore = $this->show($chefStoreId);
+       $data = $DTO->toArray();
+
+        if (isset($data['profile_image'])) {
+            $path = Storage::disk("public")->putFileAs(
+                "chef_store/$chefStore->id",
+                $data["profile_image"],
+                "profile_image." . $data["profile_image"]->getClientOriginalExtension(),
+            );
+            $data["profile_image"] = $path;
+        }
+
+        $chefStore->update($data);
+        return $chefStore->fresh();
+
     }
 }
