@@ -66,8 +66,8 @@ class OtpCacheService
         );
 
         // Send to Slack
-        $slackNotifier = new SlackNotifier();
-        Notification::send($slackNotifier, new OtpSlackNotification($otpCode, 'email', $email));
+        //$slackNotifier = new SlackNotifier();
+        //Notification::send($slackNotifier, new OtpSlackNotification($otpCode, 'email', $email));
 
         return $emailJob;
     }
@@ -82,8 +82,8 @@ class OtpCacheService
         );
 
         // Send to Slack
-        $slackNotifier = new SlackNotifier();
-        Notification::send($slackNotifier, new OtpSlackNotification($otpCode, 'sms', $phoneNumber));
+        //$slackNotifier = new SlackNotifier();
+       // Notification::send($slackNotifier, new OtpSlackNotification($otpCode, 'sms', $phoneNumber));
 
         return $smsJob;
     }
