@@ -175,27 +175,37 @@ class FoodService implements FoodServiceInterface
     ): LengthAwarePaginator {
         $query = Food::with(['chefStore', 'tags'])
             ->inStock()
-            ->select('foods.*')
+            ->select('food_filtered.*')
             ->selectRaw(
                 "
                 (6371 * acos(
-                    cos(radians(?)) * cos(radians(chef_stores.lat)) * 
-                    cos(radians(chef_stores.lng) - radians(?)) +
-                    sin(radians(?)) * sin(radians(chef_stores.lat))
+                    cos(radians(?)) * cos(radians(food_filtered.lat)) * 
+                    cos(radians(food_filtered.lng) - radians(?)) +
+                    sin(radians(?)) * sin(radians(food_filtered.lat))
                 )) AS distance_km
             ",
                 [$userLat, $userLng, $userLat]
             )
-            ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
-            ->where('foods.status', true)
-            ->where('chef_stores.is_open', true)
-            ->whereRaw(
-                "
+            ->fromSub(function ($query) {
+                $query->select(
+                    'foods.*',
+                    'chef_stores.lat',
+                    'chef_stores.lng',
+                    DB::raw('ROW_NUMBER() OVER (PARTITION BY chef_stores.id ORDER BY foods.rating DESC) as row_num')
+                )
+                    ->from('foods')
+                    ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
+                    ->where('foods.status', true)
+                    ->where('chef_stores.is_open', true)
+                    ->whereRaw(
+                        "
         TIME(NOW()) BETWEEN 
         chef_stores.start_daily_time AND 
         chef_stores.end_daily_time
     "
-            );
+                    );
+            }, 'food_filtered')
+            ->where('row_num', '=', 1);
 
         // Add tag filter if provided
         if ($tagId) {
@@ -239,7 +249,7 @@ class FoodService implements FoodServiceInterface
 
     public function topRatedFoods(
         int $limit = 10,
-        int $limitPerChef = 2,
+        int $limitPerChef = 1,
         ?int $tagId = null,
         ?int $userId = null
     ): LengthAwarePaginator {
