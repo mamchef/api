@@ -178,7 +178,6 @@ class FoodService implements FoodServiceInterface
     ): LengthAwarePaginator
     {
         $query = Food::query()
-            ->inStock()
             ->withoutGlobalScope(SoftDeletingScope::class)
             ->with(['chefStore', 'tags'])
             ->select('food_filtered.*')
@@ -200,6 +199,7 @@ class FoodService implements FoodServiceInterface
                     ->from('foods')
                     ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
                     ->where('foods.status', true)
+                    ->where('foods.available_qty', '>', 0)
                     ->where('foods.deleted_at', null)
                     ->where('chef_stores.is_open', true)
                     ->whereRaw(
@@ -208,9 +208,10 @@ class FoodService implements FoodServiceInterface
         chef_stores.start_daily_time AND 
         chef_stores.end_daily_time
     "
-                    );
+                    )
+                    ->havingRaw('distance_km <= ?', [$radiusKm]);
 
-            }, 'food_filtered')->where('row_num', '<=', $limitPerChef);;
+            }, 'food_filtered')->where('row_num', '<=', $limitPerChef);
 
 
         // Add tag filter if provided
@@ -220,8 +221,7 @@ class FoodService implements FoodServiceInterface
             });
         }
 
-        $foods = $query->having('distance_km', '<=', $radiusKm)
-            ->orderBy('distance_km', 'asc')
+        $foods = $query->orderBy('distance_km', 'asc')
             ->paginate($limit);
 
 
