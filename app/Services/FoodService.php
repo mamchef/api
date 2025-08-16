@@ -266,7 +266,6 @@ class FoodService implements FoodServiceInterface
                     ->from('foods')
                     ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
                     ->where('foods.status', true)
-                    ->where('foods.deleted_at', null)
                     ->where('chef_stores.is_open', true)
                     ->whereRaw(
                         "
