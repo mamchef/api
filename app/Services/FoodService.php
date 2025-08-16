@@ -178,6 +178,8 @@ class FoodService implements FoodServiceInterface
     ): LengthAwarePaginator
     {
         $query = Food::query()
+            ->inStock()
+            ->withoutGlobalScope(SoftDeletingScope::class)
             ->with(['chefStore', 'tags'])
             ->select('food_filtered.*')
             ->fromSub(function ($query) use ($userLat, $userLng, $radiusKm, $limitPerChef) {
