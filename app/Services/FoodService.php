@@ -22,12 +22,13 @@ class FoodService implements FoodServiceInterface
 {
 
     public function getFoodsByChefStoreID(
-        int $chefStoreID,
-        array $filters = [],
-        array $relations = [],
+        int      $chefStoreID,
+        array    $filters = [],
+        array    $relations = [],
         null|int $pagination = null,
-        ?int $userId = null
-    ): Collection|LengthAwarePaginator {
+        ?int     $userId = null
+    ): Collection|LengthAwarePaginator
+    {
         $foods = Food::query()->chefStoreFoods($chefStoreID)
             ->filter($filters)
             ->with($relations);
@@ -48,10 +49,11 @@ class FoodService implements FoodServiceInterface
 
     /** @inheritDoc */
     public function getFoodByChefStoreID(
-        int $chefStoreID,
+        int    $chefStoreID,
         string $foodSlug,
-        array $relations = [],
-    ): Food {
+        array  $relations = [],
+    ): Food
+    {
         return Food::chefStoreFoods($chefStoreID)
             ->where('slug', $foodSlug)
             ->with($relations)
@@ -168,16 +170,19 @@ class FoodService implements FoodServiceInterface
     public function findNearbyFoods(
         float $userLat,
         float $userLng,
-        ?int $tagId = null,
-        int $radiusKm = 10,
-        int $limit = 20,
-        ?int $userId = null,
-        int $limitPerChef = 1
-    ): LengthAwarePaginator {
-        $query = Food::with(['chefStore', 'tags'])
+        ?int  $tagId = null,
+        int   $radiusKm = 10,
+        int   $limit = 20,
+        ?int  $userId = null,
+        int   $limitPerChef = 1
+    ): LengthAwarePaginator
+    {
+        $query = Food::query()
+            ->inStock()
+            ->with(['chefStore', 'tags'])
             ->select('food_filtered.*')
-            ->fromSub(function ($query) use ($userLat, $userLng, $radiusKm,$limitPerChef) {
-                $query ->select(
+            ->fromSub(function ($query) use ($userLat, $userLng, $radiusKm, $limitPerChef) {
+                $query->select(
                     'foods.*',
                     DB::raw('ROW_NUMBER() OVER (PARTITION BY chef_stores.id ORDER BY foods.rating DESC) as row_num')
                 )
@@ -191,9 +196,10 @@ class FoodService implements FoodServiceInterface
             ",
                         [$userLat, $userLng, $userLat]
                     )
-
+                    ->from('foods')
                     ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
                     ->where('foods.status', true)
+                    ->where('foods.deleted_at', null)
                     ->where('chef_stores.is_open', true)
                     ->whereRaw(
                         "
@@ -203,7 +209,7 @@ class FoodService implements FoodServiceInterface
     "
                     );
 
-            },'food_filtered')->where('row_num', '<=', $limitPerChef);;
+            }, 'food_filtered')->where('row_num', '<=', $limitPerChef);;
 
 
         // Add tag filter if provided
@@ -247,11 +253,12 @@ class FoodService implements FoodServiceInterface
     }
 
     public function topRatedFoods(
-        int $limit = 10,
-        int $limitPerChef = 2,
+        int  $limit = 10,
+        int  $limitPerChef = 2,
         ?int $tagId = null,
         ?int $userId = null
-    ): LengthAwarePaginator {
+    ): LengthAwarePaginator
+    {
         $query = Food::query()
             ->inStock()
             ->withoutGlobalScope(SoftDeletingScope::class)
