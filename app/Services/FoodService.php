@@ -186,16 +186,6 @@ class FoodService implements FoodServiceInterface
                     'foods.*',
                     DB::raw('ROW_NUMBER() OVER (PARTITION BY chef_stores.id ORDER BY foods.rating DESC) as row_num')
                 )
-                    ->selectRaw(
-                        "
-                (6371 * acos(
-                    cos(radians(?)) * cos(radians(chef_stores.lat)) * 
-                    cos(radians(chef_stores.lng) - radians(?)) +
-                    sin(radians(?)) * sin(radians(chef_stores.lat))
-                )) AS distance_km
-            ",
-                        [$userLat, $userLng, $userLat]
-                    )
                     ->from('foods')
                     ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
                     ->where('foods.status', true)
