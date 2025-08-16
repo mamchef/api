@@ -42,6 +42,7 @@ class OrderController extends Controller
             $order->chefStore->address = null;
             $order->chefStore->lat = null;
             $order->chefStore->lng = null;
+            $order->chefStore->phone = null;
         }
 
         /*        if (!in_array($order->status, OrderStatusEnum::activeStatuses())) {
