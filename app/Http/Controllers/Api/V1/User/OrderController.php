@@ -31,19 +31,16 @@ class OrderController extends Controller
                 "chefStore:id,slug,name,address,lat,lng,profile_image",
                 "items.food",
                 "items.options",
-                "transactions:id,user_id,order_id,status,created_at,type,amount,description",
+                "transactions:id,user_id,order_id,status,created_at,type,amount,description,phone",
             ]
         );
-        if (in_array($order->status, [
-                OrderStatusEnum::READY_FOR_PICKUP,
-                OrderStatusEnum::COMPLETED,
-                OrderStatusEnum::ACCEPTED,
-            ]) and $order->delivery_type == DeliveryTypeEnum::PICKUP) {
+        if ( $order->delivery_type != DeliveryTypeEnum::PICKUP) {
             $order->chefStore->address = null;
             $order->chefStore->lat = null;
             $order->chefStore->lng = null;
             $order->chefStore->phone = null;
         }
+
 
         /*        if (!in_array($order->status, OrderStatusEnum::activeStatuses())) {
                     $order->chefStore->phone = null;
@@ -88,7 +85,7 @@ class OrderController extends Controller
                 "chefStore:id,slug,name,address,lat,lng,profile_image",
                 "items.food",
                 "items.options",
-                "transactions:id,user_id,order_id,status,created_at,type,amount,description",
+                "transactions:id,user_id,order_id,status,created_at,type,amount,description.phone",
             ],
             pagination: self::validPagination(),
         );

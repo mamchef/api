@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1\User\Order;
 
+use App\Enums\Order\DeliveryTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Http\Resources\V1\BaseResource;
 use App\Models\Order;
@@ -13,6 +14,14 @@ class OrderResource extends BaseResource
     {
         /** @var Order $order */
         $order = $this->resource;
+
+        if ( $order->delivery_type != DeliveryTypeEnum::PICKUP) {
+            $order->chefStore->address = null;
+            $order->chefStore->lat = null;
+            $order->chefStore->lng = null;
+            $order->chefStore->phone = null;
+        }
+
         $orderArr = $order->toArray();
         unset($orderArr['id']);
 
