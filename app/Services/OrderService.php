@@ -21,6 +21,7 @@ use App\Enums\User\TransactionStatus;
 use App\Enums\User\TransactionType;
 use App\Http\Requests\Api\V1\Admin\Order\StoreOrderByAdminRequest;
 use App\Http\Requests\Api\V1\User\Order\StoreOrderRequest;
+use App\Jobs\CalculateFoodRate;
 use App\Models\ChefStore;
 use App\Models\Food;
 use App\Models\FoodOption;
@@ -832,6 +833,9 @@ class OrderService implements OrderServiceInterface
                 'rating_review' => $DTO->getRatingReview(),
             ]);
         }
+
+
+        CalculateFoodRate::dispatch($order);
 
         return $order;
     }

@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * Relations:
  * @property HasMany | OrderItemOption[] $options
+ * @property BelongsTo | Order $order
  */
 class OrderItem extends Model
 {

@@ -98,3 +98,15 @@ Route::get('/test-foods', function () {
 
     return response()->json(['message' => 'Notification sent']);
 });
+
+
+Route::get('/rate-foods', function () {
+    $orders = Order::query()->whereIn('status', OrderStatusEnum::historyStatuses())->get();
+    foreach ($orders as $order) {
+        \App\Jobs\CalculateFoodRate::dispatch($order);
+    }
+
+    return "ok";
+});
+
+
