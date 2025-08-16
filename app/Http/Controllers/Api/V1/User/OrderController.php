@@ -85,7 +85,7 @@ class OrderController extends Controller
                 "chefStore:id,slug,name,address,lat,lng,profile_image",
                 "items.food",
                 "items.options",
-                "transactions:id,user_id,order_id,status,created_at,type,amount,description.phone",
+                "transactions:id,user_id,order_id,status,created_at,type,amount,description,phone",
             ],
             pagination: self::validPagination(),
         );
