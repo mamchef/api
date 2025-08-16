@@ -28,10 +28,10 @@ class OrderController extends Controller
             orderUuid: $orderId,
             userId: Auth::id(),
             relations: [
-                "chefStore:id,slug,name,address,lat,lng,profile_image",
+                "chefStore:id,slug,name,address,lat,lng,profile_image,phone",
                 "items.food",
                 "items.options",
-                "transactions:id,user_id,order_id,status,created_at,type,amount,description,phone",
+                "transactions:id,user_id,order_id,status,created_at,type,amount,description",
             ]
         );
         if ( $order->delivery_type != DeliveryTypeEnum::PICKUP) {
@@ -82,10 +82,10 @@ class OrderController extends Controller
             userId: Auth::id(),
             filters: [],
             relations: [
-                "chefStore:id,slug,name,address,lat,lng,profile_image",
+                "chefStore:id,slug,name,address,lat,lng,profile_image,phone",
                 "items.food",
                 "items.options",
-                "transactions:id,user_id,order_id,status,created_at,type,amount,description,phone",
+                "transactions:id,user_id,order_id,status,created_at,type,amount,description",
             ],
             pagination: self::validPagination(),
         );
