@@ -174,7 +174,6 @@ class FoodService implements FoodServiceInterface
         ?int $userId = null
     ): LengthAwarePaginator {
         $query = Food::with(['chefStore', 'tags'])
-            ->inStock()
             ->select('food_filtered.*')
             ->selectRaw(
                 "
@@ -196,6 +195,7 @@ class FoodService implements FoodServiceInterface
                     ->from('foods')
                     ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
                     ->where('foods.status', true)
+                    ->where('foods.available_qty', '>', 0)
                     ->where('chef_stores.is_open', true)
                     ->whereRaw(
                         "
