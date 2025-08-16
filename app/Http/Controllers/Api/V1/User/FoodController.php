@@ -34,7 +34,8 @@ class FoodController extends Controller
                 userLng: $request->lng ?? '25.2797',
                 tagId: $request->tag_id ?? null,
                 limit: $request->per_page ?? 10,
-                userId: Auth::id() ?? null
+                userId: Auth::id() ?? null,
+                limitPerChef: 1
             )
         );
     }

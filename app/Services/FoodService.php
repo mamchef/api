@@ -171,31 +171,40 @@ class FoodService implements FoodServiceInterface
         ?int $tagId = null,
         int $radiusKm = 10,
         int $limit = 20,
-        ?int $userId = null
+        ?int $userId = null,
+        int $limitPerChef = 1
     ): LengthAwarePaginator {
         $query = Food::with(['chefStore', 'tags'])
-            ->inStock()
-            ->select('foods.*')
-            ->selectRaw(
-                "
+            ->select('food_filtered.*')
+            ->fromSub(function ($query) use ($userLat, $userLng, $radiusKm,$limitPerChef) {
+                $query ->select(
+                    'foods.*',
+                    DB::raw('ROW_NUMBER() OVER (PARTITION BY chef_stores.id ORDER BY foods.rating DESC) as row_num')
+                )
+                    ->selectRaw(
+                        "
                 (6371 * acos(
                     cos(radians(?)) * cos(radians(chef_stores.lat)) * 
                     cos(radians(chef_stores.lng) - radians(?)) +
                     sin(radians(?)) * sin(radians(chef_stores.lat))
                 )) AS distance_km
             ",
-                [$userLat, $userLng, $userLat]
-            )
-            ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
-            ->where('foods.status', true)
-            ->where('chef_stores.is_open', true)
-            ->whereRaw(
-                "
+                        [$userLat, $userLng, $userLat]
+                    )
+
+                    ->join('chef_stores', 'foods.chef_store_id', '=', 'chef_stores.id')
+                    ->where('foods.status', true)
+                    ->where('chef_stores.is_open', true)
+                    ->whereRaw(
+                        "
         TIME(NOW()) BETWEEN 
         chef_stores.start_daily_time AND 
         chef_stores.end_daily_time
     "
-            );
+                    );
+
+            },'food_filtered')->where('row_num', '<=', $limitPerChef);;
+
 
         // Add tag filter if provided
         if ($tagId) {

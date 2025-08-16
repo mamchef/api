@@ -74,7 +74,8 @@ interface FoodServiceInterface
         ?int $tagId = null,
         int $radiusKm = 10,
         int $limit = 20,
-        ?int $userId = null
+        ?int $userId = null,
+        int $limitPerChef = 1
     ): LengthAwarePaginator;
 
 
