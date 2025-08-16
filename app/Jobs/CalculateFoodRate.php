@@ -34,9 +34,12 @@ class CalculateFoodRate implements ShouldQueue
                 $query->where('food_id', $item->food_id);
             })->where('rating','>',0)->avg('rating');
             $rating = round($rating,1);
-            $food = Food::query()->find($item->food_id);
-            $food->rating = $rating;
-            $food->save();
+            if ($rating > 0) {
+                $food = Food::query()->find($item->food_id);
+                $food->rating = $rating;
+                $food->save();
+            }
+
         }
 
     }
