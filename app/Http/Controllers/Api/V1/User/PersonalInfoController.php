@@ -58,6 +58,7 @@ class PersonalInfoController extends Controller
         $this->profileService->updateEmail(
             userId: Auth::id(),
             email: $request->email,
+            commercialAgreement: $request->commercial_agreement ?? false,
         );
         return new SuccessResponse();
     }

@@ -27,6 +27,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $phone_number
  * @property string $country_code
  * @property string $email
+ * @property bool $commercial_agreement
  * @property Carbon $email_verified_at
  * @property string $password
  * @property UserStatusEnum $status

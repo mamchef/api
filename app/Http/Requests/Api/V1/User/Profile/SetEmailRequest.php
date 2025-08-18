@@ -8,6 +8,7 @@ use App\Rules\CheckOtpRule;
 
 /**
  * @property string $email
+ * @property bool $commercial_agreement
  */
 class SetEmailRequest extends BaseFormRequest
 {
@@ -20,6 +21,7 @@ class SetEmailRequest extends BaseFormRequest
     {
         return [
             "email" => ["required", "email", "unique:users,email"],
+            'commercial_agreement' => ["required", "boolean"],
             "code" => ["required", "string", new CheckOtpRule(PersonalInfoController::$SET_EMAIL_PREFIX_KEY . $this->email)],
         ];
     }

@@ -15,9 +15,15 @@ class UserProfileService implements UserProfileServiceInterface
         User::query()->where('id', $userId)->update(['first_name' => $firstName, 'last_name' => $lastName]);
     }
 
-    public function updateEmail(int $userId, string $email): void
+    public function updateEmail(int $userId, string $email, bool $commercialAgreement): void
     {
-        User::query()->where('id', $userId)->update(['email' => $email, 'email_verified_at' => now()]);
+        User::query()->where('id', $userId)->update(
+            [
+                'email' => $email,
+                'email_verified_at' => now(),
+                'commercial_agreement' => $commercialAgreement
+            ]
+        );
     }
 
     public function changePassword(User $user, string $currentPassword, string $newPassword): void
