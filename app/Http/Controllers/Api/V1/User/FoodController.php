@@ -55,11 +55,15 @@ class FoodController extends Controller
 
     public function search(FoodSearchRequest $request)
     {
+        $filters = $request->validated();
+        if (isset($filters['search'])) {
+            $filters['user_search'] = $filters['search'];
+            unset($filters['search']);
+        }
+
         return FoodResource::collection(
             $this->foodService->foodSearchByUser(
-                filters: [
-                    'user_search' => $request->search ?? ''
-                ],
+                filters: $filters,
                 pagination: $request->per_page ?? 10,
             )
         );

@@ -81,7 +81,7 @@ class FoodFilter extends ModelFilter
     }
 
 
-    public function category(string $param): self
+    public function categoryId(string $param): self
     {
         $tags = explode(',', $param);
         if (!is_array($tags)) {
