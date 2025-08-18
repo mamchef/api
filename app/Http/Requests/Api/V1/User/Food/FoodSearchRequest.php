@@ -19,7 +19,7 @@ class FoodSearchRequest extends BaseFormRequest
             'per_page' => ['nullable', 'integer', 'min:1', 'max:25'],
             'page' => ['nullable', 'integer', 'min:1'],
             'tag_id' => ['nullable', 'integer', 'exists:tags,id'],
-            'category_id' => ['nullable', 'integer', 'exists:tags,id'],
+            'category' => ['nullable', 'integer', 'exists:tags,id'],
             'search' => ['nullable', 'string','max:50'],
             "sort_by"=>['nullable','string'],
             "sort_type"=>['nullable','string'],
