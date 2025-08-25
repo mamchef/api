@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1\User;
 
+use App\Enums\Order\OrderStatusEnum;
 use App\Enums\User\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\User\Payment\CreatePaymentIntentRequest;
 use App\Models\Order;
 use App\Services\Payment\PaymentService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
@@ -58,5 +60,41 @@ class PaymentController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+
+    public function success(Request $request)
+    {
+        $orderId = $request->get('order_id');
+        $sessionId = $request->get('session_id');
+        $paymentIntent = $request->get('payment_intent');
+        $lang = $request->get('lang') ?? 'en';
+
+        $order = Order::query()->where('uuid', $orderId)->first();
+        if ($order and $order->status == OrderStatusEnum::PENDING_PAYMENT) {
+            $order->update([
+                'status' => OrderStatusEnum::PAYMENT_PROCESSING,
+            ]);
+        }
+
+
+        return view('success', compact('order', 'sessionId', 'paymentIntent'));
+    }
+
+
+    public function failed(Request $request)
+    {
+        $orderId = $request->get('order_id');
+        $sessionId = $request->get('session_id');
+
+        $lang = $request->get('lang') ?? 'en';
+        $order = Order::query()->where('uuid', $orderId)->first();
+        if ($order and $order->status == OrderStatusEnum::PENDING_PAYMENT) {
+            $order->update([
+                'status' => OrderStatusEnum::PAYMENT_PROCESSING,
+            ]);
+        }
+
+        return view('failed', compact('order', 'sessionId','lang'));
     }
 }

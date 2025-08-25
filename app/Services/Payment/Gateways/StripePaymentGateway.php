@@ -22,6 +22,7 @@ class StripePaymentGateway implements PaymentGatewayInterface
     public function createPaymentIntent(float $amount, string $currency = 'eur', array $metadata = []): array
     {
         try {
+            $lang = request()->header('Language') ?? 'en';
             $session = $this->stripe->checkout->sessions->create([
                 'payment_method_types' => ['card'],
                 'line_items' => [
@@ -37,8 +38,8 @@ class StripePaymentGateway implements PaymentGatewayInterface
                     ]
                 ],
                 'mode' => 'payment',
-                'success_url' => config('services.stripe.success_url') . '?order_id=' . $metadata['order_id'],
-                'cancel_url' => config('services.stripe.fail_url') . '?order_id=' . $metadata['order_id'],
+                'success_url' => config('services.stripe.success_url') . '?order_id=' . $metadata['order_id'] . '&language=' . $lang,
+                'cancel_url' => config('services.stripe.fail_url') . '?order_id=' . $metadata['order_id'] . '&language=' . $lang,
                 'metadata' => $metadata,
             ]);
 

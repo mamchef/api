@@ -1,51 +1,15 @@
 <?php
 
 use App\Enums\Order\OrderStatusEnum;
+use App\Http\Controllers\Api\V1\User\PaymentController;
 use App\Http\Controllers\DocuSignController;
 use App\Models\Food;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/payment/success', function (Request $request) {
-    $orderId = $request->get('order_id');
-    $sessionId = $request->get('session_id');
-    $paymentIntent = $request->get('payment_intent');
-
-    $order = Order::query()->where('uuid', $orderId)->first();
-    if ($order and $order->status == OrderStatusEnum::PENDING_PAYMENT) {
-        $order->update([
-            'status' => OrderStatusEnum::PAYMENT_PROCESSING,
-        ]);
-    }
-
-
-    return response()->json([
-        'message' => 'Payment Successful!',
-        'order_id' => $orderId,
-        'session_id' => $sessionId,
-        'payment_intent' => $paymentIntent
-    ], 200);
-});
-
-Route::get('/payment/cancel', function (Request $request) {
-    $orderId = $request->get('order_id');
-    $sessionId = $request->get('session_id');
-
-
-    $order = Order::query()->where('uuid', $orderId)->first();
-    if ($order and $order->status == OrderStatusEnum::PENDING_PAYMENT) {
-        $order->update([
-            'status' => OrderStatusEnum::PAYMENT_PROCESSING,
-        ]);
-    }
-
-    return response()->json([
-        'message' => 'Payment Cancelled',
-        'order_id' => $orderId,
-        'session_id' => $sessionId
-    ]);
-});
+Route::get('/payment/success',[PaymentController::class,'success'])->name('payment.success');
+Route::get('/payment/cancel',[PaymentController::class,'failed'])->name('payment.failed');
 
 Route::get('/reverb-test', function () {
     return view('reverb-test');
