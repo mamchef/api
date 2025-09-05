@@ -27,6 +27,8 @@ use Illuminate\Validation\Rule;
  * @property float $delivery_cost
  * @property bool $is_open
  * @property string $status
+ * @property int $max_daily_order
+ * @property float $share_percent
  */
 class UpdateChefStoreByAdminRequest extends BaseFormRequest
 {
@@ -79,6 +81,8 @@ class UpdateChefStoreByAdminRequest extends BaseFormRequest
             "delivery_method" => ["sometimes", Rule::in(DeliveryOptionEnum::deliveryOptions())],
             "delivery_cost" => ['sometimes', 'nullable', 'numeric', "min:0"],
             "is_open" => ['sometimes', 'bool'],
+            "max_daily_order" => ['sometimes', 'nullable', 'numeric', "min:0"],
+            "share_percent" => ['sometimes', 'nullable', 'numeric', "min:0"],
         ];
     }
 

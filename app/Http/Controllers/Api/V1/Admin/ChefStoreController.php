@@ -64,6 +64,8 @@ class ChefStoreController extends Controller
                 delivery_cost: $request->has('delivery_cost') ? $request->delivery_cost : DoNotChange::value(),
                 is_open: $request->has('is_open') ? $request->is_open : DoNotChange::value(),
                 status: $request->has('status') ? ChefStoreStatusEnum::getEnum($request->status) : DoNotChange::value(),
+                share_percent: $request->has('share_percent') ? $request->share_percent :  DoNotChange::value(),
+                max_daily_order: $request->has('max_daily_order') ? $request->max_daily_order : DoNotChange::value(),
             )
         );
         return new  ChefStoreResource($chefStore);

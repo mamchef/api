@@ -78,6 +78,7 @@ class StoreOrderRequest extends BaseFormRequest
             $this->validateFoodAvailability($validator);
             $this->validateOperatingHours($validator);
             $this->validateDeliveryMethod($validator);
+            $this->validateMaxDailyOrder($validator);
             $this->validateOptionConsistency($validator);
             $this->validateRequiredOptions($validator);
             $this->validateOptionQuantityLimits($validator);
@@ -253,6 +254,27 @@ class StoreOrderRequest extends BaseFormRequest
                     );
                 }
             }
+        }
+    }
+
+    protected function validateMaxDailyOrder($validator)
+    {
+        $chefStore = ChefStore::find($this->input('chef_store_id'));
+        if (!$chefStore || !$chefStore->max_daily_order) {
+            return;
+        }
+
+        // Count today's orders with statuses included for limited
+        $todayOrderCount = Order::where('chef_store_id', $chefStore->id)
+            ->whereIn('status', OrderStatusEnum::includeForLimited())
+            ->whereDate('created_at', now()->toDateString())
+            ->count();
+
+        if ($todayOrderCount >= $chefStore->max_daily_order) {
+            $validator->errors()->add(
+                'chef_store_id',
+                "This kitchen has reached its maximum daily order limit ({$chefStore->max_daily_order} orders). Please try again tomorrow."
+            );
         }
     }
 

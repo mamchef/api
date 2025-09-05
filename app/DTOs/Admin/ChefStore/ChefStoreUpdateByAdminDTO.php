@@ -31,6 +31,8 @@ readonly class ChefStoreUpdateByAdminDTO extends BaseDTO
         public float|DoNotChange $delivery_cost = new DoNotChange(),
         public bool|DoNotChange $is_open = new DoNotChange(),
         public ChefStoreStatusEnum|DoNotChange $status = new DoNotChange(),
+        public float|DoNotChange $share_percent = new DoNotChange(),
+        public int|DoNotChange $max_daily_order = new DoNotChange(),
     ) {
     }
 
