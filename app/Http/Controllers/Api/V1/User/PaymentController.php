@@ -78,7 +78,7 @@ class PaymentController extends Controller
         }
 
 
-        return view('success', compact('order', 'sessionId', 'paymentIntent'));
+        return view('success', compact('order', 'sessionId', 'paymentIntent','lang'));
     }
 
 

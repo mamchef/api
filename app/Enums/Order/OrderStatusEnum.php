@@ -69,6 +69,21 @@ enum OrderStatusEnum: string
     }
 
 
+
+    public static function includeForLimited() :array
+    {
+        return [
+            self::PENDING_PAYMENT,
+            self::PAYMENT_PROCESSING,
+            self::PENDING,
+            self::ACCEPTED,
+            self::DELIVERY_CHANGE_REQUESTED,
+            self::READY_FOR_PICKUP,
+            self::READY_FOR_DELIVERY,
+            self::COMPLETED,
+        ];
+    }
+
     public static function activeStatuses(): array
     {
         return [

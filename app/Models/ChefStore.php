@@ -37,6 +37,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Carbon $deleted_at
  * @property DeliveryOptionEnum $delivery_method
  * @property float $delivery_cost
+ * @property float $share_percent
+ * @property int $max_daily_order
  *
  *
  * Relations:

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Payment Failed - Mamchef</title>
+    <title>{{ $lang === 'lt' ? 'Mokėjimas nepavyko - Mamchef' : 'Payment Failed - Mamchef' }}</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -132,19 +132,23 @@
                 </div>
 
                 <!-- Error Message -->
-                <h1 class="text-2xl font-bold text-forest-900 mb-3">Payment Failed</h1>
-                <p class="text-forest-600 mb-2">We couldn't process your payment</p>
+                <h1 class="text-2xl font-bold text-forest-900 mb-3">
+                    {{ $lang === 'lt' ? 'Mokėjimas nepavyko' : 'Payment Failed' }}
+                </h1>
+                <p class="text-forest-600 mb-2">
+                    {{ $lang === 'lt' ? 'Negalėjome apdoroti jūsų mokėjimo' : 'We couldn\'t process your payment' }}
+                </p>
                 
                 <!-- Error Details -->
                 <div class="bg-rust-50 border border-rust-200 rounded-lg p-4 mb-6">
                     <div class="text-sm text-forest-700">
-                        <p class="mb-2"><span class="font-semibold">Reason:</span> <span id="error-reason">{{ $error_message ?? 'Payment declined by bank' }}</span></p>
-                        <p><span class="font-semibold">Reference:</span> <span id="error-reference">{{ strtoupper(substr($session_id ?? 'unknown', -8)) }}</span></p>
+                        <p class="mb-2"><span class="font-semibold">{{ $lang === 'lt' ? 'Priežastis:' : 'Reason:' }}</span> <span id="error-reason">{{ $error_message ?? ($lang === 'lt' ? 'Mokėjimas atmestas banko' : 'Payment declined by bank') }}</span></p>
+                        <p><span class="font-semibold">{{ $lang === 'lt' ? 'Nuoroda:' : 'Reference:' }}</span> <span id="error-reference">{{ strtoupper(substr($session_id ?? 'unknown', -8)) }}</span></p>
                     </div>
                 </div>
 
                 <!-- Common Solutions -->
-                <div class="text-left mb-6 bg-sage-50 rounded-lg p-4">
+               {{-- <div class="text-left mb-6 bg-sage-50 rounded-lg p-4">
                     <h3 class="font-semibold text-forest-800 mb-3">💡 What you can try:</h3>
                     <ul class="text-sm text-forest-700 space-y-2">
                         <li>• Check your card details and try again</li>
@@ -152,7 +156,7 @@
                         <li>• Try a different payment method</li>
                         <li>• Contact your bank if the issue persists</li>
                     </ul>
-                </div>
+                </div>--}}
 
                 <!-- Action Buttons -->
                 <div class="space-y-3">
@@ -161,11 +165,11 @@
                         onclick="retryPayment()"
                         class="btn btn-primary w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white py-4 px-6 rounded-xl font-bold text-lg hover:from-primary-700 hover:to-primary-800 shadow-lg"
                     >
-                        <span id="retry-button-text">🔄 Try Again</span>
+                        <span id="retry-button-text">{{ $lang === 'lt' ? '🔄 Bandyti dar kartą' : '🔄 Try Again' }}</span>
                     </button>
 
                     <!-- Secondary Actions -->
-                    <div class="grid grid-cols-2 gap-3">
+                   {{-- <div class="grid grid-cols-2 gap-3">
                         <button
                             onclick="goToCart()"
                             class="btn bg-white/80 hover:bg-white text-forest-700 hover:text-forest-900 py-3 px-4 rounded-xl font-semibold border border-forest-200 hover:border-forest-300"
@@ -180,29 +184,29 @@
                             Get Help
                         </button>
                     </div>
-
+--}}
                     <!-- Alternative: Continue without Payment -->
-                    <button
+           {{--         <button
                         onclick="continueWithoutPayment()"
                         class="btn w-full bg-amber-50 hover:bg-amber-100 text-amber-800 py-3 px-4 rounded-xl font-semibold border border-amber-200 hover:border-amber-300"
                     >
                         💰 Pay Later / Cash on Delivery
-                    </button>
+                    </button>--}}
                 </div>
 
                 <!-- Help Text -->
-                <div class="mt-6 pt-6 border-t border-sage-200">
+               {{-- <div class="mt-6 pt-6 border-t border-sage-200">
                     <p class="text-xs text-sage-600 leading-relaxed">
                         Having trouble? Our support team is here to help. 
                         <button onclick="contactSupport()" class="text-accent-dark hover:text-accent underline font-medium">Contact us</button>
                         and we'll resolve this quickly.
                     </p>
-                </div>
+                </div>--}}
             </div>
 
             <!-- App Detection Status -->
             <div class="mt-4 text-center">
-                <p class="text-xs text-sage-500" id="debug-info">Detecting device...</p>
+                <p class="text-xs text-sage-500" id="debug-info">{{ $lang === 'lt' ? 'Aptinkamas įrenginys...' : 'Detecting device...' }}</p>
             </div>
         </div>
     </div>
@@ -219,16 +223,19 @@
             const isAndroid = /Android/i.test(userAgent);
             const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
             const isMobile = isAndroid || isIOS;
+            const lang = '{{ $lang }}';
             
             const debugInfo = document.getElementById('debug-info');
             const retryButton = document.getElementById('retry-button-text');
             
             if (isMobile) {
-                retryButton.textContent = '📱 Retry in App';
-                debugInfo.textContent = `${isAndroid ? 'Android' : 'iOS'} device detected`;
+                retryButton.textContent = lang === 'lt' ? '📱 Bandyti programėlėje' : '📱 Retry in App';
+                debugInfo.textContent = lang === 'lt' ? 
+                    `${isAndroid ? 'Android' : 'iOS'} įrenginys aptiktas` : 
+                    `${isAndroid ? 'Android' : 'iOS'} device detected`;
             } else {
-                retryButton.textContent = '🔄 Try Again';
-                debugInfo.textContent = 'Desktop browser detected';
+                retryButton.textContent = lang === 'lt' ? '🔄 Bandyti dar kartą' : '🔄 Try Again';
+                debugInfo.textContent = lang === 'lt' ? 'Stalinio kompiuterio naršyklė aptikta' : 'Desktop browser detected';
             }
         }
 
