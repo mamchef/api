@@ -40,6 +40,7 @@ use App\Notifications\Order\User\DeliveryChangeRequestNotification;
 use App\Notifications\Order\User\OrderReadyNotification;
 use App\Notifications\Order\User\PaymentCompletedNotification;
 use App\Notifications\Order\User\UserOrderCompletedNotification;
+use App\Services\FirstOrderDiscountService;
 use App\Services\Interfaces\OrderServiceInterface;
 use App\Services\Payment\PaymentService;
 use Exception;
@@ -136,7 +137,10 @@ class OrderService implements OrderServiceInterface
 
             // Calculate subtotal from items
             $subtotal = $this->calculateSubtotal($request->items);
-            $totalAmount = $subtotal + $deliveryCost;
+            
+            // Apply first order discount (temporary feature)
+            $discountData = FirstOrderDiscountService::applyDiscountToOrder($subtotal, $deliveryCost, $user);
+            $totalAmount = $discountData['total_amount'];
 
             // Get address snapshot if delivery
             $addressSnapshot = null;
@@ -157,6 +161,9 @@ class OrderService implements OrderServiceInterface
                 'original_delivery_type' => $request->delivery_type,
                 'delivery_cost' => $deliveryCost,
                 'subtotal' => $subtotal,
+                'discount_amount' => $discountData['discount_amount'],
+                'discount_percentage' => $discountData['discount_percentage'],
+                'first_order_discount_applied' => $discountData['discount_applied'],
                 'total_amount' => $totalAmount,
                 'user_notes' => $request->user_notes,
                 'delivery_address_snapshot' => $addressSnapshot,

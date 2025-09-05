@@ -1,0 +1,115 @@
+<?php
+
+namespace App\Services;
+
+use App\Enums\Order\OrderStatusEnum;
+use App\Models\Order;
+use App\Models\User;
+use Illuminate\Support\Facades\Config;
+
+/**
+ * First Order Discount Service
+ * 
+ * This service is temporary and will be removed in the future (6 months after stable launch).
+ * It will be replaced with a promo code system.
+ * 
+ * @deprecated This service is temporary and will be removed when promo code system is implemented
+ */
+class FirstOrderDiscountService
+{
+    /**
+     * Check if first order discount is enabled
+     */
+    public static function isEnabled(): bool
+    {
+        return (bool) config('app.first_order_discount_enabled', false);
+    }
+
+    /**
+     * Get the discount percentage
+     */
+    public static function getDiscountPercentage(): int
+    {
+        return (int) config('app.first_order_discount_percentage', 20);
+    }
+
+    /**
+     * Check if user is eligible for first order discount
+     */
+    public static function isUserEligible(User $user): bool
+    {
+        if (!self::isEnabled()) {
+            return false;
+        }
+
+        // Check if user has any previous orders with orderedBefore statuses
+        $hasOrderBefore = Order::where('user_id', $user->id)
+            ->whereIn('status', OrderStatusEnum::orderedBefore())
+            ->exists();
+
+        return !$hasOrderBefore;
+    }
+
+    /**
+     * Calculate discount amount for an order
+     * 
+     * @param float $subtotal Order subtotal (excluding delivery fee)
+     * @param float $deliveryFee Delivery fee (not discounted)
+     * @param User $user User placing the order
+     * @return array ['discount_amount' => float, 'discount_percentage' => int, 'applied' => bool]
+     */
+    public static function calculateDiscount(float $subtotal, float $deliveryFee, User $user): array
+    {
+        if (!self::isUserEligible($user)) {
+            return [
+                'discount_amount' => 0.0,
+                'discount_percentage' => 0,
+                'applied' => false,
+                'reason' => self::isEnabled() ? 'User has previous orders' : 'Feature disabled'
+            ];
+        }
+
+        $discountPercentage = self::getDiscountPercentage();
+        $discountAmount = ($subtotal * $discountPercentage) / 100;
+
+        return [
+            'discount_amount' => round($discountAmount, 2),
+            'discount_percentage' => $discountPercentage,
+            'applied' => true,
+            'reason' => 'First order discount applied'
+        ];
+    }
+
+    /**
+     * Get discount information for display purposes
+     */
+    public static function getDiscountInfo(User $user): array
+    {
+        return [
+            'is_enabled' => self::isEnabled(),
+            'is_eligible' => self::isUserEligible($user),
+            'discount_percentage' => self::getDiscountPercentage(),
+            'description' => self::isEnabled() ? "Get {self::getDiscountPercentage()}% off your first order!" : null
+        ];
+    }
+
+    /**
+     * Apply discount to order total
+     */
+    public static function applyDiscountToOrder(float $subtotal, float $deliveryFee, User $user): array
+    {
+        $discountData = self::calculateDiscount($subtotal, $deliveryFee, $user);
+        
+        $finalTotal = $subtotal + $deliveryFee - $discountData['discount_amount'];
+
+        return [
+            'subtotal' => $subtotal,
+            'delivery_fee' => $deliveryFee,
+            'discount_amount' => $discountData['discount_amount'],
+            'discount_percentage' => $discountData['discount_percentage'],
+            'discount_applied' => $discountData['applied'],
+            'total_amount' => round($finalTotal, 2),
+            'discount_reason' => $discountData['reason']
+        ];
+    }
+}

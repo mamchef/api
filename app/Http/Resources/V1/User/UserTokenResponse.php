@@ -3,6 +3,7 @@
 namespace App\Http\Resources\V1\User;
 
 use App\Models\User;
+use App\Services\FirstOrderDiscountService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -32,6 +33,7 @@ class UserTokenResponse extends JsonResource
             'result' => [
                 "token" => $this->token,
                 "user" => (new UserProfileResource($user))->prePareData($request),
+                "first_order_discount" => FirstOrderDiscountService::getDiscountInfo($user),
             ]
         ];
     }

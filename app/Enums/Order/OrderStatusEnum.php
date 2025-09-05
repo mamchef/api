@@ -113,4 +113,19 @@ enum OrderStatusEnum: string
             self::REFUSED_BY_CHEF,
         ];
     }
+
+
+    public static function orderedBefore():array
+    {
+        return [
+            self::PENDING_PAYMENT,
+            self::PAYMENT_PROCESSING,
+            self::PENDING,
+            self::ACCEPTED,
+            self::DELIVERY_CHANGE_REQUESTED,
+            self::READY_FOR_PICKUP,
+            self::READY_FOR_DELIVERY,
+            self::COMPLETED,
+        ];
+    }
 }

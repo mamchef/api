@@ -29,6 +29,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property DeliveryTypeEnum $original_delivery_type
  * @property float $delivery_cost
  * @property float $subtotal
+ * @property float $discount_amount
+ * @property int $discount_percentage
+ * @property bool $first_order_discount_applied
  * @property float $total_amount
  * @property Carbon $estimated_ready_time
  * @property string $chef_notes

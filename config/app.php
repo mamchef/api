@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | First Order Discount Settings (Temporary Feature)
+    |--------------------------------------------------------------------------
+    |
+    | These settings control the temporary first order discount feature.
+    | This feature will be removed in 6 months and replaced with promo codes.
+    |
+    */
+    
+    'first_order_discount_enabled' => env('FIRST_ORDER_DISCOUNT_ENABLED', false),
+    'first_order_discount_percentage' => env('FIRST_ORDER_DISCOUNT_PERCENTAGE', 20),
+
 ];
