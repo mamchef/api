@@ -48,7 +48,7 @@ class UpdateChefStoreByChefRequest extends BaseFormRequest
                     }
                 },
             ],
-            "zip" => [
+/*            "zip" => [
                 "required",
                 "string",
                 function ($attribute, $value, $fail) {
@@ -56,7 +56,7 @@ class UpdateChefStoreByChefRequest extends BaseFormRequest
                         $fail('Please enter a valid Lithuanian postal code (LT-XXXXX).');
                     }
                 },
-            ],
+            ],*/
             "profile_image" => ["sometimes", "nullable", "file", "mimes:png,jpg,jpeg", "max:2048"],
 
 

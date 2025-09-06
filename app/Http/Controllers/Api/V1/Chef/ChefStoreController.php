@@ -49,7 +49,7 @@ class ChefStoreController extends Controller
                 lat: $request->has('lat') ? $request->lat: DoNotChange::value(),
                 lng: $request->has('lng') ? $request->lng: DoNotChange::value(),
                 phone: $request->has('phone') ? $request->phone : DoNotChange::value(),
-                zip: $request->has('zip') ? $request->zip : DoNotChange::value(),
+                zip: /*$request->has('zip') ? $request->zip :*/ DoNotChange::value(),
                 profile_image: $request->has('profile_image') ? $request->profile_image : DoNotChange::value(),
                 start_daily_time: $request->has('start_daily_time') ? $request->start_daily_time : DoNotChange::value(),
                 end_daily_time: $request->has("end_daily_time") ? $request->end_daily_time : DoNotChange::value(),

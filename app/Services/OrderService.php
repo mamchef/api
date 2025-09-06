@@ -146,7 +146,7 @@ class OrderService implements OrderServiceInterface
             $addressSnapshot = null;
             if ($request->delivery_type === 'delivery' && $request->user_address) {
                 $addressSnapshot = [
-                    'address' => $request->user_address,
+                    'address' => $request->user_address .' '. $request->user_address_details,
                 ];
             }
 
