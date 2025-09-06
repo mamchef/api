@@ -135,5 +135,10 @@ return [
     
     'first_order_discount_enabled' => env('FIRST_ORDER_DISCOUNT_ENABLED', false),
     'first_order_discount_percentage' => env('FIRST_ORDER_DISCOUNT_PERCENTAGE', 20),
+    
+    // Discount deduction strategy
+    'discount_deduction_strategy' => env('DISCOUNT_DEDUCTION_STRATEGY', 'app_fee_first'),
+    'discount_app_fee_percentage' => env('DISCOUNT_APP_FEE_PERCENTAGE', 100),
+    'discount_chef_percentage' => env('DISCOUNT_CHEF_PERCENTAGE', 0),
 
 ];

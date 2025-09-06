@@ -24,9 +24,9 @@ class PaymentService
         };
     }
 
-    public function createPaymentIntent(float $amount, array $metadata = []): array
+    public function createPaymentIntent(float $amount, array $metadata = [], array $connectData = []): array
     {
-        return $this->gateway->createPaymentIntent($amount, 'eur', $metadata);
+        return $this->gateway->createPaymentIntent($amount, 'eur', $metadata, $connectData);
     }
 
     public function confirmPayment(string $paymentIntentId): array

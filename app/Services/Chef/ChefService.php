@@ -4,7 +4,9 @@ namespace App\Services\Chef;
 
 use App\DTOs\Admin\Chef\ChefPrivateDocumentViewDTO;
 use App\DTOs\Admin\Chef\ChefUpdateByAdminDTO;
+use App\Enums\Chef\ChefStatusEnum;
 use App\Models\Chef;
+use App\Services\ChefStripeOnboardingService;
 use App\Services\Interfaces\Chef\ChefServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -65,11 +67,47 @@ class ChefService implements ChefServiceInterface
             $data['password'] = Chef::generatePassword($data['password']);
         }
 
+        // Check if chef is being approved and handle Stripe account creation
+        $wasApproved = false;
+        if (isset($data['status']) && $data['status'] == ChefStatusEnum::Approved && $chef->status != ChefStatusEnum::Approved) {
+            $wasApproved = true;
+        }
+
         $chef->update($data);
+
+        // Create Stripe account and send onboarding email when chef is approved
+        if ($wasApproved) {
+            $this->handleChefApproval($chef);
+        }
 
         return $chef->fresh();
     }
 
+    /**
+     * Handle chef approval process - create Stripe account and send onboarding email
+     */
+    private function handleChefApproval(Chef $chef): void
+    {
+        try {
+            $stripeService = new ChefStripeOnboardingService();
+            
+            // Get language from request or default to 'en'
+            $lang = request()->get('lang') ?? 'en';
+            
+            // Create Stripe account and send onboarding email
+            $result = $stripeService->completeOnboarding($chef, $lang);
+            
+            if ($result['success']) {
+                \Log::info("Stripe onboarding initiated for chef {$chef->id}: {$result['message']}");
+            } else {
+                \Log::error("Failed to initiate Stripe onboarding for chef {$chef->id}: {$result['error']}");
+            }
+            
+        } catch (\Exception $e) {
+            // Log error but don't fail the chef approval
+            \Log::error("Error during chef Stripe onboarding for chef {$chef->id}: " . $e->getMessage());
+        }
+    }
 
     private function uploadPrivateDoc(UploadedFile $file, string $path, string $name): false|string
     {

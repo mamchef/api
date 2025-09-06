@@ -19,11 +19,13 @@ class StripePaymentGateway implements PaymentGatewayInterface
         $this->stripe = new StripeClient(config('services.stripe.secret'));
     }
 
-    public function createPaymentIntent(float $amount, string $currency = 'eur', array $metadata = []): array
+    public function createPaymentIntent(float $amount, string $currency = 'eur', array $metadata = [], array $connectData = []): array
     {
         try {
             $lang = request()->header('Language') ?? 'en';
-            $session = $this->stripe->checkout->sessions->create([
+            
+            // Base session data
+            $sessionData = [
                 'payment_method_types' => ['card'],
                 'line_items' => [
                     [
@@ -41,7 +43,26 @@ class StripePaymentGateway implements PaymentGatewayInterface
                 'success_url' => config('services.stripe.success_url') . '?order_id=' . $metadata['order_id'] . '&language=' . $lang,
                 'cancel_url' => config('services.stripe.fail_url') . '?order_id=' . $metadata['order_id'] . '&language=' . $lang,
                 'metadata' => $metadata,
-            ]);
+            ];
+
+            // Add Stripe Connect data if chef account provided
+            if (!empty($connectData['chef_stripe_account_id']) && !empty($connectData['stripe_application_fee']) && $connectData['stripe_application_fee'] > 0) {
+                $sessionData['payment_intent_data'] = [
+                    'application_fee_amount' => $connectData['stripe_application_fee'], // Already in cents
+                    'transfer_data' => [
+                        'destination' => $connectData['chef_stripe_account_id'],
+                        'amount' => $connectData['stripe_transfer_amount'], // Already in cents
+                    ],
+                    'metadata' => array_merge($metadata, [
+                        'chef_store_id' => $connectData['chef_store_id'],
+                        'app_fee' => $connectData['app_fee'],
+                        'chef_amount' => $connectData['chef_amount'],
+                        'discount_strategy' => $connectData['discount_strategy'] ?? 'none',
+                    ])
+                ];
+            }
+
+            $session = $this->stripe->checkout->sessions->create($sessionData);
 
             return [
                 'success' => true,

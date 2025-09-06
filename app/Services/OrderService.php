@@ -43,6 +43,7 @@ use App\Notifications\Order\User\UserOrderCompletedNotification;
 use App\Services\FirstOrderDiscountService;
 use App\Services\Interfaces\OrderServiceInterface;
 use App\Services\Payment\PaymentService;
+use App\Services\PaymentCalculationService;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -139,8 +140,17 @@ class OrderService implements OrderServiceInterface
             $subtotal = $this->calculateSubtotal($request->items);
             
             // Apply first order discount (temporary feature)
-            $discountData = FirstOrderDiscountService::applyDiscountToOrder($subtotal, $deliveryCost, $user);
-            $totalAmount = $discountData['total_amount'];
+            $discountData = FirstOrderDiscountService::applyDiscountToOrder($subtotal, $deliveryCost, $user, $request);
+            
+            // Calculate payment splits with chef-specific commission and discount strategy
+            $paymentSplit = PaymentCalculationService::calculatePaymentSplit(
+                $subtotal, 
+                $deliveryCost, 
+                $discountData['discount_amount'], 
+                $chefStore
+            );
+            
+            $totalAmount = $paymentSplit['customer_total'];
 
             // Get address snapshot if delivery
             $addressSnapshot = null;
@@ -164,6 +174,9 @@ class OrderService implements OrderServiceInterface
                 'discount_amount' => $discountData['discount_amount'],
                 'discount_percentage' => $discountData['discount_percentage'],
                 'first_order_discount_applied' => $discountData['discount_applied'],
+                'platform_fee' => $paymentSplit['final_app_fee'],
+                'chef_payout_amount' => $paymentSplit['final_chef_amount'],
+                'discount_deduction_strategy' => $paymentSplit['discount_strategy'],
                 'total_amount' => $totalAmount,
                 'user_notes' => $request->user_notes,
                 'delivery_address_snapshot' => $addressSnapshot,
@@ -235,13 +248,28 @@ class OrderService implements OrderServiceInterface
                 } else {
                     $paymentService = new PaymentService($paymentMethod);
 
-                    $metadata = [
-                        'order_id' => $order->uuid,
+                    // Create enhanced metadata with payment split info
+                    $metadata = PaymentCalculationService::createPaymentMetadata([
+                        'order_uuid' => $order->uuid,
+                        'order_number' => $order->order_number,
                         'user_id' => $order->user_id,
-                        'chef_store_id' => $order->chef_store_id,
-                    ];
+                    ], $paymentSplit);
 
-                    $paymentResult = $paymentService->createPaymentIntent($totalAmount, $metadata);
+                    // Prepare Stripe Connect data if chef has account
+                    $connectData = [];
+                    if ($chefStore->chef && $chefStore->chef->stripe_account_id) {
+                        $connectData = [
+                            'chef_stripe_account_id' => $chefStore->chef->stripe_account_id,
+                            'stripe_application_fee' => $paymentSplit['stripe_application_fee'],
+                            'stripe_transfer_amount' => $paymentSplit['stripe_transfer_amount'],
+                            'chef_store_id' => $chefStore->id,
+                            'app_fee' => $paymentSplit['final_app_fee'],
+                            'chef_amount' => $paymentSplit['final_chef_amount'],
+                            'discount_strategy' => $paymentSplit['discount_strategy'],
+                        ];
+                    }
+
+                    $paymentResult = $paymentService->createPaymentIntent($totalAmount, $metadata, $connectData);
 
                     if (!$paymentResult['success']) {
                         DB::rollBack();

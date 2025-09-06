@@ -6,6 +6,7 @@ use App\DTOs\Chef\PersonalInfo\UpdateProfileByChefDTO;
 use App\Enums\Chef\ChefStatusEnum;
 use App\Jobs\SendContractJob;
 use App\Models\Chef;
+use App\Services\ChefStripeOnboardingService;
 use App\Services\DocuSignService;
 use App\Services\Interfaces\Chef\ChefProfileServiceInterface;
 use Illuminate\Http\UploadedFile;
@@ -83,18 +84,26 @@ class ChefProfileService implements ChefProfileServiceInterface
         $chef->document_2 = $document2;
 
         //UPDATE TO NEED REVIEW COX ALL DOCUMENT UPLOADED AND CONTRACT SIGNED
+        $wasApproved = false;
         if ($chef->status == ChefStatusEnum::PersonalInfoFilled) {
             $chef->status = ChefStatusEnum::DocumentUploaded;
         } elseif ($chef->status == ChefStatusEnum::ContractSigned) {
             #TODO FOR TEST
             if (env('AUTO_APPROVE')) {
                 $chef->status = ChefStatusEnum::Approved;
+                $wasApproved = true;
             } else {
                 $chef->status = ChefStatusEnum::NeedAdminApproval;
             }
         }
 
         $chef->save();
+        
+        // Handle Stripe onboarding if chef was auto-approved
+        if ($wasApproved) {
+            $this->handleChefApproval($chef);
+        }
+        
         return $chef->fresh();
     }
 
@@ -115,17 +124,50 @@ class ChefProfileService implements ChefProfileServiceInterface
         $chef->contract = $contract;
 
         //UPDATE TO NEED REVIEW COX ALL DOCUMENT UPLOADED AND CONTRACT SIGNED
+        $wasApproved = false;
         if ($chef->status == ChefStatusEnum::PersonalInfoFilled) {
             $chef->status = ChefStatusEnum::ContractSigned;
         } elseif ($chef->status == ChefStatusEnum::DocumentUploaded) {
             #TODO FOR TEST
             if (env('AUTO_APPROVE')) {
                 $chef->status = ChefStatusEnum::Approved;
+                $wasApproved = true;
             } else {
                 $chef->status = ChefStatusEnum::NeedAdminApproval;
             }
         }
 
         $chef->save();
+        
+        // Handle Stripe onboarding if chef was auto-approved
+        if ($wasApproved) {
+            $this->handleChefApproval($chef);
+        }
+    }
+    
+    /**
+     * Handle chef approval process - create Stripe account and send onboarding email
+     */
+    private function handleChefApproval(Chef $chef): void
+    {
+        try {
+            $stripeService = new ChefStripeOnboardingService();
+            
+            // Get language from request or default to 'en'
+            $lang = request()->get('lang') ?? 'en';
+            
+            // Create Stripe account and send onboarding email
+            $result = $stripeService->completeOnboarding($chef, $lang);
+            
+            if ($result['success']) {
+                \Log::info("Stripe onboarding initiated for chef {$chef->id}: {$result['message']}");
+            } else {
+                \Log::error("Failed to initiate Stripe onboarding for chef {$chef->id}: {$result['error']}");
+            }
+            
+        } catch (\Exception $e) {
+            // Log error but don't fail the chef approval
+            \Log::error("Error during chef Stripe onboarding for chef {$chef->id}: " . $e->getMessage());
+        }
     }
 }

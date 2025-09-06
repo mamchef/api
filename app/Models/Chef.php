@@ -27,6 +27,14 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $last_name
  * @property string $email
  * @property Carbon $email_verified_at
+ * @property string $stripe_account_id
+ * @property string $stripe_account_status
+ * @property bool $stripe_details_submitted
+ * @property bool $stripe_payouts_enabled
+ * @property bool $stripe_charges_enabled
+ * @property Carbon $stripe_onboarded_at
+ * @property string $country_code
+ * @property string $business_name
  * @property RegisterSourceEnum $register_source
  * @property string $password
  * @property string $phone
@@ -123,6 +131,53 @@ class Chef extends Authenticatable
     public function receivesBroadcastNotificationsOn(): string
     {
         return 'chef-' . $this->id;
+    }
+
+    /**
+     * Check if chef has a Stripe account
+     */
+    public function hasStripeAccount(): bool
+    {
+        return !empty($this->stripe_account_id);
+    }
+
+    /**
+     * Check if chef's Stripe account is fully onboarded
+     */
+    public function isStripeOnboarded(): bool
+    {
+        return $this->hasStripeAccount() && 
+               $this->stripe_details_submitted && 
+               $this->stripe_payouts_enabled && 
+               $this->stripe_charges_enabled;
+    }
+
+    /**
+     * Check if chef can receive payments via Stripe
+     */
+    public function canReceivePayments(): bool
+    {
+        return $this->isStripeOnboarded();
+    }
+
+    /**
+     * Get chef's Stripe onboarding status as string
+     */
+    public function getStripeOnboardingStatus(): string
+    {
+        if (!$this->hasStripeAccount()) {
+            return 'not_started';
+        }
+        
+        if (!$this->stripe_details_submitted) {
+            return 'pending_verification';
+        }
+        
+        if ($this->isStripeOnboarded()) {
+            return 'completed';
+        }
+        
+        return 'incomplete';
     }
 
     // ================= Relations ==================== //
