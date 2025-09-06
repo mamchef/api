@@ -12,6 +12,17 @@ use Illuminate\Support\Facades\Route;
 Route::get('/payment/success',[PaymentController::class,'success'])->name('payment.success');
 Route::get('/payment/cancel',[PaymentController::class,'failed'])->name('payment.failed');
 
+// Stripe Connect routes for chefs
+Route::get('/chef/stripe/refresh', function (Request $request) {
+    $lang = $request->get('lang') ?? 'en';
+    return view('chef.stripe-refresh', compact('lang'));
+})->name('chef.stripe.refresh');
+
+Route::get('/chef/stripe/return', function (Request $request) {
+    $lang = $request->get('lang') ?? 'en';
+    return view('chef.stripe-return', compact('lang'));
+})->name('chef.stripe.return');
+
 Route::get('/reverb-test', function () {
     return view('reverb-test');
 });

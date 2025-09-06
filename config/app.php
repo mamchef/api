@@ -141,4 +141,5 @@ return [
     'discount_app_fee_percentage' => env('DISCOUNT_APP_FEE_PERCENTAGE', 100),
     'discount_chef_percentage' => env('DISCOUNT_CHEF_PERCENTAGE', 0),
 
+    'frontend_url' => 'https://chef.mamchef.com/'
 ];

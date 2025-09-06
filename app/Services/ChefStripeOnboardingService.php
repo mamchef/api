@@ -68,7 +68,7 @@ class ChefStripeOnboardingService
     /**
      * Generate onboarding link for chef
      */
-    public function generateOnboardingLink(Chef $chef): string
+    public function generateOnboardingLink(Chef $chef, string $lang = 'en'): string
     {
         if (!$chef->stripe_account_id) {
             throw new \Exception('Chef does not have a Stripe account ID');
@@ -77,8 +77,8 @@ class ChefStripeOnboardingService
         try {
             $accountLink = $this->stripe->accountLinks->create([
                 'account' => $chef->stripe_account_id,
-                'refresh_url' => route('chef.stripe.refresh'),
-                'return_url' => route('chef.dashboard'),
+                'refresh_url' => route('chef.stripe.refresh', ['lang' => $lang]),
+                'return_url' => route('chef.stripe.return', ['lang' => $lang]),
                 'type' => 'account_onboarding',
                 'collect' => 'eventually_due', // Collect all required information
             ]);
@@ -167,7 +167,7 @@ class ChefStripeOnboardingService
             }
 
             // Generate onboarding link
-            $onboardingUrl = $this->generateOnboardingLink($chef);
+            $onboardingUrl = $this->generateOnboardingLink($chef, $lang);
 
             // Send notification email
             $chef->notify(new StripeOnboardingNotification($onboardingUrl, $lang));
