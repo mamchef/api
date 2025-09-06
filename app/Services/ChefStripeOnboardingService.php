@@ -29,7 +29,7 @@ class ChefStripeOnboardingService
     {
         try {
             $account = $this->stripe->accounts->create([
-                'type' => 'express',
+                'type' => 'standard', // Temporary for testing - change back to 'express' when Connect is enabled
                 'country' => 'LT', // Lithuania - all chefs are placed in Lithuania
                 'email' => $chef->email,
                 'business_profile' => [
