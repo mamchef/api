@@ -30,7 +30,7 @@ class ChefStripeOnboardingService
         try {
             $account = $this->stripe->accounts->create([
                 'type' => 'express',
-                'country' => $chef->country_code ?? 'LT',
+                'country' => 'LT', // Lithuania - all chefs are placed in Lithuania
                 'email' => $chef->email,
                 'business_profile' => [
                     'name' => $chef->chefStore?->name ?? $chef->first_name . ' '.$chef->last_name . "'s Kitchen",

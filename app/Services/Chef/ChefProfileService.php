@@ -148,7 +148,7 @@ class ChefProfileService implements ChefProfileServiceInterface
     /**
      * Handle chef approval process - create Stripe account and send onboarding email
      */
-    private function handleChefApproval(Chef $chef): void
+    public function handleChefApproval(Chef $chef): void
     {
         try {
             $stripeService = new ChefStripeOnboardingService();
@@ -158,7 +158,8 @@ class ChefProfileService implements ChefProfileServiceInterface
             
             // Create Stripe account and send onboarding email
             $result = $stripeService->completeOnboarding($chef, $lang);
-            
+
+            dd($result);
             if ($result['success']) {
                 \Log::info("Stripe onboarding initiated for chef {$chef->id}: {$result['message']}");
             } else {
@@ -166,6 +167,7 @@ class ChefProfileService implements ChefProfileServiceInterface
             }
             
         } catch (\Exception $e) {
+            dd($e->getMessage());
             // Log error but don't fail the chef approval
             \Log::error("Error during chef Stripe onboarding for chef {$chef->id}: " . $e->getMessage());
         }

@@ -3,6 +3,7 @@
 use App\Enums\Order\OrderStatusEnum;
 use App\Http\Controllers\Api\V1\User\PaymentController;
 use App\Http\Controllers\DocuSignController;
+use App\Models\Chef;
 use App\Models\Food;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -14,6 +15,15 @@ Route::get('/payment/cancel',[PaymentController::class,'failed'])->name('payment
 Route::get('/reverb-test', function () {
     return view('reverb-test');
 });
+
+Route::get('/test-stripe-chef', function () {
+    $chef = Chef::find(3);
+   /** @var \App\Services\Chef\ChefProfileService $service */
+    $service = resolve(\App\Services\Interfaces\Chef\ChefProfileServiceInterface::class);
+    $service->handleChefApproval($chef);
+
+});
+
 
 Route::get('/test-notification', function () {
     // Send a test notification to user ID 1
