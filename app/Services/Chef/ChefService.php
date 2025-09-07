@@ -18,9 +18,10 @@ class ChefService implements ChefServiceInterface
 
     public function all(
         ?array $filters = null,
-        array $relations = [],
-        $pagination = null
-    ): Collection|LengthAwarePaginator {
+        array  $relations = [],
+               $pagination = null
+    ): Collection|LengthAwarePaginator
+    {
         $chefs = Chef::query()->when($relations, fn($q) => $q->with($relations))
             ->when($filters, fn($q) => $q->filter($filters));
 
@@ -91,19 +92,19 @@ class ChefService implements ChefServiceInterface
         try {
             $chef = $this->show($chefId);
             $stripeService = new ChefStripeOnboardingService();
-            
+
             // Get language from request or default to 'en'
             $lang = request()->header('lang') ?? 'en';
-            
+
             // Create Stripe account and send onboarding email
             $result = $stripeService->completeOnboarding($chef, $lang);
-            
+
             if ($result['success']) {
                 \Log::info("Stripe onboarding initiated for chef {$chef->id}: {$result['message']}");
             } else {
                 \Log::error("Failed to initiate Stripe onboarding for chef {$chef->id}: {$result['error']}");
             }
-            
+
         } catch (\Exception $e) {
             // Log error but don't fail the chef approval
             \Log::error("Error during chef Stripe onboarding for chef {$chef->id}: " . $e->getMessage());
@@ -147,11 +148,12 @@ class ChefService implements ChefServiceInterface
         );
     }
 
-    public function checkStripeOnboarding(int $chefId): void
+    public function checkStripeOnboarding(int $chefId): Chef
     {
         $chef = $this->show($chefId);
-            $stripeService = new ChefStripeOnboardingService();
-            $stripeService->updateChefStripeStatus($chef);
+        $stripeService = new ChefStripeOnboardingService();
+        $stripeService->updateChefStripeStatus($chef);
+        return $chef->fresh();
 
     }
 }
