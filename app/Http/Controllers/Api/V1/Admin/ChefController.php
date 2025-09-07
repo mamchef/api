@@ -99,7 +99,7 @@ class ChefController extends Controller
     }
 
 
-    public function chefStripeOnboarding(int $chefId)
+    public function stripeOnboarding(int $chefId)
     {
 
     }

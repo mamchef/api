@@ -38,6 +38,14 @@ class ChefResource extends BaseResource
             "document_2" => $chef->document_2,
             "contract" => $chef->contract,
 
+            "stripe_account_id"=>$chef->stripe_account_id,
+            "stripe_account_status"=> $chef->stripe_account_status,
+            "stripe_details_submitted"=>(bool) $chef->stripe_details_submitted,
+            "stripe_payouts_enabled"=>(bool) $chef->stripe_payouts_enabled,
+            "stripe_charges_enabled"=> (bool) $chef->stripe_charges_enabled,
+            "stripe_onboarded_at"=> $chef->stripe_onboarded_at?->format('Y-m-d H:i:s'),
+
+
             "chef_store" => $chefStore ? $this->prepareChefStoreData($chefStore) : null,
         ];
     }

@@ -161,14 +161,11 @@ class ChefStripeOnboardingService
     {
         try {
             // Create Stripe account if doesn't exist
-            if ($chef->stripe_account_id) {
-              return [
-                  'success' => true,
-              ];
+            if (!$chef->stripe_account_id) {
+                $accountId = $this->createStripeAccount($chef);
+                $chef->update(['stripe_account_id' => $accountId]);
+                $chef = $chef->fresh();
             }
-
-            $accountId = $this->createStripeAccount($chef);
-            $chef->update(['stripe_account_id' => $accountId]);
 
             // Generate onboarding link
             $onboardingUrl = $this->generateOnboardingLink($chef, $lang);
