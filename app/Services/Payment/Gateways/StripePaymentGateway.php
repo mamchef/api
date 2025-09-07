@@ -50,6 +50,7 @@ class StripePaymentGateway implements PaymentGatewayInterface
             if (!empty($connectData['chef_stripe_account_id']) && !empty($connectData['stripe_application_fee']) && $connectData['stripe_application_fee'] > 0) {
                 $sessionData['payment_intent_data'] = [
                     'application_fee_amount' => $connectData['stripe_application_fee'], // Already in cents
+                    'on_behalf_of' => $connectData['chef_stripe_account_id'], // Settle funds in chef's country (Lithuania)
                     'transfer_data' => [
                         'destination' => $connectData['chef_stripe_account_id'],
                         // Remove 'amount' - let Stripe automatically transfer remaining amount after fee
