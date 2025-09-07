@@ -97,4 +97,10 @@ class ChefController extends Controller
             'Expires' => '0'
         ]);
     }
+
+
+    public function chefStripeOnboarding(int $chefId)
+    {
+
+    }
 }

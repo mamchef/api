@@ -35,6 +35,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Carbon $deleted_at
  * @property Carbon $updated_at
  * @property Carbon $created_at
+ * @property string $lang
  *
  *
  * Relations:

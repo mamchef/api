@@ -30,6 +30,7 @@ Route::prefix('admin')->name("admin.")->group(function () {
         );
         Route::get('{chefId}', [ChefController::class, 'show'])->name("show");
         Route::post('{chefId}', [ChefController::class, 'update'])->name("update");
+        Route::post('{chefId}/stipe-onboarding', [ChefController::class, 'destroy'])->name("destroy");
     });
 
     //Chef Store

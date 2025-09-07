@@ -26,8 +26,8 @@ class FirstOrderDiscountService
         if (!$request) {
             $request = request();
         }
-        
-        $lang = $request->get('lang') ?? 'en';
+
+        $lang = request()->header('lang') ?? 'en';
         return $lang === 'lt' ? 'lt' : 'en';
     }
 

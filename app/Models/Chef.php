@@ -33,8 +33,6 @@ use Laravel\Sanctum\HasApiTokens;
  * @property bool $stripe_payouts_enabled
  * @property bool $stripe_charges_enabled
  * @property Carbon $stripe_onboarded_at
- * @property string $country_code
- * @property string $business_name
  * @property RegisterSourceEnum $register_source
  * @property string $password
  * @property string $phone
@@ -49,6 +47,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $contract
  * @property Carbon $created_at
  * @property string $updated_at
+ * @property string $lang
  *
  *
  * Relations:

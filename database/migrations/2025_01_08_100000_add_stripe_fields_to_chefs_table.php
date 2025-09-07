@@ -20,10 +20,6 @@ return new class extends Migration
             $table->boolean('stripe_charges_enabled')->default(false)->after('stripe_payouts_enabled')->comment('Whether charges are enabled');
             $table->timestamp('stripe_onboarded_at')->nullable()->after('stripe_charges_enabled')->comment('When chef completed Stripe onboarding');
             
-            // Additional fields for better chef management
-            $table->string('country_code', 2)->default('LT')->after('stripe_onboarded_at')->comment('Chef country code for Stripe');
-            $table->string('business_name')->nullable()->after('country_code')->comment('Business name for Stripe account');
-            
             // Index for better performance
             $table->index('stripe_account_id', 'chefs_stripe_account_id_index');
             $table->index('stripe_account_status', 'chefs_stripe_status_index');
@@ -46,8 +42,6 @@ return new class extends Migration
                 'stripe_payouts_enabled', 
                 'stripe_charges_enabled',
                 'stripe_onboarded_at',
-                'country_code',
-                'business_name',
             ]);
         });
     }

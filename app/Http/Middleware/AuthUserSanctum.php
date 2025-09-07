@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\DTOs\Chef\ChefAuthDTO;
 use App\DTOs\User\UserAuthDTO;
+use App\Models\Chef;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -21,6 +23,7 @@ class AuthUserSanctum
     public function handle(Request $request, Closure $next): Response
     {
         $token = $request->bearerToken();
+        $lang = request()->header('lang') ?? 'en';
 
         if (!$token) {
             return response()->json(['message' => 'Unauthorized'], 401);
@@ -30,8 +33,7 @@ class AuthUserSanctum
         $dto = Cache::rememberForever('token:' . $token, function () use ($token) {
             try {
                 $accessToken = PersonalAccessToken::findToken($token);
-                if (!$accessToken || ($accessToken->expires_at != null && $accessToken->expires_at < now(
-                        )) || !$accessToken->tokenable instanceof User) {
+                if (!$accessToken || ($accessToken->expires_at != null && $accessToken->expires_at < now()) || !$accessToken->tokenable instanceof User) {
                     return new UserAuthDTO(
                         message: "Unauthorized",
                         status: Response::HTTP_UNAUTHORIZED,
@@ -64,13 +66,35 @@ class AuthUserSanctum
 
 
         if ($dto->getStatus() !== Response::HTTP_OK || ($accessToken?->expires_at != null and $accessToken?->expires_at < now()) || !$user instanceof User) {
-
-           return response()->json(['message' => $dto->getMessage() ?? "Unauthorized"], 401);
+            return response()->json(['message' => $dto->getMessage() ?? "Unauthorized"], 401);
         }
 
         $request->setUserResolver(function () use ($user) {
             return $user;
         });
+
+
+        //Update cached chef when user change lang
+        if ($user->lang != $lang) {
+            User::query()->where('id', $user->id)->update(['lang' => $lang]);
+            $user->lang = $lang;
+            $accessToken = $dto->getAccessToken();
+            Cache::forget('token:' . $token);
+            Cache::rememberForever('token:' . $token, function () use ($token, $user, $accessToken) {
+                try {
+                    return new UserAuthDTO(
+                        user: $user,
+                        accessToken: $accessToken,
+                        status: Response::HTTP_OK,
+                    );
+                } catch (\Throwable) {
+                    return new UserAuthDTO(
+                        message: "Unauthorized",
+                        status: Response::HTTP_INTERNAL_SERVER_ERROR,
+                    );
+                }
+            });
+        }
 
         Auth::setUser($user);
 

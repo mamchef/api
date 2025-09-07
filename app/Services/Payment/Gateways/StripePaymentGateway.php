@@ -3,6 +3,7 @@
 namespace App\Services\Payment\Gateways;
 
 use App\Enums\User\PaymentMethod;
+use App\Models\Chef;
 use App\Services\Interfaces\OrderServiceInterface;
 use App\Services\Payment\PaymentGatewayInterface;
 use Illuminate\Support\Facades\Log;
@@ -169,6 +170,14 @@ class StripePaymentGateway implements PaymentGatewayInterface
                     $this->handlePaymentIntentFailed($event->data->object);
                     break;
 
+                case 'account.updated':
+                    $this->handleChefAccountUpdated($event->data->object);
+                    break;
+                    
+                case 'account.application.deauthorized':
+                    $this->handleChefAccountDeauthorized($event->data->object);
+                    break;
+
                 default:
                     Log::info('Unhandled Stripe event type: ' . $event->type);
             }
@@ -265,5 +274,66 @@ class StripePaymentGateway implements PaymentGatewayInterface
             'google_pay' => PaymentMethod::GOOGLE_PAY->value,
             default => PaymentMethod::STRIPE->value
         };
+    }
+
+    /**
+     * Handle chef account.updated webhook - chef completed onboarding
+     */
+    private function handleChefAccountUpdated($account): void
+    {
+        $chef = Chef::where('stripe_account_id', $account->id)->first();
+        
+        if (!$chef) {
+            Log::warning("Received webhook for unknown Stripe account: {$account->id}");
+            return;
+        }
+
+        // Update chef's Stripe status
+        $chef->update([
+            'stripe_account_status' => $account->details_submitted ? 'active' : 'pending',
+            'stripe_details_submitted' => $account->details_submitted,
+            'stripe_payouts_enabled' => $account->payouts_enabled,
+            'stripe_charges_enabled' => $account->charges_enabled,
+            'stripe_onboarded_at' => $account->details_submitted ? now() : $chef->stripe_onboarded_at,
+        ]);
+
+        if ($account->details_submitted && $account->payouts_enabled && $account->charges_enabled) {
+            Log::info("Chef {$chef->id} completed Stripe onboarding successfully");
+            
+            // Optional: Send success notification to chef
+            // $chef->notify(new StripeOnboardingCompletedNotification());
+            
+        } else {
+            Log::info("Chef {$chef->id} Stripe account updated but not fully onboarded yet", [
+                'details_submitted' => $account->details_submitted,
+                'payouts_enabled' => $account->payouts_enabled,
+                'charges_enabled' => $account->charges_enabled,
+            ]);
+        }
+    }
+
+    /**
+     * Handle chef account.application.deauthorized webhook - chef disconnected
+     */
+    private function handleChefAccountDeauthorized($account): void
+    {
+        $chef = Chef::where('stripe_account_id', $account->id)->first();
+        
+        if (!$chef) {
+            Log::warning("Received deauthorization webhook for unknown Stripe account: {$account->id}");
+            return;
+        }
+
+        // Reset chef's Stripe data
+        $chef->update([
+            'stripe_account_id' => null,
+            'stripe_account_status' => null,
+            'stripe_details_submitted' => false,
+            'stripe_payouts_enabled' => false,
+            'stripe_charges_enabled' => false,
+            'stripe_onboarded_at' => null,
+        ]);
+
+        Log::info("Chef {$chef->id} disconnected their Stripe account");
     }
 }

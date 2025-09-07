@@ -33,7 +33,7 @@ class ChefStripeOnboardingService
                 'country' => 'LT', // Lithuania - all chefs are placed in Lithuania
                 'email' => $chef->email,
                 'business_profile' => [
-                    'name' => $chef->chefStore?->name ?? $chef->first_name . ' '.$chef->last_name . "'s Kitchen",
+                    'name' => $chef->first_name . ' '.$chef->last_name . "'s Kitchen",
                     'product_description' => 'Restaurant and food delivery services',
                     'support_email' => $chef->email,
                     'url' => config('app.url'),
@@ -161,10 +161,14 @@ class ChefStripeOnboardingService
     {
         try {
             // Create Stripe account if doesn't exist
-            if (!$chef->stripe_account_id) {
-                $accountId = $this->createStripeAccount($chef);
-                $chef->update(['stripe_account_id' => $accountId]);
+            if ($chef->stripe_account_id) {
+              return [
+                  'success' => true,
+              ];
             }
+
+            $accountId = $this->createStripeAccount($chef);
+            $chef->update(['stripe_account_id' => $accountId]);
 
             // Generate onboarding link
             $onboardingUrl = $this->generateOnboardingLink($chef, $lang);
