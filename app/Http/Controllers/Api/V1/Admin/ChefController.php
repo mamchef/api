@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\Chef\ChefUpdateByAdminRequest;
 use App\Http\Resources\V1\Admin\Chef\ChefResource;
 use App\Http\Resources\V1\Admin\Chef\ChefsResource;
+use App\Http\Resources\V1\SuccessResponse;
 use App\Services\Interfaces\Chef\ChefServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -99,8 +100,10 @@ class ChefController extends Controller
     }
 
 
-    public function stripeOnboarding(int $chefId)
+    public function stripeOnboarding(int $chefId): SuccessResponse
     {
+        $this->chefService->handleChefApproval($chefId);
+        return new SuccessResponse();
 
     }
 }

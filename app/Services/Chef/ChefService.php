@@ -86,9 +86,10 @@ class ChefService implements ChefServiceInterface
     /**
      * Handle chef approval process - create Stripe account and send onboarding email
      */
-    private function handleChefApproval(Chef $chef): void
+    public function handleChefApproval(int $chefId): void
     {
         try {
+            $chef = $this->show($chefId);
             $stripeService = new ChefStripeOnboardingService();
             
             // Get language from request or default to 'en'

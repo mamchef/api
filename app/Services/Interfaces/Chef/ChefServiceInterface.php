@@ -25,6 +25,7 @@ interface ChefServiceInterface
     public function getChefDocumentByFiledName(int $chefId, string $fieldName) : ChefPrivateDocumentViewDTO;
 
 
+    public function handleChefApproval(int $chefId): void;
 
 
 }
