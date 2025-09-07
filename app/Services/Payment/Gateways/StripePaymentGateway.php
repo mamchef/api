@@ -52,7 +52,7 @@ class StripePaymentGateway implements PaymentGatewayInterface
                     'application_fee_amount' => $connectData['stripe_application_fee'], // Already in cents
                     'transfer_data' => [
                         'destination' => $connectData['chef_stripe_account_id'],
-                        'amount' => $connectData['stripe_transfer_amount'], // Already in cents
+                        // Remove 'amount' - let Stripe automatically transfer remaining amount after fee
                     ],
                     'metadata' => array_merge($metadata, [
                         'chef_store_id' => $connectData['chef_store_id'],

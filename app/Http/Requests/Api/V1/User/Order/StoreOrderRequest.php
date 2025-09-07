@@ -22,7 +22,6 @@ use Illuminate\Validation\Rule;
  * @property int $chef_store_id
  * @property string $delivery_type
  * @property string $user_address
- * @property string $user_address_details
  * @property string $user_notes
  * @property string $payment_method
  * @property array $items
@@ -67,7 +66,6 @@ class StoreOrderRequest extends BaseFormRequest
 
         if ($this->delivery_type == DeliveryTypeEnum::DELIVERY->value) {
             $rules['user_address'] = ['required', 'string', 'min:10', new SafeTextRule(),];
-            $rules['user_address_details'] = ['sometimes','nullable', 'string', new SafeTextRule(),];
         }
         return $rules;
     }
