@@ -43,7 +43,7 @@ class ChefResource extends BaseResource
             "stripe_details_submitted"=>(bool) $chef->stripe_details_submitted,
             "stripe_payouts_enabled"=>(bool) $chef->stripe_payouts_enabled,
             "stripe_charges_enabled"=> (bool) $chef->stripe_charges_enabled,
-            "stripe_onboarded_at"=> $chef->stripe_onboarded_at?->format('Y-m-d H:i:s'),
+            "stripe_onboarded_at"=> $chef->stripe_onboarded_at,
 
 
             "chef_store" => $chefStore ? $this->prepareChefStoreData($chefStore) : null,
