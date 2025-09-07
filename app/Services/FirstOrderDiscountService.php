@@ -93,12 +93,11 @@ class FirstOrderDiscountService
      * Calculate discount amount for an order
      * 
      * @param float $subtotal Order subtotal (excluding delivery fee)
-     * @param float $deliveryFee Delivery fee (not discounted)
      * @param User $user User placing the order
      * @param Request|null $request Request object for language detection
      * @return array ['discount_amount' => float, 'discount_percentage' => int, 'applied' => bool]
      */
-    public static function calculateDiscount(float $subtotal, float $deliveryFee, User $user, ?Request $request = null): array
+    public static function calculateDiscount(float $subtotal,  User $user, ?Request $request = null): array
     {
         if (!self::isUserEligible($user)) {
             return [
@@ -145,7 +144,7 @@ class FirstOrderDiscountService
      */
     public static function applyDiscountToOrder(float $subtotal, float $deliveryFee, User $user, ?Request $request = null): array
     {
-        $discountData = self::calculateDiscount($subtotal, $deliveryFee, $user, $request);
+        $discountData = self::calculateDiscount($subtotal, $user, $request);
         
         $finalTotal = $subtotal + $deliveryFee - $discountData['discount_amount'];
 
