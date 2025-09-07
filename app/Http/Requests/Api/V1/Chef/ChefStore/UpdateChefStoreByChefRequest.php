@@ -23,7 +23,7 @@ use Illuminate\Validation\Rule;
  * @property string $end_daily_time
  * @property string $estimated_time
  * @property string $delivery_method
- * @property float $delivery_cost
+// * @property float $delivery_cost
  */
 class UpdateChefStoreByChefRequest extends BaseFormRequest
 {
@@ -76,7 +76,7 @@ class UpdateChefStoreByChefRequest extends BaseFormRequest
             ],
 
             "delivery_method" => ["required", Rule::in(DeliveryOptionEnum::deliveryOptions())],
-            "delivery_cost" => ['sometimes', 'nullable', 'numeric', "min:0"],
+            //"delivery_cost" => ['sometimes', 'nullable', 'numeric', "min:0"],
         ];
     }
 

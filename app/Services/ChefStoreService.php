@@ -19,7 +19,7 @@ class ChefStoreService implements ChefStoreServiceInterface
     {
         $chef = ChefStore::query()->where('chef_id', $chefID)->first();
         if ($chef == null) {
-            $chef = ChefStore::query()->create(['chef_id' => $chefID])->fresh();
+            $chef = ChefStore::query()->create(['chef_id' => $chefID, 'delivery_cost' => 3])->fresh();
         }
         return $chef;
     }
@@ -74,9 +74,10 @@ class ChefStoreService implements ChefStoreServiceInterface
 
     public function all(
         ?array $filters = null,
-        array $relations = [],
-        $pagination = null
-    ): Collection|LengthAwarePaginator {
+        array  $relations = [],
+               $pagination = null
+    ): Collection|LengthAwarePaginator
+    {
         $chefStores = ChefStore::query()->when($relations, fn($q) => $q->with($relations))
             ->when($filters, fn($q) => $q->filter($filters));
 
@@ -90,8 +91,8 @@ class ChefStoreService implements ChefStoreServiceInterface
 
     public function update(int $chefStoreId, ChefStoreUpdateByAdminDTO $DTO): ChefStore
     {
-       $chefStore = $this->show($chefStoreId);
-       $data = $DTO->toArray();
+        $chefStore = $this->show($chefStoreId);
+        $data = $DTO->toArray();
 
         if (isset($data['profile_image'])) {
             $path = Storage::disk("public")->putFileAs(

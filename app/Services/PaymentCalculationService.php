@@ -37,13 +37,13 @@ class PaymentCalculationService
         $discountSplit = self::calculateDiscountSplit($discountAmount, $originalAppFee, $sharePercentage);
         
         $finalAppFee = max(0, $originalAppFee - $discountSplit['app_fee_deduction']);
-        $finalChefFoodAmount =  $subtotal - $finalAppFee;
-        
-        // Chef gets: (food after discount deduction) + (full delivery fee)
-        $finalChefAmount = $finalChefFoodAmount + $deliveryFee;
-        
+
         $customerTotal = $subtotal + $deliveryFee - $discountAmount;
+
+        // Chef gets: (food after discount deduction) + (full delivery fee)
+        $finalChefAmount = $customerTotal - $finalAppFee;
         
+
         return [
             // Original calculations
             'subtotal' => $subtotal,

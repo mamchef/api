@@ -55,7 +55,7 @@ class ChefStoreController extends Controller
                 end_daily_time: $request->has("end_daily_time") ? $request->end_daily_time : DoNotChange::value(),
                 estimated_time: $request->has('estimated_time') ? $request->estimated_time : DoNotChange::value(),
                 delivery_method: $request->has("delivery_method") ? $request->delivery_method : DoNotChange::value(),
-                delivery_cost: $request->has("delivery_cost") ? $request->delivery_cost : DoNotChange::value(),
+                delivery_cost: DoNotChange::value(),
             )
         );
 
