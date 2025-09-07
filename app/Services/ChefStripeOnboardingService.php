@@ -33,7 +33,7 @@ class ChefStripeOnboardingService
                 'country' => 'LT', // Lithuania - all chefs are placed in Lithuania
                 'email' => $chef->email,
                 'business_profile' => [
-                    'name' => $chef->first_name . ' '.$chef->last_name . "'s Kitchen",
+                    'name' => $chef->first_name . ' '.$chef->last_name . "-" . $chef->id .'-' . "'s Kitchen",
                     'product_description' => 'Restaurant and food delivery services',
                     'support_email' => $chef->email,
                     'url' => config('app.url'),

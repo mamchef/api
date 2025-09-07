@@ -20,6 +20,18 @@ Route::get('/chef/stripe/refresh', function (Request $request) {
 
 Route::get('/chef/stripe/return', function (Request $request) {
     $lang = $request->get('lang') ?? 'en';
+    
+    // Check if account parameter is provided (Stripe includes this)
+    $accountId = $request->get('account');
+    if ($accountId) {
+        // Update chef status when they return from Stripe
+        $chef = \App\Models\Chef::where('stripe_account_id', $accountId)->first();
+        if ($chef) {
+            $stripeService = new \App\Services\ChefStripeOnboardingService();
+            $stripeService->updateChefStripeStatus($chef);
+        }
+    }
+    
     return view('chef.stripe-return', compact('lang'));
 })->name('chef.stripe.return');
 
