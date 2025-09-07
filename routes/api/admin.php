@@ -31,6 +31,7 @@ Route::prefix('admin')->name("admin.")->group(function () {
         Route::get('{chefId}', [ChefController::class, 'show'])->name("show");
         Route::post('{chefId}', [ChefController::class, 'update'])->name("update");
         Route::post('{chefId}/stripe-onboarding', [ChefController::class, 'stripeOnboarding'])->name("stripe-onboarding");
+        Route::post('{chefId}/check-stripe-onboarding', [ChefController::class, 'checkStripeOnboarding'])->name("check-stripe-onboarding");
     });
 
     //Chef Store

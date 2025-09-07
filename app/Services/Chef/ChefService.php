@@ -146,4 +146,12 @@ class ChefService implements ChefServiceInterface
             path: $filePath, name: $originalName,
         );
     }
+
+    public function checkStripeOnboarding(int $chefId): void
+    {
+        $chef = $this->show($chefId);
+            $stripeService = new ChefStripeOnboardingService();
+            $stripeService->updateChefStripeStatus($chef);
+
+    }
 }

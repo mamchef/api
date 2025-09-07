@@ -104,6 +104,10 @@ class ChefController extends Controller
     {
         $this->chefService->handleChefApproval($chefId);
         return new SuccessResponse();
-
+    }
+    public function checkStripeOnboarding(int $chefId): SuccessResponse
+    {
+        $this->chefService->checkStripeOnboarding($chefId);
+        return new SuccessResponse();
     }
 }

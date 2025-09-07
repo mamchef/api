@@ -26,6 +26,7 @@ interface ChefServiceInterface
 
 
     public function handleChefApproval(int $chefId): void;
+    public function checkStripeOnboarding(int $chefId): void;
 
 
 }
