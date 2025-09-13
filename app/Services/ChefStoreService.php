@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\Admin\Chef\ChefUpdateByAdminDTO;
 use App\DTOs\Admin\ChefStore\ChefStoreUpdateByAdminDTO;
 use App\DTOs\Chef\ChefStore\UpdateChefStoreByChefDTO;
+use App\Enums\Chef\ChefStore\ChefStoreStatusEnum;
 use App\Models\ChefStore;
 use App\Services\Interfaces\ChefStoreServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -19,7 +20,7 @@ class ChefStoreService implements ChefStoreServiceInterface
     {
         $chef = ChefStore::query()->where('chef_id', $chefID)->first();
         if ($chef == null) {
-            $chef = ChefStore::query()->create(['chef_id' => $chefID, 'delivery_cost' => 3])->fresh();
+            $chef = ChefStore::query()->create(['chef_id' => $chefID, 'delivery_cost' => 3,'status'=>ChefStoreStatusEnum::NeedCompleteData])->fresh();
         }
         return $chef;
     }
@@ -41,6 +42,9 @@ class ChefStoreService implements ChefStoreServiceInterface
         );
 
         $chefStore->profile_image = $path;
+        if (config('app.need_approve_on_chef_store_edit')) {
+            $chefStore->status = ChefStoreStatusEnum::UnderReview;
+        }
         $chefStore->save();
         return $chefStore;
     }
@@ -50,6 +54,10 @@ class ChefStoreService implements ChefStoreServiceInterface
         $chefStore = $this->myStore($chefID);
         $params = $DTO->toArray();
 
+        if($chefStore->status != ChefStoreStatusEnum::UnderReview) {
+            $params["status"] = ChefStoreStatusEnum::Approved;
+        }
+
         if (isset($params["profile_image"])) {
             $path = Storage::disk("public")->putFileAs(
                 "chef_store/$chefStore->id",
@@ -57,7 +65,11 @@ class ChefStoreService implements ChefStoreServiceInterface
                 "profile_image." . $params["profile_image"]->getClientOriginalExtension(),
             );
             $params["profile_image"] = $path;
+            if (config('app.need_approve_on_chef_store_edit')) {
+                $params["status"] = ChefStoreStatusEnum::UnderReview;
+            }
         }
+
 
         $chefStore->update($params);
 

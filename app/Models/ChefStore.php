@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $lng
  * @property string $phone
  * @property float $rating
- * @property string $status
+ * @property ChefStoreStatusEnum $status
  * @property string $estimated_time
  * @property string $start_daily_time
  * @property string $end_daily_time

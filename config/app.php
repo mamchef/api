@@ -141,5 +141,7 @@ return [
     'discount_app_fee_percentage' => env('DISCOUNT_APP_FEE_PERCENTAGE', 100),
     'discount_chef_percentage' => env('DISCOUNT_CHEF_PERCENTAGE', 0),
 
-    'frontend_url' => 'https://chef.mamchef.com/'
+    'frontend_url' => 'https://chef.mamchef.com/',
+    'need_approve_on_food_edit' => env('NEED_APPROVE_ON_FOOD_EDIT', true),
+    'need_approve_on_chef_store_edit' => env('NEED_APPROVW_ON_CHEF_STORE_EDIT', true),
 ];

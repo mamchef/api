@@ -30,7 +30,7 @@ class ChefStoreResource extends BaseResource
             "lng" => $chefStore->lng,
             "phone" => $chefStore->phone,
             "rating" => $chefStore->rating,
-            "status" => $chefStore->status,
+            "status" => $chefStore->status?->value,
             "start_daily_time" => $chefStore->start_daily_time,
             "main_street" => $chefStore->main_street,
             "end_daily_time" => $chefStore->end_daily_time,

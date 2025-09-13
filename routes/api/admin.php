@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Admin\AuthController;
 use App\Http\Controllers\Api\V1\Admin\ChefController;
 use App\Http\Controllers\Api\V1\Admin\ChefStoreController;
+use App\Http\Controllers\Api\V1\Admin\FoodController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\StatsController;
 use App\Http\Controllers\Api\V1\Admin\TagController;
@@ -126,5 +127,14 @@ Route::prefix('admin')->name("admin.")->group(function () {
     //tags
     Route::prefix("tags")->name("tags.")->middleware("admin-auth")->group(function () {
         Route::apiResource(null, TagController::class)->parameter("", "tagId");
+    });
+
+
+    //tags
+    Route::prefix("foods")->name("foods.")->middleware("admin-auth")->group(function () {
+        Route::get('chef-store-foods/{chefStoreId}', [FoodController::class, 'chefStoreFoods'])->name("chef-store-foods");
+        Route::get('{foodId}', [FoodController::class,'show'])->name("show");
+        Route::post('{foodId}',[FoodController::class, 'update'])->name("update");
+        Route::delete('{foodId}',[FoodController::class, 'destroy'])->name("destroy");
     });
 });

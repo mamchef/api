@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\Chef\Food\StoreFoodDTO;
 use App\DTOs\Chef\Food\UpdateFoodDTO;
 use App\DTOs\DoNotChange;
+use App\Enums\Chef\ChefStore\ChefStoreStatusEnum;
 use App\Models\Bookmark;
 use App\Models\Food;
 use App\Services\Interfaces\FoodOptionGroupServiceInterface;
@@ -80,6 +81,7 @@ class FoodService implements FoodServiceInterface
                 ]);
             }
 
+
             $food = Food::query()->create($DTO->toArray());
             $logoPath = Storage::disk("public")->putFileAs(
                 "chef_store/{$DTO->getChefStoreID()}/foods",
@@ -88,6 +90,7 @@ class FoodService implements FoodServiceInterface
             );
 
             $food->image = $logoPath;
+            $food->status = false;
             $food->save();
 
             $food->tags()->attach($DTO->getTags());
@@ -120,6 +123,46 @@ class FoodService implements FoodServiceInterface
                 ]);
             }
 
+
+            if (!$DTO->getImage() instanceof DoNotChange) {
+                $logoPath = Storage::disk("public")->putFileAs(
+                    "chef_store/{$food->chef_store_id}/foods",
+                    $DTO->getImage(),
+                    $food->slug . "." . $DTO->getImage()->getClientOriginalExtension(),
+                );
+                $params['image'] = $logoPath;
+                $params['status'] = false;
+            }
+            $food->update(Arr::except($params, ['tags']));
+
+            if (!$DTO->getTags() instanceof DoNotChange) {
+                $food->tags()->sync($DTO->getTags());
+            }
+
+            DB::commit();
+        } catch (Exception $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
+        return $food->fresh()->load(['optionGroups.options', 'tags']);
+    }
+
+    /** @inheritDoc */
+    public function updateFoodByAdmin(int $foodId, \App\DTOs\Admin\Food\UpdateFoodDTO $DTO): Food
+    {
+        DB::beginTransaction();
+        try {
+            $food = $this->getById(
+              foodId: $foodId,
+            );
+
+            $params = $DTO->toArray();
+
+            if (is_array($DTO->getTags()) and count($DTO->getTags()) > 3) {
+                ValidationException::withMessages([
+                    'tags' => 'maximum tag is 3'
+                ]);
+            }
 
             if (!$DTO->getImage() instanceof DoNotChange) {
                 $logoPath = Storage::disk("public")->putFileAs(
@@ -202,6 +245,7 @@ class FoodService implements FoodServiceInterface
                     ->where('foods.available_qty', '>', 0)
                     ->where('foods.deleted_at', null)
                     ->where('chef_stores.is_open', true)
+                    ->where('chef_stores.status', ChefStoreStatusEnum::Approved->value)
                     ->whereRaw(
                         "
         TIME(NOW()) BETWEEN 
@@ -275,6 +319,7 @@ class FoodService implements FoodServiceInterface
                     ->where('foods.status', true)
                     ->where('foods.deleted_at', null)
                     ->where('chef_stores.is_open', true)
+                    ->where('chef_stores.status', ChefStoreStatusEnum::Approved->value)
                     ->whereRaw(
                         "
         TIME(NOW()) BETWEEN 
@@ -338,5 +383,27 @@ class FoodService implements FoodServiceInterface
         }
 
         return $foods;
+    }
+
+    public function destroy(int $foodId): bool
+    {
+        /** @var FoodOptionGroupServiceInterface $optionGroupService */
+        $optionGroupService = resolve(FoodOptionGroupServiceInterface::class);
+
+        $food = $this->getById(
+            foodId: $foodId,
+            relations: ['optionGroups']
+        );
+
+        foreach ($food->optionGroups as $optionGroup) {
+            $optionGroupService->deleteByChefStoreID(
+                foodOptionGroupID: $optionGroup->id,
+                chefStoreID: $food->chef_store_id,
+            );
+        }
+
+        $food->tags()->detach();
+
+        return $food->delete();
     }
 }

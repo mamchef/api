@@ -22,7 +22,7 @@ class TagFilter extends ModelFilter
         return $this->where('status', $param);
     }
 
-    public function status(string $param): self
+    public function status(bool $param): self
     {
         return $this->where('status', $param);
     }

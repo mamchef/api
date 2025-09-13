@@ -17,6 +17,7 @@ interface FoodServiceInterface
      * @param array $filters
      * @param array $relations
      * @param int|null $pagination
+     * @param int|null $userId
      * @return Collection|LengthAwarePaginator
      */
     public function getFoodsByChefStoreID(
@@ -59,6 +60,14 @@ interface FoodServiceInterface
 
 
     /**
+     * @param int $foodId
+     * @param UpdateFoodDTO $DTO
+     * @return Food
+     */
+    public function updateFoodByAdmin(int $foodId, \App\DTOs\Admin\Food\UpdateFoodDTO $DTO): Food;
+
+
+    /**
      * @param string $slug
      * @param array $relations
      * @return Food
@@ -91,4 +100,7 @@ interface FoodServiceInterface
 
 
     public function bookmarkedFoodByUser(int $userId,array $filters=[] ,int $pagination = 25): LengthAwarePaginator;
+
+
+    public function destroy(int $foodId): bool;
 }

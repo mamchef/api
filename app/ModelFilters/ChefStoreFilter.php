@@ -35,4 +35,14 @@ class ChefStoreFilter extends ModelFilter
         return $this;
     }
 
+    public function status(string $status): self
+    {
+        return $this->where('status', $status);
+    }
+
+    public function phone(string $status): self
+    {
+        return $this->where('phone', $status);
+    }
+
 }

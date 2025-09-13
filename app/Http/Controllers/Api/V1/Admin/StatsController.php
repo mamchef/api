@@ -340,6 +340,11 @@ class StatsController extends Controller
             ->get()
             ->mapWithKeys(function ($item) {
                 $method = $item->payment_method;
+                if (!$method) {
+                    return [
+
+                    ];
+                }
                 return [
                     $method->value => [
                         'label' => $method->label(),
