@@ -56,12 +56,14 @@ class OtpCacheService
     }
 
 
-    public static function sendOtpEmail(string $email, string $otpCode): mixed
+    public static function sendOtpEmail(string $email, string $otpCode , string $lang = 'en'): mixed
     {
         $emailJob = dispatch(
             new SendOtpEmailJob(
                 email: $email,
-                otpCode: $otpCode
+                otpCode: $otpCode,
+                lang: $lang
+
             )
         );
 

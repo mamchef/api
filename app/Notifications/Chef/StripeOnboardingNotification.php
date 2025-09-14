@@ -12,14 +12,13 @@ class StripeOnboardingNotification extends BaseNotification
     protected string $notificationType = 'payment_setup';
 
     public function __construct(
-        protected string $onboardingUrl,
-        protected string $lang = 'en'
+        protected string $onboardingUrl
     ) {
     }
 
     public function toArray($notifiable): array
     {
-        $isLithuanian = $this->lang === 'lt';
+        $isLithuanian = $notifiable->lang === 'lt';
         
         return [
             'title' => $isLithuanian ? 'Užbaikite mokėjimų nustatymą' : 'Complete Payment Setup',
@@ -34,7 +33,7 @@ class StripeOnboardingNotification extends BaseNotification
 
     public function toFcm($notifiable): FcmMessage
     {
-        $isLithuanian = $this->lang === 'lt';
+        $isLithuanian = $notifiable->lang === 'lt';
         
         return (new FcmMessage(
             notification: new FcmNotification(
@@ -53,37 +52,54 @@ class StripeOnboardingNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
-        $isLithuanian = $this->lang === 'lt';
-        
-        if ($isLithuanian) {
-            return (new MailMessage)
-                ->subject('💳 Užbaikite mokėjimų nustatymą - Mamchef')
-                ->greeting('Sveiki, ' . $notifiable->name . '!')
-                ->line('🎉 Jūsų dokumentai patvirtinti!')
-                ->line('Dabar reikia užbaigti mokėjimų nustatymą, kad galėtumėte pradėti gauti užsakymus.')
-                ->line('**Kodėl reikia Stripe patvirtinimo?**')
-                ->line('• Saugūs mokėjimai tiesiai į jūsų banko sąskaitą')
-                ->line('• Automatiniai pervedimai kas savaitę')
-                ->line('• Pilna mokėjimų kontrolė')
-                ->action('🔗 Užbaigti mokėjimų nustatymą', $this->onboardingUrl)
-                ->line('⏱️ Šis procesas užtruks tik kelias minutes.')
-                ->line('📞 Jei turite klausimų, susisiekite su mumis.')
-                ->salutation('Mamchef komanda');
-        } else {
-            return (new MailMessage)
-                ->subject('💳 Complete Payment Setup - Mamchef')
-                ->greeting('Hello ' . $notifiable->name . '!')
-                ->line('🎉 Your documents have been approved!')
-                ->line('Now you need to complete payment setup to start receiving orders.')
-                ->line('**Why do you need Stripe verification?**')
-                ->line('• Secure payments directly to your bank account')
-                ->line('• Automatic weekly transfers')
-                ->line('• Full control over your payments')
-                ->action('🔗 Complete Payment Setup', $this->onboardingUrl)
-                ->line('⏱️ This process only takes a few minutes.')
-                ->line('📞 Contact us if you have any questions.')
-                ->salutation('Mamchef Team');
-        }
+        $isLithuanian = $notifiable->lang === 'lt';
+
+        $subject = $isLithuanian
+            ? "💳 Užbaikite mokėjimų nustatymą - Mamchef"
+            : "💳 Complete Payment Setup - Mamchef";
+
+        $headerTitle = $isLithuanian
+            ? 'Mokėjimų nustatymas'
+            : 'Payment Setup Required';
+
+        $greeting = $isLithuanian
+            ? "Sveiki {$notifiable->name}!"
+            : "Hello {$notifiable->name}!";
+
+        $message = $isLithuanian
+            ? "🎉 Jūsų dokumentai patvirtinti!<br><br>
+               Dabar reikia užbaigti mokėjimų nustatymą, kad galėtumėte pradėti gauti užsakymus.<br><br>
+               <strong>Kodėl reikia Stripe patvirtinimo?</strong><br>
+               • Saugūs mokėjimai tiesiai į jūsų banko sąskaitą<br>
+               • Automatiniai pervedimai kas savaitę<br>
+               • Pilna mokėjimų kontrolė"
+            : "🎉 Your documents have been approved!<br><br>
+               Now you need to complete payment setup to start receiving orders.<br><br>
+               <strong>Why do you need Stripe verification?</strong><br>
+               • Secure payments directly to your bank account<br>
+               • Automatic weekly transfers<br>
+               • Full control over your payments";
+
+        $highlightMessage = $isLithuanian
+            ? '⏱️ Šis procesas užtruks tik kelias minutes.<br><br>📞 Jei turite klausimų, susisiekite su mumis.<br><br>Su pagarba,<br>MamChef komanda'
+            : '⏱️ This process only takes a few minutes.<br><br>📞 Contact us if you have any questions.<br><br>Best regards,<br>The MamChef Team';
+
+        $buttonText = $isLithuanian ? '🔗 Užbaigti mokėjimų nustatymą' : '🔗 Complete Payment Setup';
+
+        $footer = $this->mailFooter($notifiable->lang);
+
+        return (new MailMessage)
+            ->subject($subject)
+            ->view('emails.template', [
+                'header_title' => $headerTitle,
+                'greeting' => $greeting,
+                'message' => $message,
+                'highlight_message' => $highlightMessage,
+                'highlight_type' => 'info',
+                'button_text' => $buttonText,
+                'button_url' => $this->onboardingUrl,
+                'footer' => $footer
+            ]);
     }
 
     public function toDatabase($notifiable)

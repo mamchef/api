@@ -144,4 +144,10 @@ return [
     'frontend_url' => 'https://chef.mamchef.com/',
     'need_approve_on_food_edit' => env('NEED_APPROVE_ON_FOOD_EDIT', true),
     'need_approve_on_chef_store_edit' => env('NEED_APPROVW_ON_CHEF_STORE_EDIT', true),
+
+
+    'social_instagram' =>  env('SOCIAL_INSTAGRAM', ''),
+    'social_facebook' =>  env('SOCIAL_FACEBOOK', ''),
+    'chef_panel' =>   env('CHEF_PANEL_URL', ''),
+    'user_panel' =>   env('USER_PANEL_URL', ''),
 ];

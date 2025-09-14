@@ -72,15 +72,50 @@ class NewOrderNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $subject = $isLithuanian
+            ? "🍽️ Gautas naujas užsakymas!"
+            : "🍽️ New Order Received!";
+
+        $headerTitle = $isLithuanian
+            ? 'Gautas naujas užsakymas!'
+            : 'New Order Received!';
+
+        $greeting = $isLithuanian
+            ? "Sveiki šefai {$notifiable->first_name}!"
+            : "Hi Chef {$notifiable->first_name}!";
+
+        $body = $isLithuanian
+            ? "Turite naują užsakymą paruošti! 🎉<br><br>
+               <strong>Užsakymas:</strong> #{$this->order->order_number}<br>
+               <strong>Suma:</strong> €" . number_format($this->order->total_amount, 2) . "<br>
+               <strong>Pristatymas:</strong> " . ucfirst($this->order->delivery_type->value)
+            : "You've got a new order to prepare! 🎉<br><br>
+               <strong>Order:</strong> #{$this->order->order_number}<br>
+               <strong>Amount:</strong> €" . number_format($this->order->total_amount, 2) . "<br>
+               <strong>Delivery:</strong> " . ucfirst($this->order->delivery_type->value);
+
+        $highlightMessage = $isLithuanian
+            ? 'Laikas gaminti kažką skanaus! 👨‍🍳<br><br>Su pagarba,<br>MamChef komanda'
+            : 'Time to cook something delicious! 👨‍🍳<br><br>Best regards,<br>The MamChef Team';
+
+        $buttonText = $isLithuanian ? 'Peržiūrėti užsakymą' : 'View Order Details';
+
+        $footer = $this->mailFooter($notifiable->lang);
+
         return (new MailMessage)
-            ->subject('🍽️ New Order Received!')
-            ->greeting("Hi Chef {$notifiable->first_name}!")
-            ->line("You've got a new order to prepare! 🎉")
-            ->line("**Order:** #{$this->order->order_number}")
-            ->line("**Amount:** €" . number_format($this->order->total_amount, 2))
-            ->line("**Delivery:** " . ucfirst($this->order->delivery_type->value))
-            ->action('View Order Details', env('CHEF_PANEL_URL')."/orders/{$this->order->id}")
-            ->line('Time to cook something delicious! 👨‍🍳');
+            ->subject($subject)
+            ->view('emails.template', [
+                'header_title' => $headerTitle,
+                'greeting' => $greeting,
+                'body' => $body,
+                'highlight_message' => $highlightMessage,
+                'highlight_type' => 'success',
+                'button_text' => $buttonText,
+                'button_url' => config('app.chef_panel', 'https://chef.mamchef.com') . "/orders/{$this->order->id}",
+                'footer' => $footer
+            ]);
     }
 
     public function toDatabase($notifiable): array

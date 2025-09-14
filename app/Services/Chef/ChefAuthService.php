@@ -7,7 +7,9 @@ use App\DTOs\Chef\Auth\LoginByEmailDTO;
 use App\DTOs\Chef\Auth\LoginByGoogleDTO;
 use App\DTOs\Chef\Auth\RegisterByEmailDTO;
 use App\DTOs\Chef\Auth\LoginByFacebookDTO;
+use App\Enums\Chef\ChefStore\ChefStoreStatusEnum;
 use App\Models\Chef;
+use App\Models\ChefStore;
 use App\Services\Interfaces\Chef\ChefAuthServiceInterface;
 use App\Services\OtpCacheService;
 use Illuminate\Validation\ValidationException;
@@ -17,9 +19,16 @@ class ChefAuthService implements ChefAuthServiceInterface
 {
     public function registerByEmail(RegisterByEmailDTO $DTO): string
     {
-        $chef =  Chef::query()->create($DTO->toArray());
+        $chef = Chef::query()->create($DTO->toArray());
 
-        if ($DTO->getFcmToken()){
+        ChefStore::query()->firstOrCreate(
+            ['chef_id' => $chef->id],
+            [
+                'delivery_cost' => 3,
+                'status' => ChefStoreStatusEnum::NeedCompleteData
+            ]);
+
+        if ($DTO->getFcmToken()) {
             $this->storeFcmToken($chef, $DTO->getFcmToken());
         }
         return $chef->createToken(Chef::$TOKEN_NAME)->plainTextToken;
@@ -27,7 +36,13 @@ class ChefAuthService implements ChefAuthServiceInterface
 
     public function loginByFacebook(LoginByFacebookDTO $DTO): string
     {
-        $chef =  Chef::query()->create($DTO->toArray());
+        $chef = Chef::query()->create($DTO->toArray());
+        ChefStore::query()->firstOrCreate(
+            ['chef_id' => $chef->id],
+            [
+                'delivery_cost' => 3,
+                'status' => ChefStoreStatusEnum::NeedCompleteData
+            ]);
 
         // Store FCM token if provided
         if ($DTO->getFcmToken()) {
@@ -46,7 +61,8 @@ class ChefAuthService implements ChefAuthServiceInterface
             email: $email,
             otpCode: OtpCacheService::generate(
                 key: $key
-            )
+            ),
+            lang: request()->header('lang') ?? 'en'
         );
     }
 
@@ -68,6 +84,13 @@ class ChefAuthService implements ChefAuthServiceInterface
                 "email_verified_at" => now()
             ]
         );
+
+        ChefStore::query()->firstOrCreate(
+            ['chef_id' => $chef->id],
+            [
+                'delivery_cost' => 3,
+                'status' => ChefStoreStatusEnum::NeedCompleteData
+            ]);
 
         // Store FCM token if provided
         if ($DTO->getFcmToken()) {

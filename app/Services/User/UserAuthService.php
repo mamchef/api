@@ -34,7 +34,8 @@ class UserAuthService implements UserAuthServiceInterface
             email: $email,
             otpCode: OtpCacheService::generate(
                 key: $key
-            )
+            ),
+            lang: request()->header('lang') ?? 'en'
         );
     }
 

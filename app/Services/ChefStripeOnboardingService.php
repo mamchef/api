@@ -171,7 +171,7 @@ class ChefStripeOnboardingService
             $onboardingUrl = $this->generateOnboardingLink($chef, $lang);
 
             // Send notification email
-            $chef->notify(new StripeOnboardingNotification($onboardingUrl, $lang));
+            $chef->notify(new StripeOnboardingNotification($onboardingUrl));
 
             // Update status
             $this->updateChefStripeStatus($chef);

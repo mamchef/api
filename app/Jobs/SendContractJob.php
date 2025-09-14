@@ -28,8 +28,7 @@ class SendContractJob implements ShouldQueue
         $chef = $this->chef;
         $docuSignService = new DocuSignService();
         $contractID = $docuSignService->sendPdfForSigning(
-            recipientName: $chef->getFullName(),
-            recipientEmail: $chef->email,
+           chefId: $this->chef->id,
         );
         $chef->contract_id = $contractID;
         $chef->save();

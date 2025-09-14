@@ -20,9 +20,19 @@ class ChefRefusedOrderNotification extends BaseNotification
 
     public function toArray($notifiable): array
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? 'Užsakymas atmestas'
+            : 'Order Declined';
+
+        $body = $isLithuanian
+            ? "Šefas atmetė jūsų užsakymą #{$this->order->order_number}"
+            : "Chef declined your order #{$this->order->order_number}";
+
         return [
-            'title' => 'Order Declined',
-            'body' => "Chef declined your order #{$this->order->order_number}",
+            'title' => $title,
+            'body' => $body,
             'type' => 'order_refused',
             'order_number' => $this->order->order_number,
             'order_id' => $this->order->uuid,
@@ -33,10 +43,20 @@ class ChefRefusedOrderNotification extends BaseNotification
 
     public function toFcm($notifiable): FcmMessage
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? '😔 Užsakymas atmestas'
+            : '😔 Order Declined';
+
+        $body = $isLithuanian
+            ? "Užsakymas #{$this->order->order_number} atmestas - Jūsų pinigai grąžinami"
+            : "Order #{$this->order->order_number} was declined - Your refund is being processed";
+
         return (new FcmMessage(
             notification: new FcmNotification(
-                title: '😔 Order Declined',
-                body: "Order #{$this->order->order_number} was declined - Your refund is being processed",
+                title: $title,
+                body: $body,
             )
         ))
             ->data([
@@ -48,16 +68,53 @@ class ChefRefusedOrderNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $reasonText = '';
+        if ($this->refusalReason) {
+            $reasonText = $isLithuanian
+                ? "<br><strong>Priežastis:</strong> {$this->refusalReason}"
+                : "<br><strong>Reason:</strong> {$this->refusalReason}";
+        }
+
+        $subject = $isLithuanian
+            ? "😔 Užsakymas atmestas - Pinigai grąžinami"
+            : "😔 Order Declined - Refund Processing";
+
+        $headerTitle = $isLithuanian
+            ? 'Užsakymas atmestas'
+            : 'Order Declined';
+
+        $greeting = $isLithuanian
+            ? "Sveiki {$notifiable->first_name},"
+            : "Hi {$notifiable->first_name},";
+
+        $body = $isLithuanian
+            ? "Atsiprašome, bet šefas turėjo atmesti jūsų užsakymą #{$this->order->order_number}.{$reasonText}<br><br>
+               Nesijaudinkite! Jūsų pinigai grąžinami ir greitai atsiras jūsų sąskaitoje."
+            : "We're sorry, but the chef had to decline your order #{$this->order->order_number}.{$reasonText}<br><br>
+               Don't worry! Your refund is being processed and will be back in your account soon.";
+
+        $highlightMessage = $isLithuanian
+            ? 'Išbandykite kitą šefą - yra daug skanūs variantų, kurie jūsų laukia! 🍽️<br><br>Su pagarba,<br>MamChef komanda'
+            : 'Try another chef - there are many delicious options waiting for you! 🍽️<br><br>Best regards,<br>The MamChef Team';
+
+        $buttonText = $isLithuanian ? 'Naršyti kitus šefus' : 'Browse Other Chefs';
+
+        $footer = $this->mailFooter($notifiable->lang);
+
         return (new MailMessage)
-            ->subject('😔 Order Declined - Refund Processing')
-            ->greeting("Hi {$notifiable->first_name},")
-            ->line("We're sorry, but the chef had to decline your order #{$this->order->order_number}.")
-            ->when($this->refusalReason, function ($mail) {
-                return $mail->line("**Reason:** {$this->refusalReason}");
-            })
-            ->line("Don't worry! Your refund is being processed and will be back in your account soon.")
-            ->action('Browse Other Chefs', url("/"))
-            ->line("Try another chef - there are many delicious options waiting for you! 🍽️");
+            ->subject($subject)
+            ->view('emails.template', [
+                'header_title' => $headerTitle,
+                'greeting' => $greeting,
+                'body' => $body,
+                'highlight_message' => $highlightMessage,
+                'highlight_type' => 'info',
+                'button_text' => $buttonText,
+                'button_url' => config('app.user_panel', 'https://app.mamchef.com'),
+                'footer' => $footer
+            ]);
     }
 
     public function toDatabase($notifiable): array

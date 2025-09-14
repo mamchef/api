@@ -19,9 +19,19 @@ class PaymentCompletedNotification extends BaseNotification
 
     public function toArray($notifiable): array
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? 'Mokėjimas sėkmingas!'
+            : 'Payment Successful!';
+
+        $body = $isLithuanian
+            ? "Jūsų mokėjimas už užsakymą #{$this->order->order_number} patvirtintas"
+            : "Your payment for order #{$this->order->order_number} is confirmed";
+
         return [
-            'title' => 'Payment Successful!',
-            'body' => "Your payment for order #{$this->order->order_number} is confirmed",
+            'title' => $title,
+            'body' => $body,
             'type' => 'payment_completed',
             'order_number' => $this->order->order_number,
             'order_id' => $this->order->uuid,
@@ -32,10 +42,20 @@ class PaymentCompletedNotification extends BaseNotification
 
     public function toFcm($notifiable): FcmMessage
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? '💳 Mokėjimas sėkmingas!'
+            : '💳 Payment Successful!';
+
+        $body = $isLithuanian
+            ? "Užsakymas #{$this->order->order_number} - Laukiame šefo patvirtinimo"
+            : "Order #{$this->order->order_number} - Waiting for chef to accept";
+
         return (new FcmMessage(
             notification: new FcmNotification(
-                title: '💳 Payment Successful!',
-                body: "Order #{$this->order->order_number} - Waiting for chef to accept",
+                title: $title,
+                body: $body,
             )
         ))
             ->data([
@@ -47,15 +67,50 @@ class PaymentCompletedNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $subject = $isLithuanian
+            ? "💳 Mokėjimas sėkmingas!"
+            : "💳 Payment Successful!";
+
+        $headerTitle = $isLithuanian
+            ? 'Mokėjimas sėkmingas!'
+            : 'Payment Successful!';
+
+        $greeting = $isLithuanian
+            ? "Sveiki {$notifiable->first_name}!"
+            : "Hi {$notifiable->first_name}!";
+
+        $body = $isLithuanian
+            ? "Puiku! Jūsų mokėjimas sėkmingai apdorotas! 🎉<br><br>
+               <strong>Užsakymas:</strong> #{$this->order->order_number}<br>
+               <strong>Suma:</strong> €" . number_format($this->order->total_amount, 2) . "<br><br>
+               Dabar laukiame, kol šefas patvirtins jūsų užsakymą."
+            : "Great! Your payment has been processed successfully! 🎉<br><br>
+               <strong>Order:</strong> #{$this->order->order_number}<br>
+               <strong>Amount:</strong> €" . number_format($this->order->total_amount, 2) . "<br><br>
+               We're now waiting for the chef to accept your order.";
+
+        $highlightMessage = $isLithuanian
+            ? 'Pasiruoškite skaniam maistui! 😋<br><br>Su pagarba,<br>MamChef komanda'
+            : 'Get ready for some delicious food! 😋<br><br>Best regards,<br>The MamChef Team';
+
+        $buttonText = $isLithuanian ? 'Sekti užsakymą' : 'Track Your Order';
+
+        $footer = $this->mailFooter($notifiable->lang);
+
         return (new MailMessage)
-            ->subject('💳 Payment Successful!')
-            ->greeting("Hi {$notifiable->first_name}!")
-            ->line("Great! Your payment has been processed successfully! 🎉")
-            ->line("**Order:** #{$this->order->order_number}")
-            ->line("**Amount:** €" . number_format($this->order->total_amount, 2))
-            ->line("We're now waiting for the chef to accept your order.")
-            ->action('Track Your Order', url("/orders/{$this->order->uuid}"))
-            ->line("Get ready for some delicious food! 😋");
+            ->subject($subject)
+            ->view('emails.template', [
+                'header_title' => $headerTitle,
+                'greeting' => $greeting,
+                'body' => $body,
+                'highlight_message' => $highlightMessage,
+                'highlight_type' => 'success',
+                'button_text' => $buttonText,
+                'button_url' =>  config('app.user_panel', 'https://app.mamchef.com') . "/orders",
+                'footer' => $footer
+            ]);
     }
 
     public function toDatabase($notifiable): array

@@ -14,7 +14,7 @@ class SendOtpEmailJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public string $email, public string $otpCode)
+    public function __construct(public string $email, public string $otpCode , public string $lang ='en')
     {
         //
     }
@@ -24,6 +24,6 @@ class SendOtpEmailJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Mail::to($this->email)->send(new OtpMail($this->otpCode));
+        Mail::to($this->email)->send(new OtpMail(otpCode: $this->otpCode,lang:  $this->lang));
     }
 }

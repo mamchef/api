@@ -20,6 +20,8 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     // Define the channels to send through
     public function via($notifiable): array
     {
+        $channels[] = 'mail';
+        return $channels;
         $channels = ['database', 'broadcast'];
 
         // Only add FCM if user has any tokens
@@ -70,5 +72,29 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     }
 
     abstract public function toFcm($notifiable);
+
+
+
+    public function mailFooter(string $lang)
+    {
+
+        $facebook = config('app.social_facebook');
+        $instagram = config('app.social_instagram');
+        return strtolower($lang) == 'lt'
+            ? '<small style="color: #6c757d;">Šis el. laiškas yra skirtas informaciniams tikslams. Išsamiai informacijai žr. mūsų partnerių nuostatas ir sąlygas.</small><br><br>
+               <div style="text-align: center; color: #6c757d; font-size: 12px;">
+                 MamChef UAB | Vilnius<br>
+                 <a href="" style="color: #ff6b6b;">Svetainė</a> |
+                 <a href="'.  $facebook .'" style="color: #ff6b6b;">Facebook</a> |
+                 <a href="'.$instagram.'" style="color: #ff6b6b;">Instagram</a>
+               </div>'
+            : '<small style="color: #6c757d;">This email is intended for informational purposes. Please refer to our Partner Terms & Conditions for full details.</small><br><br>
+               <div style="text-align: center; color: #6c757d; font-size: 12px;">
+                 MamChef UAB | Krivių g. 5, LT-01204, Vilnius<br>
+                 <a href="https://mamchef.com" style="color: #ff6b6b;">Website</a> |
+                 <a href="'.  $facebook .'" style="color: #ff6b6b;">Facebook</a> |
+                 <a href="'.$instagram.'" style="color: #ff6b6b;">Instagram</a>
+               </div>';
+    }
 
 }

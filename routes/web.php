@@ -6,6 +6,17 @@ use App\Http\Controllers\DocuSignController;
 use App\Models\Chef;
 use App\Models\Food;
 use App\Models\Order;
+use App\Notifications\Order\Chef\NewOrderNotification;
+use App\Services\DocuSignService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use DocuSign\eSign\Api\EnvelopesApi;
+use DocuSign\eSign\Model\DateSigned;
+use DocuSign\eSign\Model\Document;
+use DocuSign\eSign\Model\EnvelopeDefinition;
+use DocuSign\eSign\Model\Recipients;
+use DocuSign\eSign\Model\Signer;
+use DocuSign\eSign\Model\SignHere;
+use DocuSign\eSign\Model\Tabs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,7 +31,7 @@ Route::get('/chef/stripe/refresh', function (Request $request) {
 
 Route::get('/chef/stripe/return', function (Request $request) {
     $lang = $request->get('lang') ?? 'en';
-    
+
     // Check if account parameter is provided (Stripe includes this)
     $accountId = $request->get('account');
     if ($accountId) {
@@ -31,7 +42,7 @@ Route::get('/chef/stripe/return', function (Request $request) {
             $stripeService->updateChefStripeStatus($chef);
         }
     }
-    
+
     return view('chef.stripe-return', compact('lang'));
 })->name('chef.stripe.return');
 
@@ -57,8 +68,7 @@ Route::get('/test-notification', function () {
 });
 
 Route::get('/test-otp', function () {
-    \App\Services\OtpCacheService::sendOtpSms('61234567', rand(111111, 999999));
-    \App\Services\OtpCacheService::sendOtpEmail('rh.soroosh@gmail.com', rand(111111, 999999));
+    \App\Services\OtpCacheService::sendOtpEmail('rh.soroosh@gmail.com', rand(111111, 999999),);
 });
 
 Route::get('test', [DocusignController::class, 'register'])->name('docusign');
@@ -104,6 +114,14 @@ Route::get('/rate-foods', function () {
     }
 
     return "ok";
+});
+Route::get('/test-contract', function () {
+    $docuSignService = new DocuSignService();
+    $contractID = $docuSignService->sendPdfForSigning(
+        chefId: request()->input('chef'),
+    );
+
+    return 'ok';
 });
 
 

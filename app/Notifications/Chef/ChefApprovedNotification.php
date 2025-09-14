@@ -5,127 +5,122 @@ namespace App\Notifications\Chef;
 use App\Models\Chef;
 use App\Notifications\BaseNotification;
 use Illuminate\Notifications\Messages\MailMessage;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
-/**
- * Chef Approved Notification
- * 
- * Sent when admin approves a chef's account
- */
 class ChefApprovedNotification extends BaseNotification
 {
+    protected string $notificationType = 'chef_approved';
+
     public function __construct(
         protected Chef $chef
-    ) {
+    )
+    {
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
+    public function toArray($notifiable): array
+    {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? 'Paskyra patvirtinta'
+            : 'Account Approved';
+
+        $body = $isLithuanian
+            ? 'Sveikiname! Jūsų virėjo paskyra sėkmingai patvirtinta. Galite pradėti kurti savo meniu ir priimti užsakymus.'
+            : 'Congratulations! Your chef account has been successfully approved. You can now start creating your menu and accepting orders.';
+
+        return [
+            'title' => $title,
+            'body' => $body,
+            'type' => 'chef_approved',
+            'chef_id' => $this->chef->id,
+            'action_url' => '/kitchen',
+        ];
+    }
+
+    public function toFcm($notifiable): FcmMessage
+    {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? '🎉 Paskyra patvirtinta!'
+            : '🎉 Account Approved!';
+
+        $body = $isLithuanian
+            ? "Sveikiname {$notifiable->first_name}! Jūsų virėjo paskyra sėkmingai patvirtinta."
+            : "Congratulations {$notifiable->first_name}! Your chef account has been successfully approved.";
+
+        return (new FcmMessage(
+            notification: new FcmNotification(
+                title: $title,
+                body: $body,
+            )
+        ))
+            ->data([
+                'type' => $this->notificationType,
+                'chef_id' => (string)$this->chef->id,
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+            ]);
+    }
+
     public function toMail($notifiable): MailMessage
     {
-        $lang = $this->chef->lang ?? 'en';
-        
-        if ($lang === 'lt') {
-            return $this->buildLithuanianEmail($notifiable);
-        }
-        
-        return $this->buildEnglishEmail($notifiable);
-    }
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
 
-    /**
-     * Build English email
-     */
-    private function buildEnglishEmail($notifiable): MailMessage
-    {
+        // Prepare all variables first
+        $subject = $isLithuanian
+            ? "Sveikiname! Jūsų virėjo paskyra patvirtinta"
+            : "Congratulations! Your Chef Account has been Approved";
+
+        $headerTitle = $isLithuanian
+            ? 'Paskyra patvirtinta!'
+            : 'Account Approved!';
+
+        $greeting = $isLithuanian
+            ? "Sveiki {$notifiable->first_name}!"
+            : "Hello {$notifiable->first_name}!";
+
+        $message = $isLithuanian
+            ? "Sveikiname! Džiugiai pranešame, kad jūsų virėjo paskyra sėkmingai patvirtinta.<br><br>
+               Dabar galite pradėti kurti savo meniu, valdyti užsakymus ir patiekti skanius patiekalus klientams savo rajone.<br><br>
+               <strong>Štai jūsų kiti žingsniai:</strong><br>
+               • Užbaikite savo virtuvės profilį ir meniu nustatymą<br>
+               • Įkelkite patrauklias patiekalų nuotraukas<br>
+               • Nustatykite savo darbo laiką ir pristatymo nuostatas<br>
+               • Pradėkite gauti ir valdyti užsakymus"
+            : "Congratulations! We are excited to inform you that your chef account has been successfully approved.<br><br>
+               You can now start creating your menu, managing orders, and serving delicious food to customers in your area.<br><br>
+               <strong>Here are your next steps:</strong><br>
+               • Complete your kitchen profile and menu setup<br>
+               • Upload appealing photos of your dishes<br>
+               • Set your availability and delivery preferences<br>
+               • Start receiving and managing orders";
+
+        $highlightMessage = $isLithuanian
+            ? 'Sveiki atvykę į MamChef šeimą! Laukiame pamatyti jūsų kulinarijos kūrinius.<br><br>Geriausi linkėjimai,<br>MamChef komanda'
+            : 'Welcome to the MamChef family! We look forward to seeing your culinary creations.<br><br>Best regards,<br>The MamChef Team';
+
+        $buttonText = $isLithuanian ? 'Patekti į virtuvės valdymo panelį' : 'Access Your Kitchen Dashboard';
+
+        $footer = $this->mailFooter($notifiable->lang);
+
         return (new MailMessage)
-            ->subject('Congratulations! Your Chef Account has been Approved - MamChef')
-            ->greeting('Hello ' . $this->chef->first_name . '!')
-            ->line('Congratulations! We are excited to inform you that your chef account has been successfully approved.')
-            ->line('You can now start creating your menu, managing orders, and serving delicious food to customers in your area.')
-            ->line('Here are your next steps:')
-            ->line('• Complete your kitchen profile and menu setup')
-            ->line('• Upload appealing photos of your dishes')
-            ->line('• Set your availability and delivery preferences')
-            ->line('• Start receiving and managing orders')
-            ->action('Access Your Kitchen Dashboard', config('app.frontend_url') . '/kitchen')
-            ->line('Welcome to the MamChef family! We look forward to seeing your culinary creations.')
-            ->salutation('Best regards, The MamChef Team');
+            ->subject($subject)
+            ->view('emails.template', [
+                'header_title' => $headerTitle,
+                'greeting' => $greeting,
+                'message' => $message,
+                'highlight_message' => $highlightMessage,
+                'highlight_type' => 'success',
+                'button_text' => $buttonText,
+                'button_url' => config('app.chef_panel') . '/kitchen',
+                'footer' => $footer
+            ]);
     }
 
-    /**
-     * Build Lithuanian email
-     */
-    private function buildLithuanianEmail($notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject('Sveikiname! Jūsų virėjo paskyra patvirtinta - MamChef')
-            ->greeting('Sveiki, ' . $this->chef->first_name . '!')
-            ->line('Sveikiname! Džiugiai pranešame, kad jūsų virėjo paskyra sėkmingai patvirtinta.')
-            ->line('Dabar galite pradėti kurti savo meniu, valdyti užsakymus ir patiekti skanius patiekalus klientams savo rajone.')
-            ->line('Štai jūsų kiti žingsniai:')
-            ->line('• Užbaikite savo virtuvės profilį ir meniu nustatymą')
-            ->line('• Įkelkite patrauklias patiekalų nuotraukas')
-            ->line('• Nustatykite savo darbo laiką ir pristatymo nuostatas')
-            ->line('• Pradėkite gauti ir valdyti užsakymus')
-            ->action('Patekti į virtuvės valdymo panelį', config('app.frontend_url') . '/kitchen')
-            ->line('Sveiki atvykę į MamChef šeimą! Laukiame pamatyti jūsų kulinarijos kūrinius.')
-            ->salutation('Geriausi linkėjimai, MamChef komanda');
-    }
-
-    /**
-     * Get FCM data for push notification
-     */
-    public function getFcmData(): array
-    {
-        $lang = $this->chef->lang ?? 'en';
-        
-        if ($lang === 'lt') {
-            return [
-                'title' => 'Paskyra patvirtinta!',
-                'body' => 'Sveikiname! Jūsų virėjo paskyra sėkmingai patvirtinta.',
-                'type' => 'chef_approved',
-                'chef_id' => $this->chef->id,
-                'action_url' => config('app.frontend_url') . '/kitchen'
-            ];
-        }
-
-        return [
-            'title' => 'Account Approved!',
-            'body' => 'Congratulations! Your chef account has been successfully approved.',
-            'type' => 'chef_approved',
-            'chef_id' => $this->chef->id,
-            'action_url' => config('app.frontend_url') . '/kitchen'
-        ];
-    }
-
-    /**
-     * Get database notification data
-     */
     public function toDatabase($notifiable): array
     {
-        $lang = $this->chef->lang ?? 'en';
-        
-        if ($lang === 'lt') {
-            return [
-                'title' => 'Paskyra patvirtinta',
-                'message' => 'Sveikiname! Jūsų virėjo paskyra sėkmingai patvirtinta. Galite pradėti kurti savo meniu ir priimti užsakymus.',
-                'type' => 'chef_approved',
-                'chef_id' => $this->chef->id,
-                'action_url' => config('app.frontend_url') . '/kitchen'
-            ];
-        }
-
-        return [
-            'title' => 'Account Approved',
-            'message' => 'Congratulations! Your chef account has been successfully approved. You can now start creating your menu and accepting orders.',
-            'type' => 'chef_approved',
-            'chef_id' => $this->chef->id,
-            'action_url' => config('app.frontend_url') . '/kitchen'
-        ];
-    }
-
-    public function toFcm($notifiable)
-    {
-        return [];
+        return $this->toArray($notifiable);
     }
 }

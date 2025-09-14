@@ -19,9 +19,19 @@ class OrderReadyNotification extends BaseNotification
 
     public function toArray($notifiable): array
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? 'Užsakymas paruoštas!'
+            : 'Order Ready!';
+
+        $body = $isLithuanian
+            ? "Jūsų užsakymas #{$this->order->order_number} paruoštas pasiimti/pristatymui"
+            : "Your order #{$this->order->order_number} is ready for pickup/delivery";
+
         return [
-            'title' => 'Order Ready!',
-            'body' => "Your order #{$this->order->order_number} is ready for pickup/delivery",
+            'title' => $title,
+            'body' => $body,
             'type' => 'order_ready',
             'order_number' => $this->order->order_number,
             'order_id' => $this->order->uuid,
@@ -33,12 +43,24 @@ class OrderReadyNotification extends BaseNotification
 
     public function toFcm($notifiable): FcmMessage
     {
-        $deliveryText = $this->order->delivery_type === 'pickup' ? 'ready for pickup!' : 'on the way!';
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? '🍽️ Jūsų maistas paruoštas!'
+            : '🍽️ Your Food is Ready!';
+
+        $deliveryText = $this->order->delivery_type === 'pickup'
+            ? ($isLithuanian ? 'paruoštas pasiimti!' : 'ready for pickup!')
+            : ($isLithuanian ? 'kelyje pas jus!' : 'on the way!');
+
+        $body = $isLithuanian
+            ? "Užsakymas #{$this->order->order_number} {$deliveryText}"
+            : "Order #{$this->order->order_number} is {$deliveryText}";
 
         return (new FcmMessage(
             notification: new FcmNotification(
-                title: '🍽️ Your Food is Ready!',
-                body: "Order #{$this->order->order_number} is {$deliveryText}",
+                title: $title,
+                body: $body,
             )
         ))
             ->data([
@@ -50,23 +72,56 @@ class OrderReadyNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $subject = $isLithuanian
+            ? "🍽️ Jūsų skanus maistas paruoštas!"
+            : "🍽️ Your Delicious Food is Ready!";
+
+        $headerTitle = $isLithuanian
+            ? 'Maistas paruoštas!'
+            : 'Food is Ready!';
+
+        $greeting = $isLithuanian
+            ? "Sveiki {$notifiable->first_name}!"
+            : "Hi {$notifiable->first_name}!";
+
         $deliveryText = $this->order->delivery_type === 'pickup'
-            ? 'Your order is ready for pickup!'
-            : 'Your order is on the way to you!';
+            ? ($isLithuanian ? 'Jūsų užsakymas paruoštas pasiimti!' : 'Your order is ready for pickup!')
+            : ($isLithuanian ? 'Jūsų užsakymas kelyje pas jus!' : 'Your order is on the way to you!');
+
+        $additionalInfo = $this->order->delivery_type === 'pickup'
+            ? ($isLithuanian ? 'Ateikite ir pasiimkite savo šviežiai paruoštą patiekalą!' : 'Please come and collect your freshly prepared meal!')
+            : ($isLithuanian ? 'Jūsų maistas netrukus atvyks - pasiruoškite mėgautis!' : 'Your food will arrive shortly - get ready to enjoy!');
+
+        $body = $isLithuanian
+            ? "Puikios žinios! {$deliveryText} 🎉<br><br>
+               <strong>Užsakymas:</strong> #{$this->order->order_number}<br><br>
+               {$additionalInfo}"
+            : "Great news! {$deliveryText} 🎉<br><br>
+               <strong>Order:</strong> #{$this->order->order_number}<br><br>
+               {$additionalInfo}";
+
+        $highlightMessage = $isLithuanian
+            ? 'Mėgaukites skaniais patiekalais! 😋<br><br>Su pagarba,<br>MamChef komanda'
+            : 'Enjoy your delicious meal! 😋<br><br>Best regards,<br>The MamChef Team';
+
+        $buttonText = $isLithuanian ? 'Peržiūrėti užsakymo detales' : 'View Order Details';
+
+        $footer = $this->mailFooter($notifiable->lang);
 
         return (new MailMessage)
-            ->subject('🍽️ Your Delicious Food is Ready!')
-            ->greeting("Hi {$notifiable->first_name}!")
-            ->line("Great news! {$deliveryText} 🎉")
-            ->line("**Order:** #{$this->order->order_number}")
-            ->when($this->order->delivery_type === 'pickup', function ($mail) {
-                return $mail->line("Please come and collect your freshly prepared meal!");
-            })
-            ->when($this->order->delivery_type === 'delivery', function ($mail) {
-                return $mail->line("Your food will arrive shortly - get ready to enjoy!");
-            })
-            ->action('View Order Details', url("/orders/{$this->order->uuid}"))
-            ->line("Enjoy your delicious meal! 😋");
+            ->subject($subject)
+            ->view('emails.template', [
+                'header_title' => $headerTitle,
+                'greeting' => $greeting,
+                'body' => $body,
+                'highlight_message' => $highlightMessage,
+                'highlight_type' => 'success',
+                'button_text' => $buttonText,
+                'button_url' =>  config('app.user_panel', 'https://app.mamchef.com') . "/orders",
+                'footer' => $footer
+            ]);
     }
 
     public function toDatabase($notifiable): array

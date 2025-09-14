@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Chef;
 use DocuSign\eSign\Api\EnvelopesApi;
 use DocuSign\eSign\Client\ApiClient;
 use DocuSign\eSign\Client\ApiException;
@@ -13,8 +14,10 @@ use DocuSign\eSign\Model\Recipients;
 use DocuSign\eSign\Model\Signer;
 use DocuSign\eSign\Model\SignHere;
 use DocuSign\eSign\Model\Tabs;
+use DocuSign\eSign\Model\DateSigned;
 use Exception;
 use SplFileObject;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DocuSignService
 {
@@ -63,53 +66,70 @@ class DocuSignService
     }
 
     /**
-     * @param string $recipientName
-     * @param string $recipientEmail
+     * @param int $chefId
      * @return string
      * @throws Exception
      */
     public function sendPdfForSigning(
-        string $recipientName,
-        string $recipientEmail,
-    ): string {
+        int $chefId
+    ): string
+    {
+        $chef = Chef::query()->with('chefStore')->findOrFail($chefId);
         try {
-            if (empty($recipientName) || empty($recipientEmail)) {
-                throw new Exception('Recipient name and email are required');
-            }
-            if (!filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
-                throw new Exception('Invalid email address');
-            }
+            // Generate PDF from Blade template
+            $pdf = Pdf::loadView('contracts.partner-agreement', [
+                'chef' => $chef
+            ]);
 
-            $contentBytes = file_get_contents(storage_path(env("DOCUSIGN_CONTRACT_PATH")), true);
-            $base64FileContent = base64_encode($contentBytes);
+            // Get PDF content as base64
+            $pdfContent = $pdf->output();
+            $base64FileContent = base64_encode($pdfContent);
 
             $document = new Document([
                 'document_base64' => $base64FileContent,
-                'name' => 'Contract.pdf',
+                'name' => 'MamChef Partner Agreement.pdf',
                 'file_extension' => 'pdf',
                 'document_id' => '1',
             ]);
 
+            // Create date signed tab for dynamic date
+            $dateSignedTab = new DateSigned([
+                'document_id' => '1',
+                'page_number' => '1',
+                'anchor_string' => '{{date_signed}}',
+                'anchor_units' => 'pixels',
+                'anchor_y_offset' => '0',
+                'anchor_x_offset' => '0',
+                'tab_label' => 'date_signed',
+                'name' => 'Date Signed',
+                'required' => 'true'
+            ]);
+
             $signer = new Signer([
-                'email' => $recipientEmail,
-                'name' => $recipientName,
+                'email' => $chef->email,
+                'name' => $chef->getFullName(),
                 'recipient_id' => '1',
                 'routing_order' => '1',
             ]);
 
             $signHere = new SignHere([
-                'anchor_string' => '**signature**',
+                'document_id' => '1',
+                'anchor_string' => '{{chef_signature}}',
                 'anchor_units' => 'pixels',
-                'anchor_y_offset' => '10',
-                'anchor_x_offset' => '20',
+                'anchor_y_offset' => '0',
+                'anchor_x_offset' => '0',
+                'tab_label' => 'signature',
+                'name' => 'Signature',
+                'required' => 'true'
             ]);
 
             $signer->setTabs(new Tabs([
                 'sign_here_tabs' => [$signHere],
+                'date_signed_tabs' => [$dateSignedTab]
             ]));
 
             $envelopeDefinition = new EnvelopeDefinition([
-                'email_subject' => env("DOCUSIGN_EMAIL_SUBJECT"),
+                'email_subject' => 'MamChef Partner Agreement - Please Sign',
                 'documents' => [$document],
                 'recipients' => new Recipients(['signers' => [$signer]]),
                 'status' => 'sent',
@@ -122,6 +142,24 @@ class DocuSignService
             throw new Exception('Error sending document: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Generate PDF from Blade template with dynamic data
+     * Uncomment and use this method after installing barryvdh/laravel-dompdf
+     *
+     * @param Chef $chef
+     * @return string base64 encoded PDF content
+     */
+    /*
+    private function generateContractPdf(Chef $chef): string
+    {
+        $pdf = Pdf::loadView('contracts.partner-agreement', [
+            'chef' => $chef
+        ]);
+
+        return base64_encode($pdf->output());
+    }
+    */
 
     /**
      * @param string $envelopeID

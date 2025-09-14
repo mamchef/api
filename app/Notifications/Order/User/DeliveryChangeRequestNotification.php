@@ -20,9 +20,19 @@ class DeliveryChangeRequestNotification extends BaseNotification
 
     public function toArray($notifiable): array
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? 'Pristatymo keitimo prašymas'
+            : 'Delivery Change Request';
+
+        $body = $isLithuanian
+            ? "Šefas prašo pakeisti pristatymą užsakymui #{$this->order->order_number}"
+            : "Chef requests delivery change for order #{$this->order->order_number}";
+
         return [
-            'title' => 'Delivery Change Request',
-            'body' => "Chef requests delivery change for order #{$this->order->order_number}",
+            'title' => $title,
+            'body' => $body,
             'type' => 'delivery_change_request',
             'order_number' => $this->order->order_number,
             'order_id' => $this->order->uuid,
@@ -33,10 +43,20 @@ class DeliveryChangeRequestNotification extends BaseNotification
 
     public function toFcm($notifiable): FcmMessage
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? '🚚 Pristatymo keitimo prašymas'
+            : '🚚 Delivery Change Request';
+
+        $body = $isLithuanian
+            ? "Šefas prašo pakeisti pristatymą užsakymui #{$this->order->order_number}"
+            : "Chef requests delivery change for order #{$this->order->order_number}";
+
         return (new FcmMessage(
             notification: new FcmNotification(
-                title: '🚚 Delivery Change Request',
-                body: "Chef requests delivery change for order #{$this->order->order_number}",
+                title: $title,
+                body: $body,
             )
         ))
             ->data([
@@ -48,16 +68,53 @@ class DeliveryChangeRequestNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $reasonText = '';
+        if ($this->changeReason) {
+            $reasonText = $isLithuanian
+                ? "<br><strong>Priežastis:</strong> {$this->changeReason}"
+                : "<br><strong>Reason:</strong> {$this->changeReason}";
+        }
+
+        $subject = $isLithuanian
+            ? "🚚 Pristatymo keitimo prašymas"
+            : "🚚 Delivery Change Request";
+
+        $headerTitle = $isLithuanian
+            ? 'Pristatymo keitimo prašymas'
+            : 'Delivery Change Request';
+
+        $greeting = $isLithuanian
+            ? "Sveiki {$notifiable->first_name},"
+            : "Hi {$notifiable->first_name},";
+
+        $body = $isLithuanian
+            ? "Šefas prašė pakeisti jūsų pristatymą užsakymui #{$this->order->order_number}.{$reasonText}<br><br>
+               Prašome peržiūrėti ir atsakyti į šį prašymą."
+            : "The chef has requested a change to your delivery for order #{$this->order->order_number}.{$reasonText}<br><br>
+               Please review and respond to this request.";
+
+        $highlightMessage = $isLithuanian
+            ? 'Dėkojame už supratimą! 🙏<br><br>Su pagarba,<br>MamChef komanda'
+            : 'We appreciate your understanding! 🙏<br><br>Best regards,<br>The MamChef Team';
+
+        $buttonText = $isLithuanian ? 'Peržiūrėti prašymą' : 'Review Request';
+
+        $footer = $this->mailFooter($notifiable->lang);
+
         return (new MailMessage)
-            ->subject('🚚 Delivery Change Request')
-            ->greeting("Hi {$notifiable->first_name},")
-            ->line("The chef has requested a change to your delivery for order #{$this->order->order_number}.")
-            ->when($this->changeReason, function ($mail) {
-                return $mail->line("**Reason:** {$this->changeReason}");
-            })
-            ->line("Please review and respond to this request.")
-            ->action('Review Request', url("/orders/{$this->order->uuid}"))
-            ->line("We appreciate your understanding! 🙏");
+            ->subject($subject)
+            ->view('emails.template', [
+                'header_title' => $headerTitle,
+                'greeting' => $greeting,
+                'body' => $body,
+                'highlight_message' => $highlightMessage,
+                'highlight_type' => 'info',
+                'button_text' => $buttonText,
+                'button_url' =>  config('app.user_panel', 'https://app.mamchef.com') . "/orders",
+                'footer' => $footer
+            ]);
     }
 
     public function toDatabase($notifiable): array
