@@ -76,8 +76,10 @@ class DocuSignService
     {
         $chef = Chef::query()->with('chefStore')->findOrFail($chefId);
         try {
+
+
             // Generate PDF from Blade template
-            $pdf = Pdf::loadView('contracts.partner-agreement', [
+            $pdf = Pdf::loadView('contracts.partner-agreement_' . strtolower($chef->lang) ?? 'en', [
                 'chef' => $chef
             ]);
 
