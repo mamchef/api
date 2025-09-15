@@ -10,6 +10,8 @@ use App\DTOs\Chef\Auth\LoginByFacebookDTO;
 use App\Enums\Chef\ChefStore\ChefStoreStatusEnum;
 use App\Models\Chef;
 use App\Models\ChefStore;
+use App\Notifications\Chef\ChefGuideNotification;
+use App\Notifications\Chef\ChefWelcomeNotification;
 use App\Services\Interfaces\Chef\ChefAuthServiceInterface;
 use App\Services\OtpCacheService;
 use App\Services\Traits\MultilingualServiceValidationTrait;
@@ -33,11 +35,21 @@ class ChefAuthService implements ChefAuthServiceInterface
         if ($DTO->getFcmToken()) {
             $this->storeFcmToken($chef, $DTO->getFcmToken());
         }
+
+        $chef->notify(new ChefWelcomeNotification($chef));
+        dispatch(new ChefGuideNotification($chef))->delay(259200);
+
         return $chef->createToken(Chef::$TOKEN_NAME)->plainTextToken;
     }
 
     public function loginByFacebook(LoginByFacebookDTO $DTO): string
     {
+
+        $isNewChef = false;
+        if (Chef::query()->where('email', $DTO->getEmail())->exists()) {
+            $isNewChef = true;
+        }
+
         $chef = Chef::query()->create($DTO->toArray());
         ChefStore::query()->firstOrCreate(
             ['chef_id' => $chef->id],
@@ -49,6 +61,11 @@ class ChefAuthService implements ChefAuthServiceInterface
         // Store FCM token if provided
         if ($DTO->getFcmToken()) {
             $this->storeFcmToken($chef, $DTO->getFcmToken());
+        }
+
+        if ($isNewChef) {
+            $chef->notify(new ChefWelcomeNotification($chef));
+            dispatch(new ChefGuideNotification($chef))->delay(259200);
         }
 
         return $chef->createToken(Chef::$TOKEN_NAME)->plainTextToken;
@@ -80,6 +97,12 @@ class ChefAuthService implements ChefAuthServiceInterface
 
         $email = $payload['email'];
 
+
+        $isNewChef = false;
+        if (Chef::query()->where('email', $email)->exists()) {
+            $isNewChef = true;
+        }
+
         $chef = Chef::query()->firstOrCreate(
             ['email' => $email], [
                 "uuid" => $DTO->getUUid(),
@@ -94,9 +117,16 @@ class ChefAuthService implements ChefAuthServiceInterface
                 'status' => ChefStoreStatusEnum::NeedCompleteData
             ]);
 
+
         // Store FCM token if provided
         if ($DTO->getFcmToken()) {
             $this->storeFcmToken($chef, $DTO->getFcmToken());
+        }
+
+
+        if ($isNewChef) {
+            $chef->notify(new ChefWelcomeNotification($chef));
+            dispatch(new ChefGuideNotification($chef))->delay(259200);
         }
 
         return $chef->createToken(Chef::$TOKEN_NAME)->plainTextToken;

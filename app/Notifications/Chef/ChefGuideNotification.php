@@ -110,7 +110,7 @@ class ChefGuideNotification extends BaseNotification
                 'highlight_message' => $highlightMessage,
                 'highlight_type' => 'info',
                 'button_text' => $buttonText,
-                'button_url' => env('LEGAL_GUIDE_URL', 'https://notion.so/mamchef-legal-guide'),
+                'button_url' => $isLithuanian ? 'https://api.mamchef.com/assets/combine-guid-lt.pdf':'https://api.mamchef.com/assets/combine-guid-en.pdf',
                 'footer' => $footer
             ]);
     }
