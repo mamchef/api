@@ -9,11 +9,13 @@ use App\Models\User;
 use App\Services\Interfaces\User\UserAuthServiceInterface;
 use App\Services\OtpCacheService;
 use App\Services\RateLimitService;
+use App\Services\Traits\MultilingualServiceValidationTrait;
 use Illuminate\Validation\ValidationException;
 use Random\RandomException;
 
 class UserAuthService implements UserAuthServiceInterface
 {
+    use MultilingualServiceValidationTrait;
 
     /**
      * @throws RandomException
@@ -35,7 +37,7 @@ class UserAuthService implements UserAuthServiceInterface
             otpCode: OtpCacheService::generate(
                 key: $key
             ),
-            lang: request()->header('lang') ?? 'en'
+            lang: request()->header('Language') ?? 'en'
         );
     }
 
@@ -82,9 +84,7 @@ class UserAuthService implements UserAuthServiceInterface
             ->where('phone_number', $phoneNumber)->first();
 
         if (!$user || !$user->passwordCheck($password)) {
-            throw ValidationException::withMessages([
-                "user" => "password or phone number is incorrect",
-            ]);
+            $this->throwAuthException('user_invalid_credentials', 'user');
         }
 
         return $user->createToken(User::$TOKEN_NAME)->plainTextToken;
@@ -96,9 +96,7 @@ class UserAuthService implements UserAuthServiceInterface
             ->where('phone_number', $phoneNumber)->first();
 
         if (!$user) {
-            throw ValidationException::withMessages([
-                'user' => "phone number is incorrect",
-            ]);
+            $this->throwAuthException('user_invalid_phone', 'user');
         }
 
 
@@ -122,9 +120,7 @@ class UserAuthService implements UserAuthServiceInterface
             ->where('phone_number', $phoneNumber)->first();
 
         if (!$user) {
-            throw ValidationException::withMessages([
-                'user' => "phone number is incorrect",
-            ]);
+            $this->throwAuthException('user_invalid_phone', 'user');
         }
 
         $user->password = User::generatePassword($password);

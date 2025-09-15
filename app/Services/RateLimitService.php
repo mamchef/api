@@ -4,9 +4,11 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
+use App\Services\Traits\MultilingualServiceValidationTrait;
 
 class RateLimitService
 {
+    use MultilingualServiceValidationTrait;
 
     /**
      * Enforce a rate limit as a static function.
@@ -31,8 +33,13 @@ class RateLimitService
 
         $availableIn = RateLimiter::availableIn($key);
 
+        $language = request()->header('Language', app()->getLocale() ?? 'en');
+        app()->setLocale($language);
+
+        $localizedMessage = __('services.rate_limit.too_many_attempts', ['seconds' => $availableIn]);
+
         throw ValidationException::withMessages([
-            'message' => $message . " available in :" . $availableIn ." seconds",
+            'message' => $localizedMessage,
         ]);
     }
 

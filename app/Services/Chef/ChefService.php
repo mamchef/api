@@ -94,7 +94,7 @@ class ChefService implements ChefServiceInterface
             $stripeService = new ChefStripeOnboardingService();
 
             // Get language from request or default to 'en'
-            $lang = request()->header('lang') ?? 'en';
+            $lang = request()->header('Language') ?? 'en';
 
             // Create Stripe account and send onboarding email
             $result = $stripeService->completeOnboarding($chef, $lang);

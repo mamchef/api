@@ -30,6 +30,8 @@ class StoreOrderRequest extends BaseFormRequest
 {
     public function prepareForValidation(): void
     {
+        parent::prepareForValidation(); // This will set the locale
+
         $pendingPaymentOrders = Order::query()->where('status', OrderStatusEnum::PENDING_PAYMENT->value)->get();
         foreach ($pendingPaymentOrders as $pendingPaymentOrder) {
             OrderService::returnFoodQuantities(
@@ -93,9 +95,13 @@ class StoreOrderRequest extends BaseFormRequest
         foreach ($items as $index => $item) {
             $food = Food::find($item['food_id']);
             if ($food && $food->chef_store_id != $chefStoreId) {
+                $message = app()->getLocale() === 'lt'
+                    ? 'Visi maisto produktai turi priklausyti tai pačiai virtuvei.'
+                    : 'All foods must belong to the same chef store.';
+
                 $validator->errors()->add(
                     "items.{$index}.food_id",
-                    "All foods must belong to the same chef store."
+                    $message
                 );
             }
         }
@@ -106,7 +112,11 @@ class StoreOrderRequest extends BaseFormRequest
         if ($this->input('delivery_type') === 'delivery' && $this->input('user_address_id')) {
             $address = UserAddress::find($this->input('user_address_id'));
             if ($address && $address->user_id !== auth()->id()) {
-                $validator->errors()->add('user_address_id', 'Invalid address selected.');
+                $message = app()->getLocale() === 'lt'
+                    ? 'Pasirinktas neteisingas adresas.'
+                    : 'Invalid address selected.';
+
+                $validator->errors()->add('user_address_id', $message);
             }
         }
     }
@@ -123,17 +133,25 @@ class StoreOrderRequest extends BaseFormRequest
 
             // Check if food is active
             if (!$food->status) {
+                $message = app()->getLocale() === 'lt'
+                    ? "Maistas '{$food->name}' šiuo metu neprieinamas."
+                    : "The food '{$food->name}' is currently unavailable.";
+
                 $validator->errors()->add(
                     "items.{$index}.food_id",
-                    "The food '{$food->name}' is currently unavailable."
+                    $message
                 );
             }
 
             // Check available quantity
             if ($food->available_qty < $item['quantity']) {
+                $message = app()->getLocale() === 'lt'
+                    ? "Tik {$food->available_qty} '{$food->name}' porcijos yra prieinamos."
+                    : "Only {$food->available_qty} portions of '{$food->name}' are available.";
+
                 $validator->errors()->add(
                     "items.{$index}.quantity",
-                    "Only {$food->available_qty} portions of '{$food->name}' are available."
+                    $message
                 );
             }
         }
@@ -299,8 +317,29 @@ class StoreOrderRequest extends BaseFormRequest
         }
     }
 
-    public function messages(): array
+    protected function getLocalizedMessages(): array
     {
+        $locale = app()->getLocale();
+
+        if ($locale === 'lt') {
+            return [
+                'chef_store_id.required' => 'Prašome pasirinkti virtuvę.',
+                'chef_store_id.exists' => 'Pasirinkta virtuvė neegzistuoja.',
+                'delivery_type.required' => 'Prašome pasirinkti pristatymo būdą.',
+                'delivery_type.in' => 'Pasirinktas neteisingas pristatymo būdas.',
+                'user_address_id.required_if' => 'Prašome pasirinkti pristatymo adresą.',
+
+                'items.required' => 'Prašome pridėti bent vieną maisto produktą.',
+                'items.min' => 'Prašome pridėti bent vieną maisto produktą.',
+                'items.max' => 'Maksimaliai 20 prekių per užsakymą.',
+                'items.*.food_id.required' => 'Maisto pasirinkimas yra privalomas.',
+                'items.*.food_id.exists' => 'Pasirinktas maistas neegzistuoja.',
+                'items.*.quantity.required' => 'Kiekis yra privalomas.',
+                'items.*.quantity.min' => 'Minimalus kiekis yra 1.',
+                'items.*.quantity.max' => 'Maksimalus kiekis yra 50 per prekę.',
+            ];
+        }
+
         return [
             'chef_store_id.required' => 'Please select a kitchen.',
             'chef_store_id.exists' => 'Selected kitchen does not exist.',

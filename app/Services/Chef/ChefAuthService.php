@@ -12,11 +12,13 @@ use App\Models\Chef;
 use App\Models\ChefStore;
 use App\Services\Interfaces\Chef\ChefAuthServiceInterface;
 use App\Services\OtpCacheService;
+use App\Services\Traits\MultilingualServiceValidationTrait;
 use Illuminate\Validation\ValidationException;
 use Random\RandomException;
 
 class ChefAuthService implements ChefAuthServiceInterface
 {
+    use MultilingualServiceValidationTrait;
     public function registerByEmail(RegisterByEmailDTO $DTO): string
     {
         $chef = Chef::query()->create($DTO->toArray());
@@ -62,7 +64,7 @@ class ChefAuthService implements ChefAuthServiceInterface
             otpCode: OtpCacheService::generate(
                 key: $key
             ),
-            lang: request()->header('lang') ?? 'en'
+            lang: request()->header('Language') ?? 'en'
         );
     }
 
@@ -105,9 +107,7 @@ class ChefAuthService implements ChefAuthServiceInterface
         $chef = Chef::query()->where('email', $DTO->getEmail())->first();
 
         if (!$chef || !$chef->passwordCheck($DTO->getPassword())) {
-            throw ValidationException::withMessages([
-                "chef" => "password or email is incorrect",
-            ]);
+            $this->throwAuthException('chef_invalid_credentials', 'chef');
         }
 
         // Store FCM token if provided

@@ -23,7 +23,7 @@ class AuthUserSanctum
     public function handle(Request $request, Closure $next): Response
     {
         $token = $request->bearerToken();
-        $lang = request()->header('lang') ?? 'en';
+        $lang = request()->header('Language') ?? 'en';
 
         if (!$token) {
             return response()->json(['message' => 'Unauthorized'], 401);

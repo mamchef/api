@@ -18,9 +18,11 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use App\Services\Traits\MultilingualServiceValidationTrait;
 
 class FoodService implements FoodServiceInterface
 {
+    use MultilingualServiceValidationTrait;
 
     public function getFoodsByChefStoreID(
         int      $chefStoreID,
@@ -76,9 +78,7 @@ class FoodService implements FoodServiceInterface
         try {
             //TODO MAKE THIS PART BETTER
             if (is_array($DTO->getTags()) and count($DTO->getTags()) > 3) {
-                ValidationException::withMessages([
-                    'tags' => 'maximum tag is 3'
-                ]);
+                $this->throwFoodException('max_tags_exceeded', 'tags');
             }
 
 
@@ -118,9 +118,7 @@ class FoodService implements FoodServiceInterface
 
             //TODO MAKE THIS PART BETTER
             if (is_array($DTO->getTags()) and count($DTO->getTags()) > 3) {
-                ValidationException::withMessages([
-                    'tags' => 'maximum tag is 3'
-                ]);
+                $this->throwFoodException('max_tags_exceeded', 'tags');
             }
 
 
@@ -159,9 +157,7 @@ class FoodService implements FoodServiceInterface
             $params = $DTO->toArray();
 
             if (is_array($DTO->getTags()) and count($DTO->getTags()) > 3) {
-                ValidationException::withMessages([
-                    'tags' => 'maximum tag is 3'
-                ]);
+                $this->throwFoodException('max_tags_exceeded', 'tags');
             }
 
             if (!$DTO->getImage() instanceof DoNotChange) {

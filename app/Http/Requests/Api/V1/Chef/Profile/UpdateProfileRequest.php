@@ -28,7 +28,10 @@ class UpdateProfileRequest extends BaseFormRequest
                 'regex:/^\d{11}$/',
                 function ($attribute, $value, $fail) {
                     if (!preg_match('/^\d{11}$/', $value)) {
-                        $fail('The ' . $attribute . ' must be exactly 11 digits.');
+                        $message = app()->getLocale() === 'lt'
+                            ? $attribute . ' turi būti tiksliai 11 skaitmenų.'
+                            : 'The ' . $attribute . ' must be exactly 11 digits.';
+                        $fail($message);
                     }
                 },
                 "unique:chefs,id_number," . $chefID
@@ -41,7 +44,10 @@ class UpdateProfileRequest extends BaseFormRequest
                 function ($attribute, $value, $fail) {
                     $cleanPhone = preg_replace('/[\s\-\(\)]/', '', $value);
                     if (!preg_match('/^(\+370|8)[0-9]{8}$/', $cleanPhone)) {
-                        $fail('Please enter a valid Lithuanian phone number.');
+                        $message = app()->getLocale() === 'lt'
+                            ? 'Prašome įvesti galiojantį Lietuvos telefono numerį.'
+                            : 'Please enter a valid Lithuanian phone number.';
+                        $fail($message);
                     }
                 },
             ],
@@ -53,7 +59,10 @@ class UpdateProfileRequest extends BaseFormRequest
                 "string",
                 function ($attribute, $value, $fail) {
                     if (!preg_match('/^LT-\d{5}$/i', strtoupper($value))) {
-                        $fail('Please enter a valid Lithuanian postal code (LT-XXXXX).');
+                        $message = app()->getLocale() === 'lt'
+                            ? 'Prašome įvesti galiojantį Lietuvos pašto kodą (LT-XXXXX).'
+                            : 'Please enter a valid Lithuanian postal code (LT-XXXXX).';
+                        $fail($message);
                     }
                 },
             ],

@@ -51,9 +51,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Ramsey\Uuid\Uuid;
+use App\Services\Traits\MultilingualServiceValidationTrait;
 
 class OrderService implements OrderServiceInterface
 {
+    use MultilingualServiceValidationTrait;
     public function getOrderByUserId(string $orderUuid, int $userId, array $relations = []): Order
     {
         return Order::forUser($userId)
@@ -229,9 +231,7 @@ class OrderService implements OrderServiceInterface
 
                 if ($paymentMethod == PaymentMethod::WALLET) {
                     if ($user->getAvailableCredit() < $totalAmount) {
-                        throw ValidationException::withMessages([
-                            'error' => 'Insufficient credit to pay.'
-                        ]);
+                        $this->throwOrderException('insufficient_credit', 'error');
                     }
 
                     $this->makeOrderPaymentSuccess(
@@ -321,9 +321,7 @@ class OrderService implements OrderServiceInterface
                 $order->status != OrderStatusEnum::PENDING_PAYMENT
             ) {
                 Log::info('Order already processed: ' . $orderUuid);
-                throw ValidationException::withMessages([
-                    'order' => 'Order already processed: ' . $orderUuid
-                ]);
+                $this->throwOrderException('order_already_processed', 'order');
             }
 
             // Update order status to Pending to chef decide
@@ -377,9 +375,7 @@ class OrderService implements OrderServiceInterface
             if ($order->status != OrderStatusEnum::PAYMENT_PROCESSING and
                 $order->status != OrderStatusEnum::PENDING_PAYMENT
             ) {
-                throw ValidationException::withMessages([
-                    'order' => 'Order already processed: ' . $orderUuid
-                ]);
+                $this->throwOrderException('order_already_processed', 'order');
             }
 
             // Update order status to failed
@@ -551,7 +547,7 @@ class OrderService implements OrderServiceInterface
 
         // Should check if chef store has pickup enabled
         if (!$order->chefStore->hasPickup()) {
-            throw ValidationException::withMessages(['order' => 'Chef store does not support pickup']);
+            $this->throwOrderException('pickup_not_supported', 'order');
         }
 
         if ($order->status != OrderStatusEnum::PENDING) {
@@ -845,21 +841,15 @@ class OrderService implements OrderServiceInterface
 
 
         if ($order->status != OrderStatusEnum::COMPLETED) {
-            throw ValidationException::withMessages([
-                'order' => 'You cannot rate for this order'
-            ]);
+            $this->throwOrderException('cannot_rate_order', 'order');
         }
 
         if ($order->rating) {
-            throw ValidationException::withMessages([
-                'order' => 'You have already rated this order',
-            ]);
+            $this->throwOrderException('already_rated', 'order');
         }
 
         if ($order->completed_at->addDays(3)->isPast()) {
-            throw ValidationException::withMessages([
-                'order' => 'You cannot rate for this order'
-            ]);
+            $this->throwOrderException('cannot_rate_order', 'order');
         }
 
         if ($order->completed_at) {
@@ -981,9 +971,7 @@ class OrderService implements OrderServiceInterface
                 $paymentMethod = PaymentMethod::from($request->payment_method);
                 if ($paymentMethod == PaymentMethod::WALLET) {
                     if ($user->getAvailableCredit() < $totalAmount) {
-                        throw ValidationException::withMessages([
-                            'error' => 'Insufficient credit to pay.'
-                        ]);
+                        $this->throwOrderException('insufficient_credit', 'error');
                     }
 
                     $this->makeOrderPaymentSuccess(
