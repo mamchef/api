@@ -51,8 +51,6 @@ class ChefProfileService implements ChefProfileServiceInterface
         if ($chef->status == ChefStatusEnum::Registered) {
             $chef->status = ChefStatusEnum::PersonalInfoFilled;
             $chef->save();
-
-            SendContractJob::dispatch($chef);
         }
 
         return $chef->fresh();
@@ -86,8 +84,9 @@ class ChefProfileService implements ChefProfileServiceInterface
         //UPDATE TO NEED REVIEW COX ALL DOCUMENT UPLOADED AND CONTRACT SIGNED
         if ($chef->status == ChefStatusEnum::PersonalInfoFilled) {
             $chef->status = ChefStatusEnum::DocumentUploaded;
-        } elseif ($chef->status == ChefStatusEnum::ContractSigned) {
-            $chef->status = ChefStatusEnum::NeedAdminApproval;
+            if ($chef->contract_id == null) {
+                SendContractJob::dispatch($chef);
+            }
         }
 
         $chef->save();
@@ -112,9 +111,7 @@ class ChefProfileService implements ChefProfileServiceInterface
         $chef->contract = $contract;
 
         //UPDATE TO NEED REVIEW COX ALL DOCUMENT UPLOADED AND CONTRACT SIGNED
-        if ($chef->status == ChefStatusEnum::PersonalInfoFilled) {
-            $chef->status = ChefStatusEnum::ContractSigned;
-        } elseif ($chef->status == ChefStatusEnum::DocumentUploaded) {
+        if ($chef->status == ChefStatusEnum::DocumentUploaded) {
             $chef->status = ChefStatusEnum::NeedAdminApproval;
         }
 

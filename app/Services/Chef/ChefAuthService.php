@@ -15,6 +15,7 @@ use App\Notifications\Chef\ChefWelcomeNotification;
 use App\Services\Interfaces\Chef\ChefAuthServiceInterface;
 use App\Services\OtpCacheService;
 use App\Services\Traits\MultilingualServiceValidationTrait;
+use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 use Random\RandomException;
 
@@ -37,7 +38,7 @@ class ChefAuthService implements ChefAuthServiceInterface
         }
 
         $chef->notify(new ChefWelcomeNotification($chef));
-        dispatch(new ChefGuideNotification($chef))->delay(259200);
+        dispatch(new ChefGuideNotification($chef))->delay(Carbon::now()->days(3));
 
         return $chef->createToken(Chef::$TOKEN_NAME)->plainTextToken;
     }
@@ -65,7 +66,7 @@ class ChefAuthService implements ChefAuthServiceInterface
 
         if ($isNewChef) {
             $chef->notify(new ChefWelcomeNotification($chef));
-            dispatch(new ChefGuideNotification($chef))->delay(259200);
+            dispatch(new ChefGuideNotification($chef))->delay(Carbon::now()->days(3));
         }
 
         return $chef->createToken(Chef::$TOKEN_NAME)->plainTextToken;
@@ -126,7 +127,7 @@ class ChefAuthService implements ChefAuthServiceInterface
 
         if ($isNewChef) {
             $chef->notify(new ChefWelcomeNotification($chef));
-            dispatch(new ChefGuideNotification($chef))->delay(259200);
+            dispatch(new ChefGuideNotification($chef))->delay(Carbon::now()->days(3));
         }
 
         return $chef->createToken(Chef::$TOKEN_NAME)->plainTextToken;

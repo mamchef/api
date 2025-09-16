@@ -38,11 +38,13 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),  // Your Google Client ID
     ],
     'docusign' => [
+        'base_path' => env('DOCUSIGN_BASE_URL'),
         'client_id' => env('DOCUSIGN_CLIENT_ID'),
         'impersonated_user_id' => env('DOCUSIGN_IMPERSONATED_USER_ID'),
         'account_id' => env('DOCUSIGN_ACCOUNT_ID'),
         'base_uri' => env('DOCUSIGN_BASE_URI'),
-        'private_key_path' => env('DOCUSIGN_PRIVATE_KEY_PATH'),
+        'private_key_path' => env('DOCUSIGN_KEY_PATH'),
+        'oauth_url' => env('DOCUSIGN_OAUTH_URL'),
     ],
     'stripe' => [
         'public' => env('STRIPE_PUBLIC_KEY'),
