@@ -6,6 +6,7 @@ use App\Jobs\SendOtpEmailJob;
 use App\Jobs\SendOtpSmsJob;
 use App\Models\SlackNotifier;
 use App\Notifications\OtpSlackNotification;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 use Random\RandomException;
@@ -24,7 +25,7 @@ class OtpCacheService
         if (env('APP_ENV') === 'production') {
             $code = random_int(111111, 999999);
         } else {
-            $code = 123456;
+            $code = Carbon::now()->format('Ym');
         }
         Cache::put(key: "otp:{$key}", value: $code, ttl: $ttl);
         return $code;

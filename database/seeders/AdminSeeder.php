@@ -22,7 +22,7 @@ class AdminSeeder extends Seeder
                 'first_name' => 'Super',
                 'last_name' => 'Admin',
                 'email' => 'admin@mamchef.com',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('$$mamchef2025@@'),
                 'status' => AdminStatusEnum::ACTIVE->value,
                 'role' => AdminRoleEnum::SUPER_ADMIN->value
             ]

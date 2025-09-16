@@ -21,7 +21,6 @@ return new class extends Migration {
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->string("status")->nullable();
-            $table->string("status")->nullable();
             $table->string("register_source")->nullable();
             $table->boolean("commercial_agreement")->default(false);
             $table->softDeletes();
