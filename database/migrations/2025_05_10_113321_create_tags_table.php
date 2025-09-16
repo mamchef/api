@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->string('slug');
             $table->text("description")->nullable();
             $table->string("icon_type")->nullable();
-            $table->string("icon")->nullable();
+            $table->longText("icon")->nullable();
             $table->foreignId("tag_id")->nullable()->constrained("tags")->onDelete("cascade");
             $table->boolean("status")->default(false);
             $table->boolean("homepage")->default(false);
