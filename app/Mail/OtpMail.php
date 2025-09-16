@@ -54,8 +54,8 @@ class OtpMail extends Mailable
             : "Your OTP code is:<br><br><div style='font-size: 24px; font-weight: bold; text-align: center; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px dashed #ff6b6b; color: #ff6b6b;'>{$this->otpCode}</div>";
 
         $highlightMessage = $isLithuanian
-            ? 'Šis kodas baigs galioti po 5 minučių. Prašome jį naudoti greitai.'
-            : 'This code will expire in 5 minutes. Please use it promptly.';
+            ? 'Šis kodas baigs galioti po 2 minučių. Prašome jį naudoti greitai.'
+            : 'This code will expire in 2 minutes. Please use it promptly.';
 
         $footer = $this->mailFooter($this->lang ?? 'en');
 
