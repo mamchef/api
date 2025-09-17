@@ -6,17 +6,8 @@ use App\Http\Controllers\DocuSignController;
 use App\Models\Chef;
 use App\Models\Food;
 use App\Models\Order;
-use App\Notifications\Order\Chef\NewOrderNotification;
 use App\Services\DocuSignService;
-use Barryvdh\DomPDF\Facade\Pdf;
-use DocuSign\eSign\Api\EnvelopesApi;
-use DocuSign\eSign\Model\DateSigned;
-use DocuSign\eSign\Model\Document;
-use DocuSign\eSign\Model\EnvelopeDefinition;
-use DocuSign\eSign\Model\Recipients;
-use DocuSign\eSign\Model\Signer;
-use DocuSign\eSign\Model\SignHere;
-use DocuSign\eSign\Model\Tabs;
+use App\Services\Interfaces\Chef\ChefProfileServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -51,9 +42,8 @@ Route::get('/reverb-test', function () {
 });
 
 Route::get('/test-stripe-chef', function () {
-    $chef = Chef::find(3);
-   /** @var \App\Services\Chef\ChefProfileService $service */
-    $service = resolve(\App\Services\Interfaces\Chef\ChefProfileServiceInterface::class);
+    $chef = Chef::query()->findOrFail(request()->input('chef'));
+    $service = resolve(ChefProfileServiceInterface::class);
     $service->handleChefApproval($chef);
 
 });
@@ -116,10 +106,13 @@ Route::get('/rate-foods', function () {
     return "ok";
 });
 Route::get('/test-contract', function () {
+    $chef = Chef::query()->findOrFail(request()->input('chef'));
     $docuSignService = new DocuSignService();
     $contractID = $docuSignService->sendPdfForSigning(
-        chefId: request()->input('chef'),
+        chefId: $this->chef->id,
     );
+    $chef->contract_id = $contractID;
+    $chef->save();
 
     return 'ok';
 });
