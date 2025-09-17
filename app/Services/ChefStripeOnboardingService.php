@@ -77,8 +77,8 @@ class ChefStripeOnboardingService
         try {
             $accountLink = $this->stripe->accountLinks->create([
                 'account' => $chef->stripe_account_id,
-                'refresh_url' => route('chef.stripe.refresh', ['lang' => $lang]),
-                'return_url' => route('chef.stripe.return', ['lang' => $lang]),
+                'refresh_url' => str_replace('http://', 'https://', route('chef.stripe.refresh', ['lang' => $lang])),
+                'return_url' => str_replace('http://', 'https://', route('chef.stripe.return', ['lang' => $lang])),
                 'type' => 'account_onboarding',
                 'collect' => 'eventually_due', // Collect all required information
             ]);
