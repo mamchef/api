@@ -46,9 +46,9 @@ class ChefAuthService implements ChefAuthServiceInterface
     public function loginByFacebook(LoginByFacebookDTO $DTO): string
     {
 
-        $isNewChef = false;
+        $isNewChef = true;
         if (Chef::query()->where('email', $DTO->getEmail())->exists()) {
-            $isNewChef = true;
+            $isNewChef = false;
         }
 
         $chef = Chef::query()->create($DTO->toArray());
@@ -99,9 +99,9 @@ class ChefAuthService implements ChefAuthServiceInterface
         $email = $payload['email'];
 
 
-        $isNewChef = false;
+        $isNewChef = true;
         if (Chef::query()->where('email', $email)->exists()) {
-            $isNewChef = true;
+            $isNewChef = false;
         }
 
         $chef = Chef::query()->firstOrCreate(
