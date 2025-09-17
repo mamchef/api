@@ -24,6 +24,7 @@ class SendOtpSmsJob implements ShouldQueue
      */
     public function handle(): void
     {
+        return;
         Mail::to('example@gmail.com')->send(new OtpMail($this->otpCode));
     }
 }

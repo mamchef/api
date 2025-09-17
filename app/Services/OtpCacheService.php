@@ -17,14 +17,15 @@ class OtpCacheService
     /**
      * @param $key
      * @param int $ttl
+     * @param string $for
      * @return int
      * @throws RandomException
      */
-    public static function generate($key, int $ttl = 120): int
+    public static function generate($key, int $ttl = 120, string $for = 'email'): int
     {
-        if (env('APP_ENV') === 'production') {
-            $code = random_int(111111, 999999);
-        } else {
+        $code = random_int(111111, 999999);
+
+        if ($for == 'sms') {
             $code = Carbon::now()->format('Ym');
         }
         Cache::put(key: "otp:{$key}", value: $code, ttl: $ttl);
@@ -57,7 +58,7 @@ class OtpCacheService
     }
 
 
-    public static function sendOtpEmail(string $email, string $otpCode , string $lang = 'en'): mixed
+    public static function sendOtpEmail(string $email, string $otpCode, string $lang = 'en'): mixed
     {
         $emailJob = dispatch(
             new SendOtpEmailJob(
@@ -86,7 +87,7 @@ class OtpCacheService
 
         // Send to Slack
         //$slackNotifier = new SlackNotifier();
-       // Notification::send($slackNotifier, new OtpSlackNotification($otpCode, 'sms', $phoneNumber));
+        // Notification::send($slackNotifier, new OtpSlackNotification($otpCode, 'sms', $phoneNumber));
 
         return $smsJob;
     }

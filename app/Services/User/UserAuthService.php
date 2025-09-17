@@ -25,7 +25,7 @@ class UserAuthService implements UserAuthServiceInterface
         return OtpCacheService::sendOtpSms(
             phoneNumber: $phoneNumber,
             otpCode: OtpCacheService::generate(
-                key: $key
+                key: $key, for: 'sms'
             )
         );
     }

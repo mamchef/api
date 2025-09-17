@@ -203,7 +203,7 @@
     <div class="email-container">
         <!-- Header with Logo -->
         <div class="header">
-            <img src="https://app.mamchef.com/logo.png" alt="MamChef Logo" class="logo">
+            <img src="https://app.mamchef.com/logo-white.png" alt="MamChef Logo" class="logo">
             @if(isset($header_title))
                 <h1 class="header-title">{{ $header_title }}</h1>
             @endif
