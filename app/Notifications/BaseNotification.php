@@ -20,8 +20,6 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     // Define the channels to send through
     public function via($notifiable): array
     {
-        $channels[] = 'mail';
-        return $channels;
         $channels = ['database', 'broadcast'];
 
         // Only add FCM if user has any tokens
