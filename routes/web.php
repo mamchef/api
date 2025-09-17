@@ -109,7 +109,7 @@ Route::get('/test-contract', function () {
     $chef = Chef::query()->findOrFail(request()->input('chef'));
     $docuSignService = new DocuSignService();
     $contractID = $docuSignService->sendPdfForSigning(
-        chefId: $this->chef->id,
+        chefId: $chef->id,
     );
     $chef->contract_id = $contractID;
     $chef->save();
