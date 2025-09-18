@@ -81,7 +81,7 @@ class ChefApprovedNotification extends BaseNotification
             ? "Sveiki {$notifiable->first_name}!"
             : "Hello {$notifiable->first_name}!";
 
-        $message = $isLithuanian
+        $body = $isLithuanian
             ? "Sveikiname! Džiugiai pranešame, kad jūsų virėjo paskyra sėkmingai patvirtinta.<br><br>
                Dabar galite pradėti kurti savo meniu, valdyti užsakymus ir patiekti skanius patiekalus klientams savo rajone.<br><br>
                <strong>Štai jūsų kiti žingsniai:</strong><br>
@@ -110,7 +110,7 @@ class ChefApprovedNotification extends BaseNotification
             ->view('emails.template', [
                 'header_title' => $headerTitle,
                 'greeting' => $greeting,
-                'message' => $message,
+                'body' => $body,
                 'highlight_message' => $highlightMessage,
                 'highlight_type' => 'success',
                 'button_text' => $buttonText,

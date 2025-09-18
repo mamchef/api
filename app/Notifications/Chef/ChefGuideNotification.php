@@ -81,7 +81,7 @@ class ChefGuideNotification extends BaseNotification
             ? "Sveiki {$notifiable->first_name},"
             : "Hi {$notifiable->first_name},";
 
-        $message = $isLithuanian
+        $body = $isLithuanian
             ? 'Kaip patikima namų gamybos maisto platforma, mes reikalaujame, kad visi mūsų šefai būtų teisiškai atitinkantys reikalavimus. Nesijaudinkite, mes padarėme tai lengvą jums.<br><br>
                Štai pagrindiniai žingsniai, kuriuos turite atlikti registruodami savo verslą Lietuvoje:<br><br>
                <strong>1. Registruotis VMI:</strong> Įsteigkite savo „individualią veiklą" mokesčių valdymui.<br>
@@ -106,7 +106,7 @@ class ChefGuideNotification extends BaseNotification
             ->view('emails.template', [
                 'header_title' => $headerTitle,
                 'greeting' => $greeting,
-                'message' => $message,
+                'body' => $body,
                 'highlight_message' => $highlightMessage,
                 'highlight_type' => 'info',
                 'button_text' => $buttonText,

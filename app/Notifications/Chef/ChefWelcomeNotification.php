@@ -69,7 +69,7 @@ class ChefWelcomeNotification extends BaseNotification
             ? "Sveiki {$notifiable->first_name},"
             : "Hi {$notifiable->first_name},";
 
-        $message = $isLithuanian
+        $body = $isLithuanian
             ? "Sveiki atvykę į MamChef bendruomenę! Esame sužavėti, kad prisijungėte prie mūsų misijos - atnešti autentišką, namie gamintą maistą prie kiekvieno kaimyno stalo.<br><br>
                Jūs esate vos keliais žingsniais nuo to, kad pavertumėte savo virtuvę verslu. Štai kas toliau:<br><br>
                <strong>1. Užbaikite savo profilį:</strong> Nustatykite savo biografiją ir meniu.<br>
@@ -97,7 +97,7 @@ class ChefWelcomeNotification extends BaseNotification
             ->view('emails.template', [
                 'header_title' => $headerTitle,
                 'greeting' => $greeting,
-                'message' => $message,
+                'body' => $message,
                 'highlight_message' => $highlightMessage,
                 'highlight_type' => 'info',
                 'button_text' => $buttonText,

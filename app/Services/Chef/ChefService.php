@@ -78,7 +78,7 @@ class ChefService implements ChefServiceInterface
 
         // Create Stripe account and send onboarding email when chef is approved
         if ($wasApproved) {
-            $this->handleChefApproval($chef);
+            $this->handleChefApproval($chef->id);
         }
 
         return $chef->fresh();

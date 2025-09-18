@@ -66,7 +66,7 @@ class StripeOnboardingNotification extends BaseNotification
             ? "Sveiki {$notifiable->name}!"
             : "Hello {$notifiable->name}!";
 
-        $message = $isLithuanian
+        $body = $isLithuanian
             ? "🎉 Jūsų dokumentai patvirtinti!<br><br>
                Dabar reikia užbaigti mokėjimų nustatymą, kad galėtumėte pradėti gauti užsakymus.<br><br>
                <strong>Kodėl reikia Stripe patvirtinimo?</strong><br>
@@ -93,7 +93,7 @@ class StripeOnboardingNotification extends BaseNotification
             ->view('emails.template', [
                 'header_title' => $headerTitle,
                 'greeting' => $greeting,
-                'message' => $message,
+                'body' => $body,
                 'highlight_message' => $highlightMessage,
                 'highlight_type' => 'info',
                 'button_text' => $buttonText,
