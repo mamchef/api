@@ -97,7 +97,7 @@ class ChefWelcomeNotification extends BaseNotification
             ->view('emails.template', [
                 'header_title' => $headerTitle,
                 'greeting' => $greeting,
-                'body' => $message,
+                'body' => $body,
                 'highlight_message' => $highlightMessage,
                 'highlight_type' => 'info',
                 'button_text' => $buttonText,
