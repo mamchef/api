@@ -37,7 +37,6 @@ class ChefAuthService implements ChefAuthServiceInterface
             $this->storeFcmToken($chef, $DTO->getFcmToken());
         }
 
-        $chef->notify(new ChefWelcomeNotification($chef));
         dispatch(new ChefGuideNotification($chef))->delay(Carbon::now()->days(3));
 
         return $chef->createToken(Chef::$TOKEN_NAME)->plainTextToken;
@@ -65,7 +64,6 @@ class ChefAuthService implements ChefAuthServiceInterface
         }
 
         if ($isNewChef) {
-            $chef->notify(new ChefWelcomeNotification($chef));
             dispatch(new ChefGuideNotification($chef))->delay(Carbon::now()->days(3));
         }
 
@@ -126,7 +124,6 @@ class ChefAuthService implements ChefAuthServiceInterface
 
 
         if ($isNewChef) {
-            $chef->notify(new ChefWelcomeNotification($chef));
             dispatch(new ChefGuideNotification($chef))->delay(Carbon::now()->days(3));
         }
 

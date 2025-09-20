@@ -54,10 +54,6 @@ class ChefStoreService implements ChefStoreServiceInterface
         $chefStore = $this->myStore($chefID);
         $params = $DTO->toArray();
 
-        if($chefStore->status != ChefStoreStatusEnum::UnderReview) {
-            $params["status"] = ChefStoreStatusEnum::Approved;
-        }
-
         if (isset($params["profile_image"])) {
             $path = Storage::disk("public")->putFileAs(
                 "chef_store/$chefStore->id",

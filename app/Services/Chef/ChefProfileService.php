@@ -6,6 +6,7 @@ use App\DTOs\Chef\PersonalInfo\UpdateProfileByChefDTO;
 use App\Enums\Chef\ChefStatusEnum;
 use App\Jobs\SendContractJob;
 use App\Models\Chef;
+use App\Notifications\Chef\ChefWelcomeNotification;
 use App\Services\ChefStripeOnboardingService;
 use App\Services\DocuSignService;
 use App\Services\Interfaces\Chef\ChefProfileServiceInterface;
@@ -51,6 +52,8 @@ class ChefProfileService implements ChefProfileServiceInterface
         if ($chef->status == ChefStatusEnum::Registered) {
             $chef->status = ChefStatusEnum::PersonalInfoFilled;
             $chef->save();
+
+            $chef->notify(new ChefWelcomeNotification($chef->fresh()));
         }
 
         return $chef->fresh();

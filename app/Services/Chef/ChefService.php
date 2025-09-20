@@ -6,6 +6,7 @@ use App\DTOs\Admin\Chef\ChefPrivateDocumentViewDTO;
 use App\DTOs\Admin\Chef\ChefUpdateByAdminDTO;
 use App\Enums\Chef\ChefStatusEnum;
 use App\Models\Chef;
+use App\Notifications\Chef\ChefApprovedNotification;
 use App\Services\ChefStripeOnboardingService;
 use App\Services\Interfaces\Chef\ChefServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -68,17 +69,19 @@ class ChefService implements ChefServiceInterface
             $data['password'] = Chef::generatePassword($data['password']);
         }
 
-        // Check if chef is being approved and handle Stripe account creation
-        $wasApproved = false;
-        if (isset($data['status']) && $data['status'] == ChefStatusEnum::Approved && $chef->status != ChefStatusEnum::Approved) {
-            $wasApproved = true;
-        }
-
         $chef->update($data);
 
-        // Create Stripe account and send onboarding email when chef is approved
-        if ($wasApproved) {
-            $this->handleChefApproval($chef->id);
+        // Check if chef is being approved and handle Stripe account creation
+        if (isset($data['status']) && $data['status'] == ChefStatusEnum::Approved && $chef->status != ChefStatusEnum::Approved
+
+        ) {
+            $chef->notify(new ChefApprovedNotification($chef));
+
+            if ($chef->stripe_account_id == null) {
+                // Create Stripe account and send onboarding email when chef is approved
+                $this->handleChefApproval($chef->id);
+            }
+
         }
 
         return $chef->fresh();

@@ -14,7 +14,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            color: #333333;
+            color: #15392f;
             background-color: #f8f9fa;
         }
 
@@ -28,7 +28,7 @@
         }
 
         .header {
-            background: #16392e;
+            background: #f5f5f5;
             padding: 30px 20px;
             text-align: center;
         }
@@ -41,7 +41,7 @@
         }
 
         .header-title {
-            color: #ffffff;
+            color: #15392f;
             font-size: 24px;
             font-weight: 600;
             margin: 0;
@@ -54,7 +54,7 @@
 
         .greeting {
             font-size: 18px;
-            color: #2c3e50;
+            color: #c2e1d7;
             margin-bottom: 20px;
             font-weight: 500;
         }
@@ -62,13 +62,13 @@
         .message {
             font-size: 16px;
             line-height: 1.7;
-            color: #555555;
+            color: #15392f !important;
             margin-bottom: 25px;
         }
 
         .button {
             display: inline-block;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            background: #b93d22;
             color: #ffffff !important;
             text-decoration: none;
             padding: 15px 30px;
@@ -77,7 +77,7 @@
             font-size: 16px;
             text-align: center;
             margin: 20px 0;
-            box-shadow: 0 3px 10px rgba(238, 90, 36, 0.3);
+            box-shadow: 0 3px 10px rgba(185, 61, 34, 0.3);
             transition: all 0.3s ease;
         }
 
@@ -104,7 +104,7 @@
         }
 
         .footer-links a {
-            color: #ff6b6b;
+            color: #b93d22;
             text-decoration: none;
             margin: 0 10px;
             font-weight: 500;
@@ -121,30 +121,30 @@
         }
 
         .highlight {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
+            background-color: #c2e1d7;
+            border: 1px solid #c2e1d7;
             border-radius: 4px;
             padding: 15px;
             margin: 20px 0;
-            border-left: 4px solid #ff6b6b;
+            border-left: 4px solid #b93d22;
         }
 
         .success {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
+            background-color: #c2e1d7;
+            border: 1px solid #c2e1d7;
+            color: #15392f;
         }
 
         .warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
+            background-color: #eba743;
+            border: 1px solid #eba743;
+            color: #15392f;
         }
 
         .info {
-            background-color: #d1ecf1;
-            border: 1px solid #bee5eb;
-            color: #0c5460;
+            background-color: #f5f5f5;
+            border: 1px solid #f5f5f5;
+            color: #15392f;
         }
 
         .social-links {
@@ -203,7 +203,7 @@
     <div class="email-container">
         <!-- Header with Logo -->
         <div class="header">
-            <img src="https://api.mamchef.com/logo-white.png" alt="MamChef Logo" class="logo">
+            <img src="https://api.mamchef.com/logo.png" alt="MamChef Logo" class="logo">
             @if(isset($header_title))
                 <h1 class="header-title">{{ $header_title }}</h1>
             @endif

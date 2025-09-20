@@ -50,8 +50,8 @@ class OtpMail extends Mailable
             : ($isLithuanian ? 'Sveiki!' : 'Hello!');
 
         $body = $isLithuanian
-            ? "Jūsų OTP kodas yra:<br><br><div style='font-size: 24px; font-weight: bold; text-align: center; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px dashed #ff6b6b; color: #ff6b6b;'>{$this->otpCode}</div>"
-            : "Your OTP code is:<br><br><div style='font-size: 24px; font-weight: bold; text-align: center; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px dashed #ff6b6b; color: #ff6b6b;'>{$this->otpCode}</div>";
+            ? "Jūsų OTP kodas yra:<br><br><div style='font-size: 24px; font-weight: bold; text-align: center; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px dashed #15392f; color: #15392f;'>{$this->otpCode}</div>"
+            : "Your OTP code is:<br><br><div style='font-size: 24px; font-weight: bold; text-align: center; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px dashed #15392f; color: #15392f;'>{$this->otpCode}</div>";
 
         $highlightMessage = $isLithuanian
             ? 'Šis kodas baigs galioti po 2 minučių. Prašome jį naudoti greitai.'

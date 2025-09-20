@@ -24,7 +24,6 @@ class ChefProfileResource extends BaseResource
             "full_name" => $chef->getFullName(),
             "email" => $chef->email,
             "phone" => $chef->phone,
-
             "address" => $chef->address,
             "main_street" => $chef->main_street,
             "city" => $chef->city,
@@ -32,6 +31,7 @@ class ChefProfileResource extends BaseResource
             "zip" => $chef->zip,
             "status" => $chef->status->value,
             "chef_store" => $chefStore ? (new ChefStoreResource($chefStore))->prePareData($request) : null,
+            'stripe_account_status'=> $chef->stripe_account_status,
         ];
     }
 }
