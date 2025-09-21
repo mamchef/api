@@ -54,7 +54,7 @@
 
         .greeting {
             font-size: 18px;
-            color: #c2e1d7;
+            color: #15392f;
             margin-bottom: 20px;
             font-weight: 500;
         }
