@@ -15,11 +15,13 @@ use Illuminate\Http\UploadedFile;
 class StoreFoodByChefRequest extends BaseFormRequest
 {
 
-    public function prepareForValidation()
+    public function prepareForValidation(): void
     {
         $this->merge([
             'tags' => explode(',', $this->tags)
         ]);
+
+        parent::prepareForValidation();
     }
 
     public function rules(): array
