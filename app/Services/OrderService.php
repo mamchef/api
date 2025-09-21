@@ -453,7 +453,8 @@ class OrderService implements OrderServiceInterface
 
         DB::beginTransaction();
         try {
-            $estimatedReadyTime = now()->addMinutes($estimatedReadyTime);
+
+            $estimatedReadyTime = now()->addMinutes((int)$estimatedReadyTime);
             $order->update([
                 'status' => OrderStatusEnum::ACCEPTED,
                 'estimated_ready_time' => $estimatedReadyTime,
