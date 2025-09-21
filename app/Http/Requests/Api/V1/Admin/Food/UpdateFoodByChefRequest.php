@@ -18,7 +18,7 @@ use Illuminate\Http\UploadedFile;
 class UpdateFoodByChefRequest extends BaseFormRequest
 {
 
-    public function prepareForValidation()
+    public function prepareForValidation():void
     {
         if ($this->has('tags') and !is_array($this->tags) ) {
             $this->merge([
