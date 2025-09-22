@@ -43,6 +43,9 @@ RUN mkdir -p /home/$user/.composer && \
 COPY ./docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY ./docker/nginx/nginx.conf /etc/nginx/sites-available/default
 
+# Copy custom PHP configuration
+COPY ./docker/php/conf.d/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
 # Setup cron for Laravel scheduler - run as www-data
 RUN echo "* * * * * www-data cd /var/www && php artisan schedule:run >> /dev/null 2>&1" >> /etc/crontab
 
