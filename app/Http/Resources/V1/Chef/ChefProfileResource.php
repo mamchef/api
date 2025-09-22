@@ -31,7 +31,7 @@ class ChefProfileResource extends BaseResource
             "zip" => $chef->zip,
             "status" => $chef->status->value,
             "chef_store" => $chefStore ? (new ChefStoreResource($chefStore))->prePareData($request) : null,
-            'stripe_account_status'=> $chef->stripe_account_status == 'active' ? 'active':'pending',
+            'stripe_account_status'=> $chef->stripe_account_status,
         ];
     }
 }
