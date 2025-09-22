@@ -8,6 +8,7 @@ enum TicketStatusEnum: string
     case UNDER_REVIEW = 'under_review';
     case ADMIN_ANSWERED = 'admin_answered';
     case USER_ANSWERED = 'user_answered';
+
     case COMPLETED = 'completed';
     case CLOSED = 'closed';
 

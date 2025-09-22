@@ -27,11 +27,12 @@ class TicketService implements TicketServiceInterface
 
     /** @inheritDoc */
     public function getChefTickets(
-        int $chefId,
+        int   $chefId,
         array $filters = [],
         array $relations = [],
-        ?int $pagination = null
-    ): Collection|LengthAwarePaginator|array {
+        ?int  $pagination = null
+    ): Collection|LengthAwarePaginator|array
+    {
         $tickets = Ticket::forChef($chefId)->filter($filters)
             ->with($relations);
         return $pagination ? $tickets->paginate($pagination) : $tickets->get();
@@ -39,11 +40,12 @@ class TicketService implements TicketServiceInterface
 
     /** @inheritDoc */
     public function getUserTickets(
-        int $userId,
+        int   $userId,
         array $filters = [],
         array $relations = [],
-        ?int $pagination = null
-    ): Collection|LengthAwarePaginator|array {
+        ?int  $pagination = null
+    ): Collection|LengthAwarePaginator|array
+    {
         $tickets = Ticket::forUser($userId)->filter($filters)
             ->with($relations);
         return $pagination ? $tickets->paginate($pagination) : $tickets->get();
@@ -144,10 +146,19 @@ class TicketService implements TicketServiceInterface
     {
         DB::beginTransaction();
         try {
+
+
             $ticket = $this->getChefTicket(
                 chefId: $DTO->getChefId(),
                 ticketId: $DTO->getTicketId()
             );
+
+            if (in_array($ticket->status?->value, [
+                TicketStatusEnum::COMPLETED->value,
+                TicketStatusEnum::CLOSED->value,
+            ])) {
+                return $ticket;
+            }
 
             $ticketItem = TicketItem::query()->create($DTO->toArray());
 
@@ -159,6 +170,10 @@ class TicketService implements TicketServiceInterface
                 );
                 $ticketItem->save();
             }
+
+
+            $ticket->status = TicketStatusEnum::USER_ANSWERED;
+            $ticket->save();
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -271,9 +286,10 @@ class TicketService implements TicketServiceInterface
 
     public function all(
         ?array $filters = null,
-        array $relations = [],
-        $pagination = null
-    ): Collection|LengthAwarePaginator {
+        array  $relations = [],
+               $pagination = null
+    ): Collection|LengthAwarePaginator
+    {
         $tickets = Ticket::query()->when($relations, fn($q) => $q->with($relations))
             ->when($filters, fn($q) => $q->filter($filters));
 
@@ -306,6 +322,6 @@ class TicketService implements TicketServiceInterface
         $ticket = $this->show($ticketId);
         $ticket->status = $status;
         $ticket->save();
-        return $ticket->fresh()->loadMissing(['items','ticketable']);
+        return $ticket->fresh()->loadMissing(['items', 'ticketable']);
     }
 }

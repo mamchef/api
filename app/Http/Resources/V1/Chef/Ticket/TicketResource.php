@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1\Chef\Ticket;
 
+use App\Enums\Ticket\TicketStatusEnum;
 use App\Http\Resources\V1\BaseResource;
 use App\Models\Ticket;
 use App\Models\TicketItem;
@@ -24,6 +25,7 @@ class TicketResource extends BaseResource
             'items' => $items,
             'created_at' => $ticket->created_at,
             'updated_at' => $ticket->updated_at,
+            'status' =>   $this->getStatus($ticket->status?->value ?? ''),
         ];
     }
 
@@ -38,5 +40,36 @@ class TicketResource extends BaseResource
             'created_at' => $item->created_at,
             'updated_at' => $item->updated_at,
         ];
+    }
+
+
+    private function getStatus(string $status):string
+    {
+        if ($status == TicketStatusEnum::USER_CREATED?->value) {
+            $status = 'Under Review';
+        }
+
+        if ($status == TicketStatusEnum::UNDER_REVIEW?->value) {
+            $status = 'Under Review';
+        }
+
+
+        if ($status == TicketStatusEnum::USER_ANSWERED?->value) {
+            $status = 'Under Review';
+        }
+
+        if ($status == TicketStatusEnum::ADMIN_ANSWERED?->value) {
+            $status = 'Answered';
+        }
+
+        if ($status == TicketStatusEnum::COMPLETED?->value) {
+            $status = 'Closed';
+        }
+
+        if ($status == TicketStatusEnum::CLOSED?->value) {
+            $status = 'Closed';
+        }
+
+        return $status;
     }
 }
