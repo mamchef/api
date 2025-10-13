@@ -8,6 +8,7 @@ use App\DTOs\Chef\Auth\LoginByGoogleDTO;
 use App\DTOs\Chef\Auth\RegisterByEmailDTO;
 use App\DTOs\Chef\Auth\LoginByFacebookDTO;
 use App\Enums\Chef\ChefStore\ChefStoreStatusEnum;
+use App\Enums\RegisterSourceEnum;
 use App\Models\Chef;
 use App\Models\ChefStore;
 use App\Notifications\Chef\ChefGuideNotification;
@@ -105,7 +106,8 @@ class ChefAuthService implements ChefAuthServiceInterface
         $chef = Chef::query()->firstOrCreate(
             ['email' => $email], [
                 "uuid" => $DTO->getUUid(),
-                "email_verified_at" => now()
+                "email_verified_at" => now(),
+                'register_source' => RegisterSourceEnum::Gmail
             ]
         );
 
