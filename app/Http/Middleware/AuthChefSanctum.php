@@ -23,6 +23,8 @@ class AuthChefSanctum
         $token = $request->bearerToken();
         $lang = request()->header('Language') ?? 'en';
 
+        Cache::forget('admin-token:78|3keniJempGKKu8RUzdKi39mqnp1tyPaVr7naq7hN7803f4b4');
+
         if (!$token) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
