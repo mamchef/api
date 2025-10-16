@@ -88,7 +88,7 @@ class ChefProfileService implements ChefProfileServiceInterface
         if ($chef->status == ChefStatusEnum::PersonalInfoFilled) {
             $chef->status = ChefStatusEnum::DocumentUploaded;
             if ($chef->contract_id == null) {
-                SendContractJob::dispatch($chef);
+               // SendContractJob::dispatch($chef);
             }
         }
 
