@@ -14,6 +14,7 @@ use App\Http\Requests\Api\V1\Chef\Auth\RegisterByGoogleRequest;
 use App\Http\Requests\Api\V1\Chef\Auth\SendForgotPasswordEmailOTPlRequest;
 use App\Http\Requests\Api\V1\Chef\Auth\SendLoginEmailOTPlRequest;
 use App\Http\Requests\Api\V1\Chef\Auth\SendRegisterEmailOTPlRequest;
+use App\Http\Resources\V1\Admin\AdminTokenResponse;
 use App\Http\Resources\V1\Chef\ChefTokenResponse;
 use App\Http\Resources\V1\SuccessResponse;
 use App\Services\Interfaces\Chef\ChefAuthServiceInterface;
@@ -162,6 +163,15 @@ class AuthController extends Controller
 
         return new SuccessResponse(
             message: __('auth.password_reset.success')
+        );
+    }
+
+
+    public function me(Request $request): ChefTokenResponse
+    {
+        $token = $request->bearerToken();
+        return new ChefTokenResponse(
+            token: $token
         );
     }
 

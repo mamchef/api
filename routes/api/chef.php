@@ -30,6 +30,8 @@ Route::prefix('chef')->name("chef.")->group(function () {
         Route::post("forgot-password", [AuthController::class, 'forgotPassword'])->name("forgot-password");
 
         Route::post('logout', [AuthController::class, 'logout'])->middleware("chef-auth")->name("logout");
+
+        Route::get('me', [AuthController::class, 'me'])->middleware("chef-auth")->name("me");
     });
 
     //Personal Info
