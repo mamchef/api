@@ -10,6 +10,8 @@ use App\Services\DocuSignService;
 use App\Services\Interfaces\Chef\ChefProfileServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 
 Route::get('/payment/success',[PaymentController::class,'success'])->name('payment.success');
 Route::get('/payment/cancel',[PaymentController::class,'failed'])->name('payment.failed');
@@ -70,7 +72,10 @@ Route::post('/webhook/docusign', [DocusignController::class, 'handle']);
 
 
 Route::get('dev', function () {
-    dd(Order::query()->whereIn('status', OrderStatusEnum::historyStatuses())->first());
+    $keys = Redis::keys('token:*');
+    foreach ($keys as $key) {
+        Redis::del($key);
+    }
 })->name('dev');
 
 
