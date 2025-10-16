@@ -14,6 +14,7 @@ use App\Http\Resources\V1\User\UserTokenResponse;
 use App\Services\Interfaces\User\UserAuthServiceInterface;
 use App\Services\RateLimitService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -87,6 +88,8 @@ class AuthController extends Controller
         $token = $request->user()->currentAccessToken();
         $token->expires_at = now();
         $token->save();
+
+        Cache::forget('token:' . $request->bearerToken());
         return new SuccessResponse();
     }
 

@@ -28,7 +28,7 @@ class AuthChefSanctum
         }
 
         /** @var ChefAuthDTO $dto */
-        $dto = Cache::rememberForever('token:' . $token, function () use ($token) {
+        $dto = Cache::rememberForever('chef-token:' . $token, function () use ($token) {
             try {
                 $accessToken = PersonalAccessToken::findToken($token);
                 if (!$accessToken || ($accessToken->expires_at != null && $accessToken->expires_at < now(
@@ -55,7 +55,7 @@ class AuthChefSanctum
         });
 
         if ($dto->getStatus() == Response::HTTP_INTERNAL_SERVER_ERROR) {
-            Cache::forget('token:' . $token);
+            Cache::forget('chef-token:' . $token);
         }
 
         /** @var PersonalAccessToken $accessToken */
@@ -79,8 +79,8 @@ class AuthChefSanctum
             Chef::query()->where('id', $chef->id)->update(['lang' => $lang]);
             $chef->lang = $lang;
             $accessToken = $dto->getAccessToken();
-            Cache::forget('token:' . $token);
-            Cache::rememberForever('token:' . $token, function () use ($token ,$chef,$accessToken) {
+            Cache::forget('chef-token:' . $token);
+            Cache::rememberForever('chef-token:' . $token, function () use ($token ,$chef,$accessToken) {
                 try {
                     return new ChefAuthDTO(
                         chef: $chef,
