@@ -22,8 +22,20 @@ class ChefFilter extends ModelFilter
     {
         return $this->where(function ($query) use ($param) {
             return $query->where('first_name', 'like', '%' . $param . '%')
-                ->orWhere('first_name', 'like', '%' . $param . '%');
+                ->orWhere('last_name', 'like', '%' . $param . '%')
+                ->orWhere('email', 'like', '%' . $param . '%')
+                ->orWhere('phone', 'like', '%' . $param . '%');
         });
+    }
+
+    public function status(string $param): self
+    {
+        return $this->where('status', strtoupper($param));
+    }
+
+    public function registerSource(string $param): self
+    {
+        return $this->where('register_source', strtoupper($param));
     }
 
     public function sortBy(string $column): self

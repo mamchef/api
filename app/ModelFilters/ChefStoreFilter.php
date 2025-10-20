@@ -23,7 +23,13 @@ class ChefStoreFilter extends ModelFilter
         return $this->where(function ($query) use ($param) {
             return $query->where('name', 'like', '%' . $param . '%')
                 ->orWhere('short_description', 'like', '%' . $param . '%')
-                ->orWhere('phone', 'like', '%' . $param . '%');
+                ->orWhere('phone', 'like', '%' . $param . '%')
+                ->orWhereHas('chef', function ($query) use ($param) {
+                    return $query->where('first_name', 'like', '%' . $param . '%')
+                        ->orWhere('last_name', 'like', '%' . $param . '%')
+                        ->orWhere('email', 'like', '%' . $param . '%')
+                        ->orWhere('phone', 'like', '%' . $param . '%');
+                });
         });
     }
 

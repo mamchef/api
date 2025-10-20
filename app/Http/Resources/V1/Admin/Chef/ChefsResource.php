@@ -37,6 +37,8 @@ class ChefsResource extends BaseResource
             "document_1" => $chef->document_1,
             "document_2" => $chef->document_2,
             "contract" => $chef->contract,
+            "created_at" => $chef->created_at->format('Y-m-d H:i:s'),
+            "updated_at" => $chef->created_at->format('Y-m-d H:i:s'),
 
             //  "chef_store" => $chefStore ? (new ChefStoreResource($chefStore))->prePareData($request) : null,
         ];
