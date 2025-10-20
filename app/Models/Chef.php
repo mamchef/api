@@ -46,7 +46,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $contract_id
  * @property string $contract
  * @property Carbon $created_at
- * @property string $updated_at
+ * @property Carbon $updated_at
  * @property string $lang
  *
  *
