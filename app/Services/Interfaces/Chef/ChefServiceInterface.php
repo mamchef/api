@@ -29,4 +29,5 @@ interface ChefServiceInterface
     public function checkStripeOnboarding(int $chefId): Chef;
 
 
+    public function sendContract(int $chefId): void;
 }

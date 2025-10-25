@@ -30,6 +30,7 @@ class ChefResource extends BaseResource
             "main_street" => $chef->main_street,
             "address" => $chef->address,
             "zip" => $chef->zip,
+            "vmvt_number" => $chef->vmvt_number,
 
             "city_id" => $chef->city_id,
             "status" => $chef->status->value,

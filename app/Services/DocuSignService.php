@@ -146,6 +146,32 @@ class DocuSignService
     }
 
     /**
+     * Resend notification for an existing envelope
+     * This doesn't create a new envelope, just resends the email notification
+     *
+     * @param string $envelopeId
+     * @return bool
+     * @throws Exception
+     */
+    public function resendContractNotification(string $envelopeId): bool
+    {
+        try {
+            $envelopeApi = new EnvelopesApi($this->apiClient);
+
+            // Update envelope to resend notification
+            $envelopeApi->update(
+                $this->args['account_id'],
+                $envelopeId,
+                ['resend_envelope' => 'true']
+            );
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception('Error resending contract notification: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Generate PDF from Blade template with dynamic data
      * Uncomment and use this method after installing barryvdh/laravel-dompdf
      *

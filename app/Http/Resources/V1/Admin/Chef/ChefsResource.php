@@ -36,6 +36,7 @@ class ChefsResource extends BaseResource
             "contract_id" => $chef->contract_id,
             "document_1" => $chef->document_1,
             "document_2" => $chef->document_2,
+            "vmvt_number" => $chef->vmvt_number,
             "contract" => $chef->contract,
             "created_at" => $chef->created_at->format('Y-m-d H:i:s'),
             "updated_at" => $chef->updated_at?->format('Y-m-d H:i:s'),

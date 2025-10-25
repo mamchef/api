@@ -19,7 +19,7 @@ interface ChefProfileServiceInterface
 
     public function updateProfileByChef(int $chefID, UpdateProfileByChefDTO $DTO): Chef;
 
-    public function updateDocumentsByChef(int $chefID, UploadedFile $document1, UploadedFile $document2): Chef;
+    public function updateDocumentsByChef(int $chefID, UploadedFile $document1, string $vmvtNumber, ?UploadedFile $document2 =null): Chef;
 
     public function fetchChefSignedContract(string $envelopeID): void;
 }

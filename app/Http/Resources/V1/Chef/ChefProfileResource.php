@@ -29,6 +29,7 @@ class ChefProfileResource extends BaseResource
             "city" => $chef->city,
             "city_id" => $chef->city_id,
             "zip" => $chef->zip,
+            "vmvt_number" => $chef->vmvt_number,
             "status" => $chef->status->value,
             "chef_store" => $chefStore ? (new ChefStoreResource($chefStore))->prePareData($request) : null,
             'stripe_account_status'=> $chef->stripe_account_status,

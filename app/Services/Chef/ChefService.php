@@ -5,6 +5,8 @@ namespace App\Services\Chef;
 use App\DTOs\Admin\Chef\ChefPrivateDocumentViewDTO;
 use App\DTOs\Admin\Chef\ChefUpdateByAdminDTO;
 use App\Enums\Chef\ChefStatusEnum;
+use App\Jobs\ResendContractJob;
+use App\Jobs\SendContractJob;
 use App\Models\Chef;
 use App\Notifications\Chef\ChefApprovedNotification;
 use App\Services\ChefStripeOnboardingService;
@@ -158,5 +160,15 @@ class ChefService implements ChefServiceInterface
         $stripeService->updateChefStripeStatus($chef);
         return $chef->fresh();
 
+    }
+
+    public function sendContract(int $chefId): void
+    {
+        $chef = $this->show($chefId);
+        if ($chef->contract_id == null) {
+            SendContractJob::dispatch($chef);
+            return;
+        }
+        ResendContractJob::dispatch($chef);
     }
 }

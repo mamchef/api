@@ -43,6 +43,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property ChefStatusEnum $status
  * @property string $document_1
  * @property string $document_2
+ * @property string $vmvt_number
  * @property string $contract_id
  * @property string $contract
  * @property Carbon $created_at

@@ -59,11 +59,11 @@ class ChefProfileService implements ChefProfileServiceInterface
         return $chef->fresh();
     }
 
-    public function updateDocumentsByChef(int $chefID, UploadedFile $document1, UploadedFile $document2): Chef
+    public function updateDocumentsByChef(int $chefID, UploadedFile $document1, string $vmvtNumber, ?UploadedFile $document2 = null): Chef
     {
         $chef = Chef::query()->findOrFail($chefID);
 
-        if ($chef->document_1 != null and $chef->document_2 != null) {
+        if ($chef->document_1 != null and $chef->vmvt_number != null) {
             throw ValidationException::withMessages([
                 "error" => __("public.operation_denied")
             ]);
@@ -75,25 +75,24 @@ class ChefProfileService implements ChefProfileServiceInterface
             "document1." . $document1->getClientOriginalExtension(),
         );
 
-        $document2 = Storage::disk("private")->putFileAs(
-            "chef/$chefID",
-            $document2,
-            "document2." . $document2->getClientOriginalExtension(),
-        );
+        if ($document2 != null) {
+            $document2 = Storage::disk("private")->putFileAs(
+                "chef/$chefID",
+                $document2,
+                "document2." . $document2->getClientOriginalExtension(),
+            );
+            $chef->document_2 = $document2;
+        }
 
         $chef->document_1 = $document1;
-        $chef->document_2 = $document2;
+        $chef->vmvt_number = $vmvtNumber;
 
         //UPDATE TO NEED REVIEW COX ALL DOCUMENT UPLOADED AND CONTRACT SIGNED
         if ($chef->status == ChefStatusEnum::PersonalInfoFilled) {
             $chef->status = ChefStatusEnum::DocumentUploaded;
-            if ($chef->contract_id == null) {
-               // SendContractJob::dispatch($chef);
-            }
         }
 
         $chef->save();
-
         return $chef->fresh();
     }
 

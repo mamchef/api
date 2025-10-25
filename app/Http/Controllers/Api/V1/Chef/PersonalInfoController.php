@@ -56,7 +56,7 @@ class PersonalInfoController extends Controller
         $this->chefProfileService->updateDocumentsByChef(
             chefID: Auth::id(),
             document1: $request->document_1,
-            document2: $request->document_2,
+            vmvtNumber: $request->vmvt_number,
         );
         return new SuccessResponse();
     }

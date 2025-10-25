@@ -110,4 +110,11 @@ class ChefController extends Controller
         $chef=   $this->chefService->checkStripeOnboarding($chefId);
         return new ChefResource($chef);
     }
+
+
+    public function sendContract(int $chefId)
+    {
+        $this->chefService->sendContract($chefId);
+        return new SuccessResponse();
+    }
 }
