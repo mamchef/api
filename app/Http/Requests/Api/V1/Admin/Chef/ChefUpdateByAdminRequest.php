@@ -26,6 +26,7 @@ use Illuminate\Validation\Rules\Password;
  * @property UploadedFile $document_2
  * @property UploadedFile $contract
  * @property string $contract_id
+ * @property string $vmvt_number
  */
 class ChefUpdateByAdminRequest extends BaseFormRequest
 {
@@ -81,6 +82,7 @@ class ChefUpdateByAdminRequest extends BaseFormRequest
             "document_2" => ["sometimes", "file", "mimes:pdf,jpg,jpeg,png,doc,docx"],
             "contract" => ["sometimes", "file", "mimes:pdf,jpg,jpeg,png,doc,docx"],
             'contract_id' => ['sometimes', 'integer', 'unique:chefs,contract_id,' . $chefId],
+            "vmvt_number"=> ['sometimes', 'string','size:9'],
         ];
     }
 }
