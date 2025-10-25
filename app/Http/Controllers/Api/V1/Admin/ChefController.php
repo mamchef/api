@@ -66,7 +66,7 @@ class ChefController extends Controller
                 document_2: $request->has('document_2') ? $request->document_2 : DoNotChange::value(),
                 contract_id: $request->has('contract_id') ? $request->contract_id : DoNotChange::value(),
                 contract: $request->has('contract') ? $request->contract : DoNotChange::value(),
-                vmvtNumber: $request->has('vmvt_number') ? $request->vmvt_number : DoNotChange::value(),
+                vmvt_number: $request->has('vmvt_number') ? $request->vmvt_number : DoNotChange::value(),
             )
         );
 

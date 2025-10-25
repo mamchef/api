@@ -27,7 +27,7 @@ readonly class ChefUpdateByAdminDTO extends BaseDTO
         public UploadedFile|DoNotChange $document_2 = new DoNotChange(),
         public string|DoNotChange $contract_id = new DoNotChange(),
         public UploadedFile|DoNotChange $contract = new DoNotChange(),
-        public string|DoNotChange $vmvtNumber = new DoNotChange(),
+        public string|DoNotChange $vmvt_number = new DoNotChange(),
     ) {
     }
 
