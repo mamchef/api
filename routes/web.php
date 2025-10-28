@@ -40,10 +40,12 @@ Route::get('/chef/stripe/return', function (Request $request) {
 })->name('chef.stripe.return');
 
 Route::get('/reverb-test', function () {
+    return ;
     return view('reverb-test');
 });
 
 Route::get('/test-stripe-chef', function () {
+    return ;
     $chef = Chef::query()->findOrFail(request()->input('chef'));
     $service = resolve(ChefProfileServiceInterface::class);
     $service->handleChefApproval($chef);
@@ -52,6 +54,7 @@ Route::get('/test-stripe-chef', function () {
 
 
 Route::get('/test-notification', function () {
+    return ;
     // Send a test notification to user ID 1
     $user = \App\Models\User::find(3);
     $order = Order::latest()->find(34);
@@ -60,18 +63,20 @@ Route::get('/test-notification', function () {
 });
 
 Route::get('/test-otp', function () {
+    return ;
     \App\Services\OtpCacheService::sendOtpEmail('rh.soroosh@gmail.com', rand(111111, 999999),);
 });
 
-Route::get('test', [DocusignController::class, 'register'])->name('docusign');
-Route::get('docusign', [DocusignController::class, 'index'])->name('docusign');
-Route::get('connect-docusign', [DocusignController::class, 'connectDocusign'])->name('connect.docusign');
-Route::get('docusign/callback', [DocusignController::class, 'callback'])->name('docusign.callback');
-Route::get('sign-document', [DocusignController::class, 'signDocument'])->name('docusign.sign');
+//Route::get('test', [DocusignController::class, 'register'])->name('docusign');
+//Route::get('docusign', [DocusignController::class, 'index'])->name('docusign');
+//Route::get('connect-docusign', [DocusignController::class, 'connectDocusign'])->name('connect.docusign');
+//Route::get('docusign/callback', [DocusignController::class, 'callback'])->name('docusign.callback');
+//Route::get('sign-document', [DocusignController::class, 'signDocument'])->name('docusign.sign');
 Route::post('/webhook/docusign', [DocusignController::class, 'handle']);
 
 
 Route::get('dev', function () {
+    return ;
     $keys = Redis::keys('token:*');
     foreach ($keys as $key) {
         Redis::del($key);
@@ -80,6 +85,7 @@ Route::get('dev', function () {
 
 
 Route::get('/test-foods', function () {
+    return ;
     $foods = Food::query()->first();
 
 
@@ -103,6 +109,7 @@ Route::get('/test-foods', function () {
 
 
 Route::get('/rate-foods', function () {
+    return ;
     $orders = Order::query()->whereIn('status', OrderStatusEnum::historyStatuses())->get();
     foreach ($orders as $order) {
         \App\Jobs\CalculateFoodRate::dispatch($order);
@@ -111,6 +118,7 @@ Route::get('/rate-foods', function () {
     return "ok";
 });
 Route::get('/test-contract', function () {
+    return ;
     $chef = Chef::query()->findOrFail(request()->input('chef'));
     $docuSignService = new DocuSignService();
     $contractID = $docuSignService->sendPdfForSigning(
