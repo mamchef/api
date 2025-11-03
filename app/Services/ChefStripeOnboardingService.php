@@ -167,8 +167,9 @@ class ChefStripeOnboardingService
                 $chef = $chef->fresh();
             }
 
-            // Generate onboarding link
-            $onboardingUrl = $this->generateOnboardingLink($chef, $lang);
+            // Generate our own onboarding URL that creates fresh Stripe links on-demand
+            // This way the link in the email never expires
+            $onboardingUrl = str_replace('http://', 'https://', route('chef.stripe.onboard', ['chef' => $chef->id, 'lang' => $lang]));
 
             // Send notification email
             $chef->notify(new StripeOnboardingNotification($onboardingUrl));
@@ -179,18 +180,18 @@ class ChefStripeOnboardingService
             return [
                 'success' => true,
                 'onboarding_url' => $onboardingUrl,
-                'message' => $lang === 'lt' 
+                'message' => $lang === 'lt'
                     ? 'Stripe sąskaitos nustatymai išsiųsti el. paštu'
                     : 'Stripe account setup sent via email',
             ];
-            
+
         } catch (\Exception $e) {
             Log::error("Failed to complete onboarding for chef {$chef->id}: " . $e->getMessage());
-            
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
-                'message' => $lang === 'lt' 
+                'message' => $lang === 'lt'
                     ? 'Nepavyko nustatyti mokėjimų sistemos'
                     : 'Failed to setup payment system',
             ];
@@ -227,7 +228,7 @@ class ChefStripeOnboardingService
                 'step' => 'kyc_verification',
                 'progress' => 50,
                 'message' => 'Complete Stripe verification',
-                'onboarding_url' => $this->generateOnboardingLink($chef),
+                'onboarding_url' => str_replace('http://', 'https://', route('chef.stripe.onboard', ['chef' => $chef->id, 'lang' => $chef->lang ?? 'en'])),
                 'can_receive_payments' => false,
             ];
         }

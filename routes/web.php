@@ -17,6 +17,31 @@ Route::get('/payment/success',[PaymentController::class,'success'])->name('payme
 Route::get('/payment/cancel',[PaymentController::class,'failed'])->name('payment.failed');
 
 // Stripe Connect routes for chefs
+// This route generates a fresh onboarding link every time it's accessed
+// Use this in emails so the link never expires
+Route::get('/chef/stripe/onboard/{chef}', function (Chef $chef, Request $request) {
+    $lang = $request->get('lang') ?? $chef->lang ?? 'en';
+
+    try {
+        $stripeService = new \App\Services\ChefStripeOnboardingService();
+
+        // If chef doesn't have a Stripe account yet, create one
+        if (!$chef->stripe_account_id) {
+            $accountId = $stripeService->createStripeAccount($chef);
+            $chef->update(['stripe_account_id' => $accountId]);
+            $chef = $chef->fresh();
+        }
+
+        // Generate fresh onboarding link and redirect
+        $onboardingUrl = $stripeService->generateOnboardingLink($chef, $lang);
+        return redirect($onboardingUrl);
+
+    } catch (\Exception $e) {
+        \Log::error("Failed to generate onboarding link for chef {$chef->id}: " . $e->getMessage());
+        return view('chef.stripe-refresh', compact('lang'));
+    }
+})->name('chef.stripe.onboard');
+
 Route::get('/chef/stripe/refresh', function (Request $request) {
     $lang = $request->get('lang') ?? 'en';
 
