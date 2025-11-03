@@ -19,6 +19,26 @@ Route::get('/payment/cancel',[PaymentController::class,'failed'])->name('payment
 // Stripe Connect routes for chefs
 Route::get('/chef/stripe/refresh', function (Request $request) {
     $lang = $request->get('lang') ?? 'en';
+
+    // Check if account parameter is provided (Stripe includes this when link expires)
+    $accountId = $request->get('account');
+    if ($accountId) {
+        // Find the chef and generate a fresh onboarding link
+        $chef = \App\Models\Chef::where('stripe_account_id', $accountId)->first();
+        if ($chef) {
+            try {
+                $stripeService = new \App\Services\ChefStripeOnboardingService();
+                $newLink = $stripeService->generateOnboardingLink($chef, $lang);
+
+                // Redirect to the fresh onboarding link
+                return redirect($newLink);
+            } catch (\Exception $e) {
+                \Log::error("Failed to generate refresh link for chef {$chef->id}: " . $e->getMessage());
+            }
+        }
+    }
+
+    // Fallback to static page if account not found or error occurred
     return view('chef.stripe-refresh', compact('lang'));
 })->name('chef.stripe.refresh');
 
