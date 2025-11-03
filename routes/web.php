@@ -9,21 +9,27 @@ use App\Models\Order;
 use App\Services\DocuSignService;
 use App\Services\Interfaces\Chef\ChefProfileServiceInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/payment/success',[PaymentController::class,'success'])->name('payment.success');
 Route::get('/payment/cancel',[PaymentController::class,'failed'])->name('payment.failed');
 
-// Stripe Connect routes for chefs
-// This route generates a fresh onboarding link every time it's accessed
-// Use this in emails so the link never expires
 Route::get('/chef/stripe/onboard/{chef}', function (Chef $chef, Request $request) {
     $lang = $request->get('lang') ?? $chef->lang ?? 'en';
 
     try {
         $stripeService = new \App\Services\ChefStripeOnboardingService();
+
+        // Check if chef has already completed onboarding
+        if ($chef->stripe_account_id) {
+            $status = $chef->stripe_account_status;
+
+            // If already completed, show success page instead
+            if ($status == 'active') {
+                return view('chef.stripe-already-completed', compact('lang'));
+            }
+        }
 
         // If chef doesn't have a Stripe account yet, create one
         if (!$chef->stripe_account_id) {
