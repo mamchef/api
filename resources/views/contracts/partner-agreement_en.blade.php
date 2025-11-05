@@ -976,7 +976,7 @@
 
         <p><strong>Platform:</strong> MB "MamChef", a company established under the laws of the Republic of Lithuania, company code 307277177, registered at Krivių g. 5, LT-01204, Vilnius, Republic of Lithuania</p>
 
-        <p><strong>Date of Signature:</strong> @{{date_signed}}</p>
+        <p><strong>Date of Signature:</strong><span style="color: white;"> @{{date_signed}}</span></p>
 
         <p><strong>Applicable Period:</strong> 365 Days</p>
     </div>

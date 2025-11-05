@@ -412,7 +412,7 @@
 
     <p><strong>Platforma:</strong> MB "MamChef", įmonė, įsteigta pagal Lietuvos Respublikos įstatymus, įmonės kodas 307277177, registruota adresu Krivių g. 5, LT-01204, Vilnius, Lietuvos Respublika</p>
 
-    <p><strong>Pasirašymo data:</strong> @{{date_signed}}</p>
+    <p><strong>Pasirašymo data:</strong> <span style="color: white;"> @{{date_signed}}</span></p>
 
     <p><strong>Taikymo laikotarpis:</strong> 365 Dienos</p>
 </div>
