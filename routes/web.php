@@ -125,6 +125,17 @@ Route::get('/test-otp', function () {
 //Route::get('sign-document', [DocusignController::class, 'signDocument'])->name('docusign.sign');
 Route::post('/webhook/docusign', [DocusignController::class, 'handle']);
 
+Route::get('/docusign/callback', function (\Illuminate\Http\Request $request) {
+    // When user grants consent, DocuSign redirects here with ?code=...
+    $code = $request->query('code');
+
+    if ($code) {
+        return "✅ Consent granted! You can close this tab now.";
+    }
+
+    return "❌ No authorization code received.";
+});
+
 
 Route::get('dev', function () {
     return ;
