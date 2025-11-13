@@ -10,6 +10,7 @@ readonly class HomeBannerViewDTO extends BaseDTO
     public function __construct(
         protected string $section,
         protected string $image,
+        protected string $imageLt,
         protected ?string $link,
         protected ?string $alt,
     ) {
@@ -21,6 +22,7 @@ readonly class HomeBannerViewDTO extends BaseDTO
         return [
             'section' => $this->section,
             'image' => $this->image,
+            'image_lt' => $this->imageLt,
             'link' => $this->link,
             'alt' => $this->alt,
         ];

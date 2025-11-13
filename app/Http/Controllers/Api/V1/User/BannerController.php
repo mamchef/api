@@ -17,29 +17,34 @@ class BannerController extends Controller
         $banners->push(
             new HomeBannerViewDTO(
                 section: "top",
-                image: config("app.url") . '/storage/banners/banner1.jpg',
+                image: config("app.url") . '/banners/app_banner.png',
+                imageLt: config("app.url") . '/banners/app_banner_lt.png',
                 link: "#",
-                alt: "home banner 1"
+                alt: "20% discount"
+            )
+        );
+
+
+        $banners->push(
+            new HomeBannerViewDTO(
+                section: "top",
+                image: config("app.url") . '/banners/app_banner.png',
+                imageLt: config("app.url") . '/banners/app_banner_lt.png',
+                link: "#",
+                alt: "20% discount"
             )
         );
 
         $banners->push(
             new HomeBannerViewDTO(
                 section: "top",
-                image: config("app.url") . '/storage/banners/banner2.jpg',
+                image: config("app.url") . '/banners/app_banner.png',
+                imageLt: config("app.url") . '/banners/app_banner_lt.png',
                 link: "#",
-                alt: "home banner 2"
+                alt: "20% discount"
             )
         );
 
-        $banners->push(
-            new HomeBannerViewDTO(
-                section: "top",
-                image: config("app.url") . '/storage/banners/banner3.jpg',
-                link: "#",
-                alt: "home banner 3"
-            )
-        );
         return HomeBannerResource::collection($banners);
     }
 
