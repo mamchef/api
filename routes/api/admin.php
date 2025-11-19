@@ -26,6 +26,7 @@ Route::prefix('admin')->name("admin.")->group(function () {
     //Chef
     Route::prefix("chefs")->name("chefs.")->middleware("admin-auth")->group(function () {
         Route::get('', [ChefController::class, 'index'])->name("index");
+        Route::get('export', [ChefController::class, 'export'])->name("export");
         Route::get('get-doc/{chefId}/{fieldName}', [ChefController::class, 'getChefDocumentByFieldName'])->name(
             "get-doc"
         );

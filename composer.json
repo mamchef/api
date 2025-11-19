@@ -21,6 +21,7 @@
     "laravel/sanctum": "^4.0",
     "laravel/slack-notification-channel": "^3.6",
     "laravel/tinker": "^2.10.1",
+    "maatwebsite/excel": "^3.1",
     "predis/predis": "^3.0",
     "stripe/stripe-php": "^17.3",
     "tucker-eric/eloquentfilter": "^3.5"

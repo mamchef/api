@@ -6,6 +6,7 @@ use App\DTOs\Admin\Chef\ChefUpdateByAdminDTO;
 use App\DTOs\DoNotChange;
 use App\Enums\Chef\ChefStatusEnum;
 use App\Enums\RegisterSourceEnum;
+use App\Exports\ChefExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\Chef\ChefUpdateByAdminRequest;
 use App\Http\Resources\V1\Admin\Chef\ChefResource;
@@ -14,6 +15,7 @@ use App\Http\Resources\V1\SuccessResponse;
 use App\Services\Interfaces\Chef\ChefServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ChefController extends Controller
@@ -31,6 +33,33 @@ class ChefController extends Controller
             pagination: self::validPagination()
         );
         return ChefsResource::collection($chefs);
+    }
+
+    /**
+     * Export chefs to Excel with all applied filters
+     *
+     * @param Request $request
+     * @return BinaryFileResponse
+     */
+    public function export(Request $request): BinaryFileResponse
+    {
+        // Use the same service method as index, but without pagination
+        $chefs = $this->chefService->all(
+            filters: $request->all(),
+            relations: ['city.country', 'chefStore.city'],
+            pagination: null
+        );
+
+        // Generate filename with timestamp
+        $timestamp = now()->format('Y-m-d_His');
+        $filename = "chefs_export_{$timestamp}.xlsx";
+
+        // Create and download the Excel file
+        return Excel::download(
+            new ChefExport($chefs),
+            $filename,
+            \Maatwebsite\Excel\Excel::XLSX
+        );
     }
 
     public function show(int $chefId): ChefResource
