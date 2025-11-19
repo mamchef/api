@@ -143,8 +143,8 @@ class ChefExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
             $chefStore?->estimated_time ?? '',
             $chefStore?->start_daily_time ?? '',
             $chefStore?->end_daily_time ?? '',
-            $chef->created_at?->format('Y-m-d H:i:s') ?? '',
-            $chef->updated_at?->format('Y-m-d H:i:s') ?? '',
+            $this->dateFormat($chef->created_at),
+            $this->dateFormat($chef->updated_at),
         ];
     }
 
@@ -235,7 +235,7 @@ class ChefExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
     {
         try {
             return $date->format('Y-m-d H:i:s');
-        }catch (\Exception $exception){
+        }catch (\Throwable $exception){
             return $date;
         }
     }
