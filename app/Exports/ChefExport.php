@@ -103,7 +103,7 @@ class ChefExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
             $chef->last_name ?? '',
             $chef->getFullName(),
             $chef->email ?? '',
-            $chef->email_verified_at ? $chef->email_verified_at->format('Y-m-d H:i:s') : '',
+            $chef->email_verified_at ? $this->dateFormat($chef->email_verified_at) : '',
             $chef->phone ?? '',
             $chef->status?->value ?? '',
             $chef->register_source?->value ?? '',
@@ -120,7 +120,7 @@ class ChefExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
             $chef->stripe_details_submitted ? 'Yes' : 'No',
             $chef->stripe_payouts_enabled ? 'Yes' : 'No',
             $chef->stripe_charges_enabled ? 'Yes' : 'No',
-            $chef->stripe_onboarded_at ? $chef->stripe_onboarded_at->format('Y-m-d H:i:s') : '',
+            $chef->stripe_onboarded_at ? $this->dateFormat($chef->stripe_onboarded_at) : '',
             $chef->getStripeOnboardingStatus(),
             $chef->canReceivePayments() ? 'Yes' : 'No',
             $chef->contract_id ?? '',
@@ -228,5 +228,15 @@ class ChefExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
             'AV' => 20, // Registered At
             'AW' => 20, // Last Updated At
         ];
+    }
+
+
+    private function dateFormat( $date)
+    {
+        try {
+            return $date->format('Y-m-d H:i:s');
+        }catch (\Exception $exception){
+            return $date;
+        }
     }
 }
