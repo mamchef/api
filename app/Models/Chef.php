@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
@@ -61,7 +62,7 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class Chef extends Authenticatable
 {
-    use HasFactory, HasApiTokens, Notifiable, Filterable, GetTableColumn;
+    use HasFactory, HasApiTokens, Notifiable, Filterable, GetTableColumn ,SoftDeletes;
 
     public static string $TOKEN_NAME = "chef-token";
 

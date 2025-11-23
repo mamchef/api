@@ -11,6 +11,7 @@ use Cviebrock\EloquentSluggable\Sluggable;
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $id
@@ -48,7 +49,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ChefStore extends Model
 {
 
-    use Sluggable, Filterable, GetTableColumn;
+    use Sluggable, Filterable, GetTableColumn ,SoftDeletes;
 
     protected $table = "chef_stores";
 
