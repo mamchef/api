@@ -44,7 +44,7 @@ class ChefFirebaseController extends Controller
                 ]
             );
 
-          return new SuccessResponse();
+            return new SuccessResponse();
 
         } catch (\Exception $e) {
             \Log::error('FCM Token Storage Error: ' . $e->getMessage());
@@ -63,12 +63,12 @@ class ChefFirebaseController extends Controller
     {
         $userAgent = $request->header('User-Agent', '');
 
-        if (str_contains($userAgent, 'Mobile')) {
-            return 'mobile';
-        } elseif (str_contains($userAgent, 'Android')) {
+        if (str_contains($userAgent, 'Android')) {
             return 'android';
         } elseif (str_contains($userAgent, 'iPhone') || str_contains($userAgent, 'iPad')) {
             return 'ios';
+        } elseif (str_contains($userAgent, 'Mobile')) {
+            return 'mobile';
         } else {
             return 'web';
         }
