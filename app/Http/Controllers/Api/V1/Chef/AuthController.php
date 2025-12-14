@@ -117,7 +117,8 @@ class AuthController extends Controller
         $token = $this->authService->loginByGoogle(
             DTO: new LoginByGoogleDTO(
                 token: $request->token,
-                fcmToken: $request->fcm_token ?? null
+                fcmToken: $request->fcm_token ?? null,
+                deviceType: $request->device_type ?? null
             )
         );
 

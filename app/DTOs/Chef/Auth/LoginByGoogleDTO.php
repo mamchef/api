@@ -10,6 +10,7 @@ readonly class LoginByGoogleDTO extends BaseDTO
     public function __construct(
         private string $token,
         private ?string $fcmToken = null,
+        private ?string $deviceType = null,
     ) {
     }
 
@@ -28,11 +29,17 @@ readonly class LoginByGoogleDTO extends BaseDTO
         return $this->fcmToken;
     }
 
+    public function getDeviceType(): ?string
+    {
+        return $this->deviceType;
+    }
+
     public function toArray(): array
     {
         return [
             "uuid" => $this->getUUid(),
             'token' => $this->getToken(),
+            'device_type' => $this->getDeviceType(),
         ];
     }
 }

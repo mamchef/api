@@ -36,6 +36,7 @@ return [
     ],
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),  // Your Google Client ID
+        'ios_client_id' => env('GOOGLE_IOS_CLIENT_ID'),
     ],
     'docusign' => [
         'base_path' => env('DOCUSIGN_BASE_URL'),
