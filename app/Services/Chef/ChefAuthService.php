@@ -24,6 +24,7 @@ use Random\RandomException;
 class ChefAuthService implements ChefAuthServiceInterface
 {
     use MultilingualServiceValidationTrait;
+
     public function registerByEmail(RegisterByEmailDTO $DTO): string
     {
         $chef = Chef::query()->create($DTO->toArray());
@@ -89,12 +90,16 @@ class ChefAuthService implements ChefAuthServiceInterface
 
     public function loginByGoogle(LoginByGoogleDTO $DTO): string
     {
-        if ($DTO->getDeviceType() === 'ios') {
-            $client = new \Google_Client(['client_id' => config('services.google.ios_client_id')]);
+        if ($DTO->getDeviceType() == 'ios') {
+            $clientId = config('services.google.ios_chef_client_id');
+        }
+        if ($DTO->getDeviceType() == 'android') {
+            $clientId = config('services.google.android_chef_client_id');
         } else {
-            $client = new \Google_Client(['client_id' => config('services.google.client_id')]);
+            $clientId = config('services.google.client_id');
         }
 
+        $client = new \Google_Client(['client_id' => $clientId]);
         $payload = $client->verifyIdToken($DTO->getToken());
 
         if (!$payload || !isset($payload['email'])) {
