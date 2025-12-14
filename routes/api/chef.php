@@ -20,6 +20,7 @@ Route::prefix('chef')->name("chef.")->group(function () {
         Route::post('register-send-otp', [AuthController::class, 'registerSendOtp'])->name("register-send-otp");
         Route::post("register-by-email", [AuthController::class, 'registerByEmail'])->name("register-by-email");
         Route::post("login-by-google", [AuthController::class, 'loginByGoogle'])->name("login-by-google");
+        Route::post("login-by-apple", [AuthController::class, 'loginByApple'])->name("login-by-apple");
         Route::post("login-send-otp", [AuthController::class, 'loginSendOtp'])->name("login-send-otp");
         Route::post("login-by-email", [AuthController::class, 'loginByEmail'])->name("login-by-email");
 

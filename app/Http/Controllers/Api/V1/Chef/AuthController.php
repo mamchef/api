@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Api\V1\Chef;
 use App\DTOs\Chef\Auth\ForgotPasswordDTO;
 use App\DTOs\Chef\Auth\LoginByEmailDTO;
 use App\DTOs\Chef\Auth\LoginByGoogleDTO;
+use App\DTOs\Chef\Auth\LoginByAppleDTO;
 use App\DTOs\Chef\Auth\RegisterByEmailDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Chef\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\Chef\Auth\LoginByEmailRequest;
 use App\Http\Requests\Api\V1\Chef\Auth\RegisterByEmailRequest;
 use App\Http\Requests\Api\V1\Chef\Auth\RegisterByGoogleRequest;
+use App\Http\Requests\Api\V1\Chef\Auth\RegisterByAppleRequest;
 use App\Http\Requests\Api\V1\Chef\Auth\SendForgotPasswordEmailOTPlRequest;
 use App\Http\Requests\Api\V1\Chef\Auth\SendLoginEmailOTPlRequest;
 use App\Http\Requests\Api\V1\Chef\Auth\SendRegisterEmailOTPlRequest;
@@ -115,6 +117,23 @@ class AuthController extends Controller
         $token = $this->authService->loginByGoogle(
             DTO: new LoginByGoogleDTO(
                 token: $request->token,
+                fcmToken: $request->fcm_token ?? null
+            )
+        );
+
+        return new ChefTokenResponse(
+            token: $token
+        );
+    }
+
+    public function loginByApple(RegisterByAppleRequest $request): ChefTokenResponse
+    {
+        $token = $this->authService->loginByApple(
+            DTO: new LoginByAppleDTO(
+                identityToken: $request->identity_token,
+                email: $request->email ?? null,
+                fullName: $request->full_name ?? null,
+                user: $request->user ?? null,
                 fcmToken: $request->fcm_token ?? null
             )
         );
