@@ -90,12 +90,10 @@ class ChefAuthService implements ChefAuthServiceInterface
 
     public function loginByGoogle(LoginByGoogleDTO $DTO): string
     {
-        if ($DTO->getDeviceType() == 'ios') {
-            $clientId = config('services.google.ios_chef_client_id');
-        }elseif ($DTO->getDeviceType() == 'android') {
-            $clientId = config('services.google.android_chef_client_id');
+        if ($DTO->getDeviceType() == 'ios' || $DTO->getDeviceType() == 'android') {
+            $clientId = config('services.google.app_chef_client_id');
         } else {
-            $clientId = config('services.google.client_id');
+            $clientId = config('services.google.web_client_id');
         }
 
         $client = new \Google_Client(['client_id' => $clientId]);
