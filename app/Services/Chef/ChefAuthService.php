@@ -92,8 +92,7 @@ class ChefAuthService implements ChefAuthServiceInterface
     {
         if ($DTO->getDeviceType() == 'ios') {
             $clientId = config('services.google.ios_chef_client_id');
-        }
-        if ($DTO->getDeviceType() == 'android') {
+        }elseif ($DTO->getDeviceType() == 'android') {
             $clientId = config('services.google.android_chef_client_id');
         } else {
             $clientId = config('services.google.client_id');
