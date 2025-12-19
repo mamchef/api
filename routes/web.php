@@ -105,11 +105,10 @@ Route::get('/test-stripe-chef', function () {
 
 
 Route::get('/test-notification', function () {
-    return ;
+    return;
     // Send a test notification to user ID 1
-    $user = \App\Models\User::find(3);
-    $order = Order::latest()->find(34);
-    $user->notify(new \App\Notifications\Order\User\UserOrderCompletedNotification($order));
+    $chef = \App\Models\Chef::find(1);
+    $chef->notify(new \App\Notifications\Chef\StripeOnboardingNotification('testttt'));
     return response()->json(['message' => 'Notification sent']);
 });
 

@@ -104,6 +104,6 @@ class StripeOnboardingNotification extends BaseNotification
 
     public function toDatabase($notifiable)
     {
-       return[];
+       return $this->toArray($notifiable);
     }
 }

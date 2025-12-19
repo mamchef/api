@@ -20,9 +20,18 @@ class ChefWelcomeNotification extends BaseNotification
 
     public function toArray($notifiable): array
     {
+        $isLithuanian = ($notifiable->lang ?? 'en') === 'lt';
+
+        $title = $isLithuanian
+            ? '🍳 Sveiki atvykę į MamChef!'
+            : '🍳 Welcome to MamChef!';
+
+        $subject = $isLithuanian
+            ? "Sveiki atvykę į MamChef, {$notifiable->first_name}! Jūsų virtuvė paruošta."
+            : "Welcome to MamChef, {$notifiable->first_name}! Your Kitchen Is Ready.";
         return [
-            'title' => 'Welcome to MamChef!',
-            'body' => "Welcome {$notifiable->first_name}! Your kitchen is ready to start earning.",
+            'title' => $title,
+            'body' => $subject,
             'type' => 'chef_welcome',
             'chef_id' => $this->chef->id,
             'action_url' => '/dashboard',
