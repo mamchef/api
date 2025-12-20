@@ -26,14 +26,14 @@ class ChefVersionResponse extends JsonResource
             'message' => $this->message ?? __('public.operation_successful'),
             'result' => [
                 'android' => [
-                    'version' => env('CHEF_ANDROID_VERSION'),
-                    'force_update' => env('CHEF_ANDROID_FORCE_UPDATE'),
-                    "update_url" => "https://api.mamchef.com/storage/app/chef-mamchef.apk",
+                    'version' => config('app.chef-app.android.version'),
+                    'force_update' => config('app.chef-app.android.force_update'),
+                    "update_url" => config('app.chef-app.android.update_url'),
                 ],
                 'ios' => [
-                    'version' => env('CHEF_IOS_VERSION'),
-                    'force_update' => env('CHEF_IOS_FORCE_UPDATE'),
-                    "update_url" => "https://mamchef.com?id=com.mamchef.chef",
+                    'version' => config('app.chef-app.ios.version'),
+                    'force_update' => config('app.chef-app.ios.force_update'),
+                    "update_url" => config('app.chef-app.ios.update_url'),
                 ]
             ]
         ];

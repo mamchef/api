@@ -150,4 +150,29 @@ return [
     'social_facebook' =>  env('SOCIAL_FACEBOOK', ''),
     'chef_panel' =>   env('CHEF_PANEL_URL', ''),
     'user_panel' =>   env('USER_PANEL_URL', ''),
+
+    'user-app' => [
+        'android' => [
+            'version' => env('APP_ANDROID_VERSION', '1.0.2'),
+            'force_update' => env('APP_ANDROID_FORCE_UPDATE', true),
+            "update_url" => "https://api.mamchef.com/storage/app/mamchef.apk",
+        ],
+        'ios' => [
+            'version' => env('APP_IOS_VERSION', '1.0.0'),
+            'force_update' => env('APP_IOS_FORCE_UPDATE', true),
+            "update_url" => "https://mamchef.com?id=com.mamchef.app",
+        ]
+    ],
+    'chef-app' => [
+        'android' => [
+            'version' => env('CHEF_ANDROID_VERSION', '1.0.0'),
+            'force_update' => env('CHEF_ANDROID_FORCE_UPDATE', true),
+            "update_url" => "https://api.mamchef.com/storage/app/chef-mamchef.apk",
+        ],
+        'ios' => [
+            'version' => env('CHEF_IOS_VERSION', '1.0.0'),
+            'force_update' => env('CHEF_IOS_FORCE_UPDATE', true),
+            "update_url" => "https://mamchef.com?id=com.mamchef.chef",
+        ]
+    ]
 ];

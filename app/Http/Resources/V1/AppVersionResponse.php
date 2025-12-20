@@ -26,14 +26,14 @@ class AppVersionResponse extends JsonResource
             'message' => $this->message ?? __('public.operation_successful'),
             'result' => [
                 'android' => [
-                    'version' => env('APP_ANDROID_VERSION'),
-                    'force_update' => env('APP_ANDROID_FORCE_UPDATE'),
-                    "update_url" => "https://api.mamchef.com/storage/app/mamchef.apk",
+                    'version' => config('app.user-app.android.version'),
+                    'force_update' => config('app.user-app.android.force_update'),
+                    "update_url" => config('app.user-app.android.update_url'),
                 ],
                 'ios' => [
-                    'version' => env('APP_IOS_VERSION'),
-                    'force_update' => env('APP_IOS_FORCE_UPDATE'),
-                    "update_url" => "https://mamchef.com?id=com.mamchef.app",
+                    'version' => config('app.user-app.ios.version'),
+                    'force_update' => config('app.user-app.ios.force_update'),
+                    "update_url" => config('app.user-app.ios.update_url'),
                 ]
             ]
         ];
