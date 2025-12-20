@@ -21,3 +21,9 @@ Route::post('/user/broadcasting/auth', [BroadcastAuthController::class, 'userAut
 Route::get('app-version',function(Request $request){
     return  new \App\Http\Resources\V1\AppVersionResponse();
 });
+
+
+
+Route::get('chef-version',function(Request $request){
+    return  new \App\Http\Resources\V1\ChefVersionResponse();
+});
