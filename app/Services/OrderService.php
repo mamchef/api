@@ -56,6 +56,7 @@ use App\Services\Traits\MultilingualServiceValidationTrait;
 class OrderService implements OrderServiceInterface
 {
     use MultilingualServiceValidationTrait;
+
     public function getOrderByUserId(string $orderUuid, int $userId, array $relations = []): Order
     {
         return Order::forUser($userId)
@@ -73,11 +74,12 @@ class OrderService implements OrderServiceInterface
     }
 
     public function getOrdersByChef(
-        int $chefStoreId,
+        int   $chefStoreId,
         array $filters = [],
         array $relations = [],
-        int $pagination = null
-    ): Collection|LengthAwarePaginator|array {
+        int   $pagination = null
+    ): Collection|LengthAwarePaginator|array
+    {
         $orders = Order::forChefStore($chefStoreId)
             ->filter($filters)
             ->with($relations);
@@ -85,11 +87,12 @@ class OrderService implements OrderServiceInterface
     }
 
     public function getOrdersByUserId(
-        int $userId,
+        int   $userId,
         array $filters = [],
         array $relations = [],
-        int $pagination = null
-    ): Collection|LengthAwarePaginator|array {
+        int   $pagination = null
+    ): Collection|LengthAwarePaginator|array
+    {
         $orders = Order::forUser($userId)
             ->whereNotIn(
                 'status',
@@ -101,9 +104,10 @@ class OrderService implements OrderServiceInterface
     }
 
     public function getOrdersStatisticByChef(
-        int $chefStoreId,
+        int   $chefStoreId,
         array $filters = []
-    ): OrderStatisticDTO {
+    ): OrderStatisticDTO
+    {
         $orders = Order::forChefStore($chefStoreId)
             ->filter($filters)->select('id', 'status', 'created_at', 'total_amount')->get();
         $totalOrders = $orders->count();
@@ -140,18 +144,18 @@ class OrderService implements OrderServiceInterface
 
             // Calculate subtotal from items
             $subtotal = $this->calculateSubtotal($request->items);
-            
+
             // Apply first order discount (temporary feature)
             $discountData = FirstOrderDiscountService::applyDiscountToOrder($subtotal, $deliveryCost, $user, $request);
-            
+
             // Calculate payment splits with chef-specific commission and discount strategy
             $paymentSplit = PaymentCalculationService::calculatePaymentSplit(
-                $subtotal, 
-                $deliveryCost, 
-                $discountData['discount_amount'], 
+                $subtotal,
+                $deliveryCost,
+                $discountData['discount_amount'],
                 $chefStore
             );
-            
+
             $totalAmount = $paymentSplit['customer_total'];
 
             // Get address snapshot if delivery
@@ -246,6 +250,11 @@ class OrderService implements OrderServiceInterface
                         'currency' => "eur",
                     ];
                 } else {
+                    if ($request->use_credit) {
+                        $order->use_credit = true;
+                        $order->save();
+                    }
+
                     $paymentService = new PaymentService($paymentMethod);
 
                     // Create enhanced metadata with payment split info
@@ -311,7 +320,8 @@ class OrderService implements OrderServiceInterface
         $externalId = null,
         $description = null,
         $gatewayResponse = null
-    ): void {
+    ): void
+    {
         DB::beginTransaction();
         try {
             $order = Order::query()->with(['user', 'chefStore'])->where('uuid', $orderUuid)->firstOrFail();
@@ -365,7 +375,8 @@ class OrderService implements OrderServiceInterface
         $externalId = null,
         $description = null,
         $gatewayResponse = null
-    ): void {
+    ): void
+    {
         DB::beginTransaction();
         try {
             $order = Order::query()->with([
@@ -868,9 +879,10 @@ class OrderService implements OrderServiceInterface
 
     public function all(
         ?array $filters = null,
-        array $relations = [],
-        $pagination = null
-    ): Collection|LengthAwarePaginator {
+        array  $relations = [],
+               $pagination = null
+    ): Collection|LengthAwarePaginator
+    {
         $orders = Order::query()->when($relations, fn($q) => $q->with($relations))
             ->when($filters, fn($q) => $q->filter($filters));
 

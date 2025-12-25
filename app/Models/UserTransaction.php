@@ -24,7 +24,7 @@ use Illuminate\Validation\ValidationException;
  * @property TransactionStatus $status
  * @property PaymentMethod $payment_method
  * @property string $external_transaction_id
- * @property array gateway_response
+ * @property array $gateway_response
  * @property Carbon $created_at
  * @property Carbon $updated_at
  *
@@ -140,11 +140,6 @@ class UserTransaction extends Model
     public function scopeRefunds($query)
     {
         return $query->where('type', TransactionType::REFUND->value);
-    }
-
-    public function scopeTopups($query)
-    {
-        return $query->where('type', TransactionType::TOPUP->value);
     }
 
     public function scopeDeliveryRefunds($query)

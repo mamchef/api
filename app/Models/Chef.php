@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -59,6 +60,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property MorphMany | Notification[] $unreadNotifications
  * @property MorphMany | FcmToken[] $fcmTokens
  * @property MorphMany | FcmToken[] $activeFcmTokens
+ * @property MorphOne | referralCode $referralCode
  */
 class Chef extends Authenticatable
 {
@@ -210,6 +212,11 @@ class Chef extends Authenticatable
         return $this->fcmTokens()->where('is_active', true);
     }
 
+
+    public function referralCode(): MorphOne
+    {
+        return $this->morphOne(ReferralCode::class, 'referrable');
+    }
 
     // ================== MISC ===================== //
 

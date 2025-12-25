@@ -42,7 +42,7 @@ class OrderController extends Controller
         }
 
 
-        /*        if (!in_array($order->status, OrderStatusEnum::activeStatuses())) {
+        /*  if (!in_array($order->status, OrderStatusEnum::activeStatuses())) {
                     $order->chefStore->phone = null;
                 }*/
 

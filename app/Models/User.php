@@ -9,9 +9,11 @@ use App\Traits\GetTableColumn;
 use Carbon\Carbon;
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -47,6 +49,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property MorphMany | FcmToken[] $activeFcmTokens
  * @property BelongsToMany | Food[] $bookmarkFoods
  * @property HasMany | Bookmark[] $bookmarks
+ * @property MorphOne | referralCode $referralCode
  */
 class User extends Authenticatable
 {
@@ -118,11 +121,11 @@ class User extends Authenticatable
         return $this->activeFcmTokens()->pluck('token')->toArray();
     }
 
-
     public function receivesBroadcastNotificationsOn(): string
     {
         return 'user-' . $this->id;
     }
+
 
     // ================= Relations ==================== //
 
@@ -166,6 +169,11 @@ class User extends Authenticatable
     public function bookmarks(): HasMany
     {
         return $this->hasMany(Bookmark::class, 'user_id', 'id');
+    }
+
+    public function referralCode(): MorphOne
+    {
+        return $this->morphOne(ReferralCode::class, 'referrable');
     }
 
     //==================== MISC =======================//
