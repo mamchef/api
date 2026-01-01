@@ -319,7 +319,7 @@ class StripePaymentGateway implements PaymentGatewayInterface
     private function handleChefAccountDeauthorized($account): void
     {
         $chef = Chef::where('stripe_account_id', $account->id)->first();
-        
+
         if (!$chef) {
             Log::warning("Received deauthorization webhook for unknown Stripe account: {$account->id}");
             return;
@@ -336,5 +336,55 @@ class StripePaymentGateway implements PaymentGatewayInterface
         ]);
 
         Log::info("Chef {$chef->id} disconnected their Stripe account");
+    }
+
+    /**
+     * Transfer funds from platform account to chef's connected account
+     *
+     * @param float $amount Amount in currency units (e.g., euros)
+     * @param string $chefStripeAccountId Chef's Stripe Connect account ID
+     * @param string[] $metadata Additional metadata for the transfer
+     * @param string $currency Currency code (default: 'eur')
+     * @return array Transfer result with success status
+     */
+    public function transferToConnectedAccount(
+        float $amount,
+        string $chefStripeAccountId,
+        array $metadata = [],
+        string $currency = 'eur'
+    ): array {
+        try {
+            $transfer = $this->stripe->transfers->create([
+                'amount' => (int)($amount * 100), // Convert to cents
+                'currency' => $currency,
+                'destination' => $chefStripeAccountId,
+                'metadata' => $metadata,
+            ]);
+
+            Log::info("Transfer created successfully", [
+                'transfer_id' => $transfer->id,
+                'amount' => $amount,
+                'destination' => $chefStripeAccountId,
+            ]);
+
+            return [
+                'success' => true,
+                'transfer_id' => $transfer->id,
+                'amount' => $amount,
+                'currency' => $currency,
+                'destination' => $chefStripeAccountId,
+            ];
+        } catch (ApiErrorException $e) {
+            Log::error("Transfer failed", [
+                'error' => $e->getMessage(),
+                'amount' => $amount,
+                'destination' => $chefStripeAccountId,
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
     }
 }

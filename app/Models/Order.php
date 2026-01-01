@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Order\DeliveryTypeEnum;
 use App\Enums\Order\OrderCompleteByEnum;
+use App\Enums\Order\OrderPaidStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\ModelFilters\OrderFilter;
 use App\Observers\OrderObserver;
@@ -34,6 +35,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $first_order_discount_applied
  * @property float $platform_fee
  * @property float $chef_payout_amount
+ * @property Carbon|null $chef_payout_transferred_at
+ * @property string|null $chef_payout_transfer_id
  * @property string $discount_deduction_strategy
  * @property string $stripe_payment_intent_id
  * @property string $stripe_transfer_id
@@ -50,6 +53,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $rating_review
  * @property Carbon $completed_at
  * @property OrderCompleteByEnum $completed_by
+ * @property bool $use_credit
+ * @property string $chef_payout_error
+ * @property bool $need_review
  * @property Carbon $deleted_at
  * @property Carbon $updated_at
  * @property Carbon $created_at
@@ -83,6 +89,7 @@ class Order extends Model
         'completed_at' => 'datetime',
         'completed_by' => OrderCompleteByEnum::class,
         'delivery_address_snapshot' => 'array',
+        'chef_payout_transferred_at' => 'datetime',
     ];
 
     // ================= Relations ==================== //
@@ -145,6 +152,18 @@ class Order extends Model
         ]);
     }
 
+    public function scopeReadyForDisbursement($query, int $minDays = 2)
+    {
+        return $query->where('status', OrderStatusEnum::COMPLETED)
+            ->whereNull('chef_payout_transferred_at')
+            ->where('chef_payout_amount', '>', 0)
+            ->where('completed_at', '<=', now()->subDays($minDays))
+            ->whereHas('chefStore.chef', function ($q) {
+                $q->whereNotNull('stripe_account_id')
+                  ->where('stripe_payouts_enabled', true);
+            });
+    }
+
     // ================= QUERIES ==================== //
 
     public function generateOrderNumber(): string
@@ -197,6 +216,11 @@ class Order extends Model
             OrderStatusEnum::REFUSED_BY_CHEF,
             OrderStatusEnum::CANCELLED
         ]);
+    }
+
+    public function isChefPayoutTransferred(): bool
+    {
+        return $this->chef_payout_transferred_at !== null;
     }
 
     public function hasDeliveryChangeRequest(): bool
@@ -259,5 +283,17 @@ class Order extends Model
     public function getModelFilterClass(): string
     {
         return OrderFilter::class;
+    }
+
+
+    public function getOrderPaidStatus(): string
+    {
+        if ($this->status == OrderStatusEnum::COMPLETED) {
+            if ($this->chef_payout_transfer_id){
+                return OrderPaidStatusEnum::PAID->value;
+            }
+            return OrderPaidStatusEnum::PENDING_PAYMENT->value;
+        }
+        return OrderPaidStatusEnum::NO_PAYMENT->value;
     }
 }

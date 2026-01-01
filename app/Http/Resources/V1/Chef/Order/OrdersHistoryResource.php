@@ -23,6 +23,8 @@ class OrdersHistoryResource extends BaseResource
             "total_amount" => $order->total_amount,
             "created_at" => $order->created_at,
             "completed_at" => $order->completed_at,
+            'chef_payment_amount' => $order->chef_payout_amount,
+            'paid_status' => $order->getOrderPaidStatus(),
         ];
     }
 }

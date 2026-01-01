@@ -27,6 +27,7 @@ class OrderResource extends BaseResource
             "delivery_type" => $order->delivery_type->value,
             "total_amount" => $order->total_amount,
             "delivery_cost" => $order->delivery_cost,
+            "chef_payout_amount" => $order->chef_payout_amount,
             "subtotal" => $order->subtotal,
             "created_at" => $order->created_at,
             "user_notes" => $order->user_notes,
@@ -35,7 +36,10 @@ class OrderResource extends BaseResource
             "estimated_ready_time" => $order->estimated_ready_time,
             "user" => $order->user,
             "items" => $orderItems,
-            "status_history" => $order->statusHistories
+            "status_history" => $order->statusHistories,
+            'chef_payout_transferred_at' => $order->chef_payout_transferred_at,
+            'chef_payout_transfer_id' => $order->chef_payout_transfer_id,
+            'paid_status' => $order->getOrderPaidStatus(),
         ];
     }
 

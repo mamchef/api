@@ -109,7 +109,7 @@ class OrderService implements OrderServiceInterface
     ): OrderStatisticDTO
     {
         $orders = Order::forChefStore($chefStoreId)
-            ->filter($filters)->select('id', 'status', 'created_at', 'total_amount')->get();
+            ->filter($filters)->select('id', 'status', 'created_at', 'total_amount','chef_payout_amount')->get();
         $totalOrders = $orders->count();
         $completeOrders = $orders->where('status', OrderStatusEnum::COMPLETED->value)->count();
         $cancelOrders = $orders->whereIn('status', array_map(function ($item) {
@@ -118,11 +118,19 @@ class OrderService implements OrderServiceInterface
 
         $totalAmount = $orders->where('status', OrderStatusEnum::COMPLETED->value)->sum('total_amount');
 
+        $totalRevenueAmount = $orders->where('status', OrderStatusEnum::COMPLETED->value)->sum('chef_payout_amount');
+
+        $totalPaidAmount = $orders->where('status', OrderStatusEnum::COMPLETED->value)
+            ->where('chef_payout_transfer_id','!=',null)->sum('chef_payout_amount');
+
         return new OrderStatisticDTO(
             totalOrder: $totalOrders,
             completedOrder: $completeOrders,
             cancelOrder: $cancelOrders,
-            totalAmount: $totalAmount
+            totalAmount: $totalAmount,
+            totalRevenueAmount: $totalRevenueAmount,
+            totalPaidAmount: $totalPaidAmount,
+            totalPendingPaymentAmount:$totalRevenueAmount - $totalPaidAmount
         );
     }
 
@@ -233,6 +241,19 @@ class OrderService implements OrderServiceInterface
             if ($request->has('payment_method')) {
                 $paymentMethod = PaymentMethod::from($request->payment_method);
 
+                if ($request->use_credit) {
+                    if ($paymentMethod != PaymentMethod::WALLET) {
+                        $newTotalAmount = $totalAmount - $user->getAvailableCredit();
+                        if ($newTotalAmount < 0) {
+                            $paymentMethod = PaymentMethod::WALLET;
+                        } else {
+                            $order->use_credit = true;
+                            $order->save();
+                            $totalAmount = $newTotalAmount;
+                        }
+                    }
+                }
+
                 if ($paymentMethod == PaymentMethod::WALLET) {
                     if ($user->getAvailableCredit() < $totalAmount) {
                         $this->throwOrderException('insufficient_credit', 'error');
@@ -250,11 +271,6 @@ class OrderService implements OrderServiceInterface
                         'currency' => "eur",
                     ];
                 } else {
-                    if ($request->use_credit) {
-                        $order->use_credit = true;
-                        $order->save();
-                    }
-
                     $paymentService = new PaymentService($paymentMethod);
 
                     // Create enhanced metadata with payment split info
@@ -264,21 +280,8 @@ class OrderService implements OrderServiceInterface
                         'user_id' => $order->user_id,
                     ], $paymentSplit);
 
-                    // Prepare Stripe Connect data if chef has account
-                    $connectData = [];
-                    if ($chefStore->chef && $chefStore->chef->stripe_account_id) {
-                        $connectData = [
-                            'chef_stripe_account_id' => $chefStore->chef->stripe_account_id,
-                            'stripe_application_fee' => $paymentSplit['stripe_application_fee'],
-                            'stripe_transfer_amount' => $paymentSplit['stripe_transfer_amount'],
-                            'chef_store_id' => $chefStore->id,
-                            'app_fee' => $paymentSplit['final_app_fee'],
-                            'chef_amount' => $paymentSplit['final_chef_amount'],
-                            'discount_strategy' => $paymentSplit['discount_strategy'],
-                        ];
-                    }
-
-                    $paymentResult = $paymentService->createPaymentIntent($totalAmount, $metadata, $connectData);
+                    // All payments go to main account - chef transfers are done separately
+                    $paymentResult = $paymentService->createPaymentIntent($totalAmount, $metadata);
 
                     if (!$paymentResult['success']) {
                         DB::rollBack();
@@ -821,13 +824,13 @@ class OrderService implements OrderServiceInterface
         $subtotal = 0;
 
         foreach ($items as $itemData) {
-            $food = Food::find($itemData['food_id']);
+            $food = Food::query()->find($itemData['food_id']);
             $itemTotal = $food->price * $itemData['quantity'];
 
             // Add options cost
             if (isset($itemData['options'])) {
                 foreach ($itemData['options'] as $optionData) {
-                    $foodOption = FoodOption::find($optionData['food_option_id']);
+                    $foodOption = FoodOption::query()->find($optionData['food_option_id']);
                     $itemTotal += $foodOption->price * $optionData['quantity'];
                 }
             }
@@ -1032,5 +1035,86 @@ class OrderService implements OrderServiceInterface
             active: Order::query()->filter($filters)->whereIn('status', $activeStatus)->count(),
             cancelled: Order::query()->filter($filters)->whereIn('status', $canceledStatus)->count(),
         );
+    }
+
+    /**
+     * Transfer chef's share from platform account to chef's Stripe Connect account
+     *
+     * @param Order $order The order to transfer funds for
+     * @return array Transfer result with success status
+     * @throws ValidationException
+     */
+    public function transferChefPayout(Order $order): array
+    {
+        // Validate order status - only completed orders can be paid out
+        if ($order->status !== OrderStatusEnum::COMPLETED) {
+            throw ValidationException::withMessages([
+                'order' => 'Only completed orders can be paid out to chef'
+            ]);
+        }
+
+        // Check if already transferred
+        if ($order->chef_payout_transferred_at) {
+            throw ValidationException::withMessages([
+                'order' => 'Chef payout already transferred for this order'
+            ]);
+        }
+
+        // Get chef's Stripe account
+        $chef = $order->chefStore?->chef;
+        if (!$chef || !$chef->stripe_account_id) {
+            throw ValidationException::withMessages([
+                'chef' => 'Chef does not have a connected Stripe account'
+            ]);
+        }
+
+        // Check if chef's account is ready for payouts
+        if (!$chef->stripe_payouts_enabled) {
+            throw ValidationException::withMessages([
+                'chef' => 'Chef Stripe account is not enabled for payouts'
+            ]);
+        }
+
+        $amountToTransfer = $order->chef_payout_amount;
+        if ($amountToTransfer <= 0) {
+            throw ValidationException::withMessages([
+                'order' => 'No payout amount available for this order'
+            ]);
+        }
+
+        // Create the transfer
+        $stripeGateway = new Payment\Gateways\StripePaymentGateway();
+        $result = $stripeGateway->transferToConnectedAccount(
+            amount: $amountToTransfer,
+            chefStripeAccountId: $chef->stripe_account_id,
+            metadata: [
+                'order_id' => (string)$order->id,
+                'order_uuid' => $order->uuid,
+                'order_number' => $order->order_number,
+                'chef_store_id' => (string)$order->chef_store_id,
+                'chef_id' => (string)$chef->id,
+            ]
+        );
+
+        if ($result['success']) {
+            // Mark order as paid out
+            $order->update([
+                'chef_payout_transferred_at' => now(),
+                'chef_payout_transfer_id' => $result['transfer_id'],
+                'need_review' => false,
+            ]);
+        } else {
+            Log::error("Chef payout transfer failed", [
+                'order_id' => $order->id,
+                'error' => $result['error'] ?? 'Unknown error',
+            ]);
+
+            $order->update([
+                'chef_payout_error' => $result['error'],
+                'need_review' => true,
+            ]);
+        }
+
+        return $result;
     }
 }

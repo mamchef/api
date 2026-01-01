@@ -2,6 +2,7 @@
 
 namespace App\ModelFilters;
 
+use App\Enums\Order\OrderPaidStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use EloquentFilter\ModelFilter;
 
@@ -84,5 +85,17 @@ class OrderFilter extends ModelFilter
     public function chefStoreId(int $chefStoreId): self
     {
         return $this->where('chef_store_id', $chefStoreId);
+    }
+
+    public function payoutStatus(string $status): self
+    {
+        if ($status == OrderPaidStatusEnum::PAID->value) {
+            return $this->where('chef_payout_transfer_id', '!=', null);
+        }
+        if ($status == OrderPaidStatusEnum::PENDING_PAYMENT->value) {
+            return $this->where('status', OrderStatusEnum::COMPLETED)->where('chef_payout_transfer_id', null);
+        }
+
+        return $this;
     }
 }

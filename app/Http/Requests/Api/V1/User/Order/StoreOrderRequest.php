@@ -24,6 +24,7 @@ use Illuminate\Validation\Rule;
  * @property string $user_address
  * @property string $user_notes
  * @property string $payment_method
+ * @property bool $use_credit
  * @property array $items
  */
 class StoreOrderRequest extends BaseFormRequest
@@ -52,6 +53,7 @@ class StoreOrderRequest extends BaseFormRequest
         $rules = [
             'chef_store_id' => ['required', 'exists:chef_stores,id'],
             'delivery_type' => ['required', Rule::in(DeliveryTypeEnum::values())],
+            'use_credit' => ['sometimes','nullable', 'boolean'],
             'user_notes' => ['nullable', 'string', 'max:500' , new SafeTextRule(),],
 
             'items' => ['required', 'array', 'min:1', 'max:20'],
