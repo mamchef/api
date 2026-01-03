@@ -49,7 +49,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property MorphMany | FcmToken[] $activeFcmTokens
  * @property BelongsToMany | Food[] $bookmarkFoods
  * @property HasMany | Bookmark[] $bookmarks
- * @property MorphOne | referralCode $referralCode
+ * @property MorphOne | ReferralCode $referralCode
  */
 class User extends Authenticatable
 {

@@ -15,6 +15,7 @@ use App\Models\ChefStore;
 use App\Notifications\Chef\ChefGuideNotification;
 use App\Notifications\Chef\ChefWelcomeNotification;
 use App\Services\Interfaces\Chef\ChefAuthServiceInterface;
+use App\Services\Interfaces\ReferralCodeServiceInterface;
 use App\Services\OtpCacheService;
 use App\Services\Traits\MultilingualServiceValidationTrait;
 use Carbon\Carbon;
@@ -38,6 +39,15 @@ class ChefAuthService implements ChefAuthServiceInterface
 
         if ($DTO->getFcmToken()) {
             $this->storeFcmToken($chef, $DTO->getFcmToken());
+        }
+
+        if ($DTO->getReferralCode()) {
+            /** @var ReferralCodeServiceInterface $referralCodeService */
+            $referralCodeService = app(ReferralCodeServiceInterface::class);
+            $referralCodeService->submitChefReferredByCode(
+                chefId: $chef->id,
+                referralCode: $DTO->getReferralCode()
+            );
         }
 
         dispatch(new ChefGuideNotification($chef))->delay(Carbon::now()->days(3));
@@ -130,6 +140,16 @@ class ChefAuthService implements ChefAuthServiceInterface
 
 
         if ($isNewChef) {
+
+            if ($DTO->getReferralCode()) {
+                /** @var ReferralCodeServiceInterface $referralCodeService */
+                $referralCodeService = app(ReferralCodeServiceInterface::class);
+                $referralCodeService->submitChefReferredByCode(
+                    chefId: $chef->id,
+                    referralCode: $DTO->getReferralCode()
+                );
+            }
+
             dispatch(new ChefGuideNotification($chef))->delay(Carbon::now()->days(3));
         }
 

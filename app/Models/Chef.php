@@ -60,7 +60,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property MorphMany | Notification[] $unreadNotifications
  * @property MorphMany | FcmToken[] $fcmTokens
  * @property MorphMany | FcmToken[] $activeFcmTokens
- * @property MorphOne | referralCode $referralCode
+ * @property MorphOne | ReferralCode $referralCode
  */
 class Chef extends Authenticatable
 {

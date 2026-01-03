@@ -11,6 +11,7 @@ readonly class LoginByGoogleDTO extends BaseDTO
         private string $token,
         private ?string $fcmToken = null,
         private ?string $deviceType = null,
+        private ?string $referralCode = null,
     ) {
     }
 
@@ -32,6 +33,11 @@ readonly class LoginByGoogleDTO extends BaseDTO
     public function getDeviceType(): ?string
     {
         return $this->deviceType;
+    }
+
+    public function getReferralCode(): ?string
+    {
+        return $this->referralCode;
     }
 
     public function toArray(): array

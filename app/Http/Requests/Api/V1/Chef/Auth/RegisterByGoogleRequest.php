@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
  * @property string $token
  * @property string $fcm_token
  * @property string $device_type
+ * @property string $ref_code
  */
 class RegisterByGoogleRequest extends BaseFormRequest
 {
@@ -19,6 +20,7 @@ class RegisterByGoogleRequest extends BaseFormRequest
             'token' => ['required', 'string'], // Google ID token
             "fcm_token" => ["sometimes", "nullable", "string"],
             'device_type' => ['sometimes', 'nullable', Rule::in(['ios', 'android'])],
+            "ref_code" => ["sometimes", "nullable", "string"],
         ];
     }
 

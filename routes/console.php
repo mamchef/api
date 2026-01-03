@@ -26,3 +26,16 @@ Artisan::command('inspire', function () {
 //    ->onFailure(function () {
 //        Log::error('Chef payout disbursement failed');
 //    });
+
+
+Schedule::command('referral:prize')
+    ->dailyAt('01:00')
+    ->withoutOverlapping(expiresAt: 1440) // Lock for 24 hours - GUARANTEES only one run per day
+    ->onOneServer()
+    ->runInBackground()
+    ->onSuccess(function () {
+        Log::info('Referral Prize Saved');
+    })
+    ->onFailure(function () {
+        Log::error('Chef payout disbursement failed');
+    });

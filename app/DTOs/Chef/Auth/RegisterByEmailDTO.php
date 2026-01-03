@@ -14,6 +14,7 @@ readonly class RegisterByEmailDTO extends BaseDTO
         private string $email,
         private string $password,
         private ?string $fcmToken = null,
+        private ?string $referralCode = null,
     ) {
     }
 
@@ -36,6 +37,11 @@ readonly class RegisterByEmailDTO extends BaseDTO
     public function getFcmToken(): ?string
     {
         return $this->fcmToken;
+    }
+
+    public function getReferralCode(): ?string
+    {
+        return $this->referralCode;
     }
 
     public function toArray(): array

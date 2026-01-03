@@ -165,7 +165,8 @@ class UserTransaction extends Model
         $externalId = null,
         $description = null,
         $gatewayResponse = null
-    ): static {
+    ): static
+    {
         $order = Order::query()->find($orderId);
         // For external payments, first add credit to wallet
         if ($paymentMethod != PaymentMethod::WALLET) {
@@ -198,7 +199,8 @@ class UserTransaction extends Model
 
     public static function createRefund(
         Order $order,
-    ): static {
+    ): static
+    {
         $refundedTransactionAmount = UserTransaction::forUser($order->user_id)
             ->forOrder($order->id)
             ->refunds()
@@ -255,24 +257,16 @@ class UserTransaction extends Model
         ]);
     }
 
-    public static function createTopup(
-        $userId,
-        $amount,
-        $paymentMethod = null,
-        $externalId = null,
-        $description = null
-    ): static {
-        return static::create([
+    public static function createReferralPayment($userId, $referralId): static
+    {
+        return static::query()->create([
             'user_id' => $userId,
-            'type' => TransactionType::TOPUP,
-            'amount' => abs($amount), // Always positive for topups
-            'description' => $description ?? "Wallet top up",
+            'type' => TransactionType::REFERRAL,
+            'amount' => 2,
+            'description' => "referral payment for referral id: {$referralId}",
             'status' => TransactionStatus::COMPLETED,
-            'payment_method' => $paymentMethod,
-            'external_transaction_id' => $externalId,
         ]);
     }
-
 
     public function getModelFilterClass(): string
     {

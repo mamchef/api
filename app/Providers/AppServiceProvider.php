@@ -20,6 +20,7 @@ use App\Services\Interfaces\FoodOptionServiceInterface;
 use App\Services\Interfaces\FoodServiceInterface;
 use App\Services\Interfaces\NotificationsServiceInterface;
 use App\Services\Interfaces\OrderServiceInterface;
+use App\Services\Interfaces\ReferralCodeServiceInterface;
 use App\Services\Interfaces\TagServiceInterface;
 use App\Services\Interfaces\TicketServiceInterface;
 use App\Services\Interfaces\User\UserAddressServiceInterface;
@@ -29,6 +30,7 @@ use App\Services\Interfaces\User\UserServiceInterface;
 use App\Services\Interfaces\UserTransactionServiceInterface;
 use App\Services\NotificationService;
 use App\Services\OrderService;
+use App\Services\ReferralCodeService;
 use App\Services\TagService;
 use App\Services\TicketService;
 use App\Services\User\UserAddressService;
@@ -68,7 +70,8 @@ class AppServiceProvider extends ServiceProvider
         NotificationsServiceInterface::class => NotificationService::class,
         TicketServiceInterface::class => TICketService::class,
         TagServiceInterface::class => TagService::class,
-        UserTransactionServiceInterface::class => UserTransactionService::class
+        UserTransactionServiceInterface::class => UserTransactionService::class,
+        ReferralCodeServiceInterface::class => ReferralCodeService::class,
     ];
 
     /**

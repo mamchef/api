@@ -20,9 +20,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * Relations:
  * @property BelongsTo | User $user
  * @property MorphTo referrable
- * @property HasMany | referral $referrals
+ * @property HasMany | Referral $referrals
  */
-class referralCode extends Model
+class ReferralCode extends Model
 {
     protected $guarded = [];
 

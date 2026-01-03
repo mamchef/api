@@ -64,7 +64,8 @@ class AuthController extends Controller
             DTO: new RegisterByEmailDTO(
                 email: $request->email,
                 password: $request->password,
-                fcmToken: $request->fcm_token ?? null
+                fcmToken: $request->fcm_token ?? null,
+                referralCode: $request->ref_code ?? null
             )
         );
 
@@ -118,7 +119,8 @@ class AuthController extends Controller
             DTO: new LoginByGoogleDTO(
                 token: $request->token,
                 fcmToken: $request->fcm_token ?? null,
-                deviceType: $request->device_type ?? null
+                deviceType: $request->device_type ?? null,
+                referralCode: $request->ref_code ?? null
             )
         );
 
