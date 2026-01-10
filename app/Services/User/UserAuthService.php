@@ -55,8 +55,7 @@ class UserAuthService implements UserAuthServiceInterface
         RateLimitService::enforce(
             AuthController::$REGISTER_PREFIX_KEY . $countryCode . $phoneNumber,
             1,
-            120,
-            'Too many OTP requests. Please try again later.'
+            120
         );
 
 
@@ -103,8 +102,7 @@ class UserAuthService implements UserAuthServiceInterface
         RateLimitService::enforce(
             AuthController::$FORGOT_PREFIX_KEY . $countryCode . $phoneNumber,
             1,
-            120,
-            'Too many OTP requests. Please try again later.'
+            120
         );
 
 

@@ -138,4 +138,19 @@ interface OrderServiceInterface
 
 
     public function stats(array $filters = []) :OrderStatsDTO;
+
+    /**
+     * @param Order $order
+     * @return void
+     * @throws ValidationException
+     * @throws \Throwable
+     */
+    public function transferChefPayout(Order $order): void;
+
+
+    /**
+     * @param int $orderId
+     * @return Order
+     */
+    public function getOrderById(int $orderId): Order;
 }

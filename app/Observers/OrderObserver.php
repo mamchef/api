@@ -18,7 +18,22 @@ class OrderObserver
      */
     public function created(Order $order): void
     {
-        //
+        $changer = Auth::user();
+        $changeBy = null;
+        if ($changer instanceof Chef) {
+            $changeBy = OrderStatusChangeByEnum::CHEF;
+        } elseif ($changer instanceof User) {
+            $changeBy = OrderStatusChangeByEnum::USER;
+        } elseif ($changer instanceof Admin) {
+            $changeBy = OrderStatusChangeByEnum::ADMIN;
+        }
+
+        OrderStatusHistory::query()->create([
+            'order_id' => $order->id,
+            'new_status' => $order->status,
+            'change_by' => $changeBy,
+            'changer_id' => Auth::id() ?? null,
+        ]);
     }
 
     /**

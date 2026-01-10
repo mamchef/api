@@ -32,7 +32,9 @@ class ProcessChefPayoutJob implements ShouldQueue
      */
     public function __construct(
         public Order $order
-    ) {}
+    )
+    {
+    }
 
     /**
      * Execute the job.
@@ -55,40 +57,7 @@ class ProcessChefPayoutJob implements ShouldQueue
         ]);
 
         try {
-            $result = $orderService->transferChefPayout($this->order);
-
-            if ($result['success']) {
-                Log::info("Chef payout successful for order {$this->order->id}", [
-                    'transfer_id' => $result['transfer_id'],
-                    'amount' => $result['amount'],
-                ]);
-
-                // Notify chef about the payout
-                $chef = $this->order->chefStore?->chef;
-                if ($chef) {
-                    try {
-                        $chef->notify(new ChefPayoutReceivedNotification($this->order, $result['amount']));
-                    } catch (Throwable $e) {
-                        Log::warning("Failed to send payout notification to chef", [
-                            'order_id' => $this->order->id,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                }
-            } else {
-                Log::error("Chef payout failed for order {$this->order->id}", [
-                    'error' => $result['error'] ?? 'Unknown error',
-                ]);
-
-                // Don't retry validation errors
-                if (str_contains($result['error'] ?? '', 'validation')) {
-                    $this->fail(new \Exception($result['error']));
-                    return;
-                }
-
-                // Throw to trigger retry for other errors
-                throw new \Exception($result['error'] ?? 'Payout transfer failed');
-            }
+            $orderService->transferChefPayout($this->order);
         } catch (Throwable $e) {
             Log::error("Exception during chef payout for order {$this->order->id}", [
                 'error' => $e->getMessage(),
@@ -106,12 +75,6 @@ class ProcessChefPayoutJob implements ShouldQueue
     {
         Log::error("Chef payout job failed permanently for order {$this->order->id}", [
             'error' => $exception?->getMessage(),
-        ]);
-
-        // Mark order for manual review
-        $this->order->update([
-            'need_review' => true,
-            'chef_payout_error' => $exception?->getMessage() ?? 'Job failed after all retries',
         ]);
     }
 }

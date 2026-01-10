@@ -7,15 +7,18 @@ use App\DTOs\Admin\Order\DeliveryChangeByAdminDTO;
 use App\DTOs\Admin\Order\RefuseOrderByAdminDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\Order\AcceptOrderByAdminRequest;
+use App\Http\Requests\Api\V1\Admin\Order\OrderListByAdminRequest;
 use App\Http\Requests\Api\V1\Admin\Order\RefuseOrderByAdminRequest;
 use App\Http\Requests\Api\V1\Admin\Order\RequestDeliveryChangeByAdminRequest;
 use App\Http\Requests\Api\V1\Admin\Order\StoreOrderByAdminRequest;
 use App\Http\Resources\V1\Admin\Order\OrderResource;
 use App\Http\Resources\V1\Admin\Order\OrderStatsResource;
 use App\Http\Resources\V1\Admin\Order\StoreOrderResponseResource;
+use App\Http\Resources\V1\SuccessResponse;
 use App\Services\Interfaces\OrderServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
@@ -24,10 +27,10 @@ class OrderController extends Controller
     {
     }
 
-    public function index(Request $request): ResourceCollection
+    public function index(OrderListByAdminRequest $request): ResourceCollection
     {
         $orders = $this->orderService->all(
-            filters: $request->all(),
+            filters: $request->validated(),
             relations: ["items.options", "statusHistories", "chefStore.chef"],
             pagination: self::validPagination()
         );
@@ -169,6 +172,19 @@ class OrderController extends Controller
             orderId: $orderId
         );
         return new OrderResource($order);
+    }
+
+
+    /**
+     * @throws \Throwable
+     * @throws ValidationException
+     */
+    public function transferOrderPayoutToChef(int $orderId): SuccessResponse
+    {
+        $this->orderService->transferChefPayout(
+            $this->orderService->getOrderById($orderId),
+        );
+        return new SuccessResponse();
     }
 
 }

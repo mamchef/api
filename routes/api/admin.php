@@ -85,6 +85,10 @@ Route::prefix('admin')->name("admin.")->group(function () {
         Route::post('refuse-delivery-change/{orderId}', [OrderController::class, 'refuseDeliveryChange'])->name(
             "refuse-delivery-change"
         );
+
+        Route::post('transform-order-payout-to-chef/{orderId}', [OrderController::class, 'transferOrderPayoutToChef'])->name(
+            "transform-order-payout-to-chef"
+        );
     });
 
     //Tickets

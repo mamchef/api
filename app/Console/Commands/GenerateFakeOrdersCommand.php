@@ -8,6 +8,7 @@ use App\Enums\Chef\FoodOption\FoodOptionTypeEnum;
 use App\Enums\Chef\FoodOptionGroup\FoodOptionGroupSelectTypeEnum;
 use App\Enums\Order\DeliveryTypeEnum;
 use App\Enums\Order\OrderCompleteByEnum;
+use App\Enums\Order\OrderStatusChangeByEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Models\ChefStore;
 use App\Models\Food;
@@ -16,6 +17,7 @@ use App\Models\FoodOptionGroup;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemOption;
+use App\Models\OrderStatusHistory;
 use App\Models\User;
 use App\Services\PaymentCalculationService;
 use Illuminate\Console\Command;
@@ -250,7 +252,111 @@ class GenerateFakeOrdersCommand extends Command
         // Apply status-specific data
         $this->applyStatusSpecificData($order, $status, $createdAt);
 
+        // Create status history for the order
+        $this->createStatusHistory($order, $status, $createdAt, $user->id, $chefStore->chef_id);
+
         return $order;
+    }
+
+    /**
+     * Create status history entries based on the order's final status
+     */
+    private function createStatusHistory(Order $order, OrderStatusEnum $finalStatus, \DateTime $createdAt, int $userId, int $chefId): void
+    {
+        // Define the status path for each final status
+        $statusPath = $this->getStatusPath($finalStatus, $order->delivery_type);
+
+        $currentTime = clone $createdAt;
+
+        foreach ($statusPath as $index => $transition) {
+            // Add some time between each status change
+            if ($index > 0) {
+                $currentTime = (clone $currentTime)->modify('+' . fake()->numberBetween(2, 15) . ' minutes');
+            }
+
+            OrderStatusHistory::create([
+                'order_id' => $order->id,
+                'old_status' => $transition['old'],
+                'new_status' => $transition['new'],
+                'change_by' => $transition['change_by'],
+                'changer_id' => $transition['change_by'] === OrderStatusChangeByEnum::USER ? $userId : $chefId,
+                'created_at' => $currentTime,
+                'updated_at' => $currentTime,
+            ]);
+        }
+    }
+
+    /**
+     * Get the status transition path to reach the final status
+     */
+    private function getStatusPath(OrderStatusEnum $finalStatus, DeliveryTypeEnum $deliveryType): array
+    {
+        $readyStatus = $deliveryType === DeliveryTypeEnum::PICKUP
+            ? OrderStatusEnum::READY_FOR_PICKUP->value
+            : OrderStatusEnum::READY_FOR_DELIVERY->value;
+
+        return match ($finalStatus) {
+            // Payment states
+            OrderStatusEnum::PENDING_PAYMENT => [],
+
+            OrderStatusEnum::FAILED_PAYMENT => [
+                ['old' => OrderStatusEnum::PENDING_PAYMENT->value, 'new' => OrderStatusEnum::FAILED_PAYMENT->value, 'change_by' => OrderStatusChangeByEnum::SYSTEM],
+            ],
+
+            // Pending - payment successful
+            OrderStatusEnum::PENDING => [
+                ['old' => OrderStatusEnum::PENDING_PAYMENT->value, 'new' => OrderStatusEnum::PENDING->value, 'change_by' => OrderStatusChangeByEnum::SYSTEM],
+            ],
+
+            // Accepted by chef
+            OrderStatusEnum::ACCEPTED => [
+                ['old' => OrderStatusEnum::PENDING_PAYMENT->value, 'new' => OrderStatusEnum::PENDING->value, 'change_by' => OrderStatusChangeByEnum::SYSTEM],
+                ['old' => OrderStatusEnum::PENDING->value, 'new' => OrderStatusEnum::ACCEPTED->value, 'change_by' => OrderStatusChangeByEnum::CHEF],
+            ],
+
+            // Refused by chef
+            OrderStatusEnum::REFUSED_BY_CHEF => [
+                ['old' => OrderStatusEnum::PENDING_PAYMENT->value, 'new' => OrderStatusEnum::PENDING->value, 'change_by' => OrderStatusChangeByEnum::SYSTEM],
+                ['old' => OrderStatusEnum::PENDING->value, 'new' => OrderStatusEnum::REFUSED_BY_CHEF->value, 'change_by' => OrderStatusChangeByEnum::CHEF],
+            ],
+
+            // Cancelled
+            OrderStatusEnum::CANCELLED => [
+                ['old' => OrderStatusEnum::PENDING_PAYMENT->value, 'new' => OrderStatusEnum::PENDING->value, 'change_by' => OrderStatusChangeByEnum::SYSTEM],
+                ['old' => OrderStatusEnum::PENDING->value, 'new' => OrderStatusEnum::CANCELLED->value, 'change_by' => OrderStatusChangeByEnum::USER],
+            ],
+
+            // Refused by user (after delivery change request)
+            OrderStatusEnum::REFUSED_BY_USER => [
+                ['old' => OrderStatusEnum::PENDING_PAYMENT->value, 'new' => OrderStatusEnum::PENDING->value, 'change_by' => OrderStatusChangeByEnum::SYSTEM],
+                ['old' => OrderStatusEnum::PENDING->value, 'new' => OrderStatusEnum::DELIVERY_CHANGE_REQUESTED->value, 'change_by' => OrderStatusChangeByEnum::CHEF],
+                ['old' => OrderStatusEnum::DELIVERY_CHANGE_REQUESTED->value, 'new' => OrderStatusEnum::REFUSED_BY_USER->value, 'change_by' => OrderStatusChangeByEnum::USER],
+            ],
+
+            // Ready for pickup/delivery
+            OrderStatusEnum::READY_FOR_PICKUP,
+            OrderStatusEnum::READY_FOR_DELIVERY => [
+                ['old' => OrderStatusEnum::PENDING_PAYMENT->value, 'new' => OrderStatusEnum::PENDING->value, 'change_by' => OrderStatusChangeByEnum::SYSTEM],
+                ['old' => OrderStatusEnum::PENDING->value, 'new' => OrderStatusEnum::ACCEPTED->value, 'change_by' => OrderStatusChangeByEnum::CHEF],
+                ['old' => OrderStatusEnum::ACCEPTED->value, 'new' => $readyStatus, 'change_by' => OrderStatusChangeByEnum::CHEF],
+            ],
+
+            // Completed
+            OrderStatusEnum::COMPLETED => [
+                ['old' => OrderStatusEnum::PENDING_PAYMENT->value, 'new' => OrderStatusEnum::PENDING->value, 'change_by' => OrderStatusChangeByEnum::SYSTEM],
+                ['old' => OrderStatusEnum::PENDING->value, 'new' => OrderStatusEnum::ACCEPTED->value, 'change_by' => OrderStatusChangeByEnum::CHEF],
+                ['old' => OrderStatusEnum::ACCEPTED->value, 'new' => $readyStatus, 'change_by' => OrderStatusChangeByEnum::CHEF],
+                ['old' => $readyStatus, 'new' => OrderStatusEnum::COMPLETED->value, 'change_by' => fake()->randomElement([OrderStatusChangeByEnum::CHEF, OrderStatusChangeByEnum::USER])],
+            ],
+
+            // Delivery change requested
+            OrderStatusEnum::DELIVERY_CHANGE_REQUESTED => [
+                ['old' => OrderStatusEnum::PENDING_PAYMENT->value, 'new' => OrderStatusEnum::PENDING->value, 'change_by' => OrderStatusChangeByEnum::SYSTEM],
+                ['old' => OrderStatusEnum::PENDING->value, 'new' => OrderStatusEnum::DELIVERY_CHANGE_REQUESTED->value, 'change_by' => OrderStatusChangeByEnum::CHEF],
+            ],
+
+            default => [],
+        };
     }
 
     private function generateOrderItems($foods): array

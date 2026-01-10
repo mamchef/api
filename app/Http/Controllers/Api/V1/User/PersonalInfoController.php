@@ -40,8 +40,7 @@ class PersonalInfoController extends Controller
         RateLimitService::enforce(
             'set-email-send-otp:' . $request->email,
             1,
-            60,
-            'Too many   requests. Please try again later.'
+            60
         );
 
         $this->authService->sendEmailOtp(

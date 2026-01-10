@@ -29,8 +29,7 @@ class AuthController extends Controller
         RateLimitService::enforce(
             'login-send-otp:' . $request->email,
             1,
-            120,
-            'Too many OTP requests. Please try again later.'
+            120
         );
 
         $this->authService->sendOtp(

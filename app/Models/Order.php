@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Enums\Order\DeliveryTypeEnum;
 use App\Enums\Order\OrderCompleteByEnum;
-use App\Enums\Order\OrderPaidStatusEnum;
+use App\Enums\Order\OrderPayoutStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\ModelFilters\OrderFilter;
 use App\Observers\OrderObserver;
@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property OrderStatusEnum $status
  * @property DeliveryTypeEnum $delivery_type
  * @property DeliveryTypeEnum $original_delivery_type
+ * @property OrderPayoutStatusEnum $payout_status
  * @property float $delivery_cost
  * @property float $subtotal
  * @property float $discount_amount
@@ -68,7 +69,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property HasMany | OrderStatusHistory $statusHistories
  *
  */
-
 #[ObservedBy([OrderObserver::class])]
 class Order extends Model
 {
@@ -90,6 +90,7 @@ class Order extends Model
         'completed_by' => OrderCompleteByEnum::class,
         'delivery_address_snapshot' => 'array',
         'chef_payout_transferred_at' => 'datetime',
+        'payout_status' => OrderPayoutStatusEnum::class,
     ];
 
     // ================= Relations ==================== //
@@ -160,7 +161,7 @@ class Order extends Model
             ->where('completed_at', '<=', now()->subDays($minDays))
             ->whereHas('chefStore.chef', function ($q) {
                 $q->whereNotNull('stripe_account_id')
-                  ->where('stripe_payouts_enabled', true);
+                    ->where('stripe_payouts_enabled', true);
             });
     }
 
@@ -218,26 +219,41 @@ class Order extends Model
         ]);
     }
 
+    /**
+     * @return bool
+     */
     public function isChefPayoutTransferred(): bool
     {
-        return $this->chef_payout_transferred_at !== null;
+        return $this->payout_status == OrderPayoutStatusEnum::PAID;
     }
 
+    /**
+     * @return bool
+     */
     public function hasDeliveryChangeRequest(): bool
     {
         return $this->status === OrderStatusEnum::DELIVERY_CHANGE_REQUESTED;
     }
 
+    /**
+     * @return int
+     */
     public function getTotalItemsCount(): int
     {
         return $this->items->sum('quantity');
     }
 
+    /**
+     * @return string
+     */
     public function getFormattedOrderNumber(): string
     {
         return $this->order_number ?? $this->generateOrderNumber();
     }
 
+    /**
+     * @return bool
+     */
     public function isPaid(): bool
     {
         return $this->transactions()
@@ -246,6 +262,9 @@ class Order extends Model
             ->exists();
     }
 
+    /**
+     * @return float
+     */
     public function getPaymentAmount(): float
     {
         return abs(
@@ -259,7 +278,10 @@ class Order extends Model
     // ================= MISC ==================== //
 
     // Boot method for auto-generating order number
-    protected static function boot()
+    /**
+     * @return void
+     */
+    protected static function boot(): void
     {
         parent::boot();
 
@@ -280,20 +302,20 @@ class Order extends Model
     }
 
 
+    /**
+     * @return string
+     */
     public function getModelFilterClass(): string
     {
         return OrderFilter::class;
     }
 
 
+    /**
+     * @return string
+     */
     public function getOrderPaidStatus(): string
     {
-        if ($this->status == OrderStatusEnum::COMPLETED) {
-            if ($this->chef_payout_transfer_id){
-                return OrderPaidStatusEnum::PAID->value;
-            }
-            return OrderPaidStatusEnum::PENDING_PAYMENT->value;
-        }
-        return OrderPaidStatusEnum::NO_PAYMENT->value;
+        return $this->payout_status?->value;
     }
 }

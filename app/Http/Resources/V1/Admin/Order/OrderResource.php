@@ -65,7 +65,17 @@ class OrderResource extends BaseResource
             "chef_store" => $chefStore,
             "items" => $orderItems,
             'transactions' => $order->transactions,
-            'statusHistories' => $order->loadExists('statusHistories') ? $order->statusHistories : [],
+            'status_histories' => $order->loadExists('statusHistories') ? $order->statusHistories : [],
+            'chef_payout_amount' => $order->chef_payout_amount,
+            'chef_payout_transfer_id' => $order->chef_payout_transfer_id,
+            'chef_payout_transferred_at' => $order->chef_payout_transferred_at,
+            'chef_payout_error' => $order->chef_payout_error,
+            'discount_amount' => $order->discount_amount,
+            'discount_percentage' => $order->discount_percentage,
+            'platform_fee' => $order->platform_fee,
+            'discount_deduction_strategy' => $order->discount_deduction_strategy,
+            'is_paid' => $order->isChefPayoutTransferred(),
+            'payout_status' => $order->getOrderPaidStatus()
         ];
     }
 

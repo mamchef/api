@@ -450,6 +450,7 @@ class StatsController extends Controller
             OrderStatusEnum::COMPLETED => 'Completed',
             OrderStatusEnum::CANCELLED => 'Cancelled',
             OrderStatusEnum::FAILED_PAYMENT => 'Failed Payment',
+            OrderStatusEnum::PLACED => 'Placed',
         };
     }
 

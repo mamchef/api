@@ -66,8 +66,7 @@ class AuthController extends Controller
         RateLimitService::enforce(
             self::$REGISTER_PREFIX_KEY . $request->country_code . $request->phone_number,
             5,
-            120,
-            'Too many Attempts. Please try again later.'
+            120
         );
 
         $token = $this->authService->login(

@@ -4,6 +4,8 @@ namespace App\Enums\Order;
 
 enum OrderStatusEnum: string
 {
+    case PLACED = 'placed'; //This One Is Only Use On Order History Status
+
     case PENDING_PAYMENT = 'pending_payment';
     case PAYMENT_PROCESSING = 'payment_processing';
     case PENDING = 'pending';
@@ -20,6 +22,7 @@ enum OrderStatusEnum: string
     public function label(): string
     {
         return match ($this) {
+            self::PLACED => 'Placed',
             self::PENDING => 'Pending',
             self::PAYMENT_PROCESSING => 'Payment Processing',
             self::ACCEPTED => 'Accepted',
@@ -35,6 +38,9 @@ enum OrderStatusEnum: string
     public function canTransitionTo(OrderStatusEnum $newStatus): bool
     {
         return match ($this) {
+            self::PLACED => in_array($newStatus, [
+                self::PENDING_PAYMENT,
+            ]),
             self::PENDING_PAYMENT => in_array($newStatus, [
                 self::PAYMENT_PROCESSING,
                 self::PENDING,
@@ -69,10 +75,10 @@ enum OrderStatusEnum: string
     }
 
 
-
-    public static function includeForLimited() :array
+    public static function includeForLimited(): array
     {
         return [
+            self::PLACED,
             self::PENDING_PAYMENT,
             self::PAYMENT_PROCESSING,
             self::PENDING,
@@ -115,7 +121,7 @@ enum OrderStatusEnum: string
     }
 
 
-    public static function orderedBefore():array
+    public static function orderedBefore(): array
     {
         return [
             self::PENDING_PAYMENT,
@@ -127,5 +133,10 @@ enum OrderStatusEnum: string
             self::READY_FOR_DELIVERY,
             self::COMPLETED,
         ];
+    }
+
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
     }
 }

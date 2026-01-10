@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Api\V1\Chef\Order;
 
 use App\Enums\Order\DeliveryTypeEnum;
-use App\Enums\Order\OrderPaidStatusEnum;
+use App\Enums\Order\OrderPayoutStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Http\Requests\BaseFormRequest;
 use Illuminate\Validation\Rule;
@@ -31,8 +31,8 @@ class OrderHistoryRequest extends BaseFormRequest
             "delivery_type" => ["sometimes", "nullable", "string", Rule::in(DeliveryTypeEnum::values())],
             "order_number" => ['sometimes', "nullable", "string", "max:255"],
             "payout_status" => ['sometimes', "nullable", Rule::in([
-                OrderPaidStatusEnum::PAID->value,
-                OrderPaidStatusEnum::PENDING_PAYMENT->value,
+                OrderPayoutStatusEnum::PAID->value,
+                OrderPayoutStatusEnum::PENDING_PAYOUT->value,
             ])]
         ];
     }
