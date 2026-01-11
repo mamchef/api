@@ -54,5 +54,16 @@ return [
         'success_url' => env('STRIPE_SUCCESS_URL'),
         'fail_url' => env('STRIPE_FAIL_URL'),
     ],
+    'appsflyer' => [
+        'dev_key' => env('APPSFLYER_DEV_KEY'),
+        'api_token' => env('APPSFLYER_API_TOKEN'), // For server-to-server API calls
+        'app_id' => env('APPSFLYER_APP_ID'),
+        'onelink_id' => env('APPSFLYER_ONELINK_ID'),
+        'subdomain' => env('APPSFLYER_SUBDOMAIN'),
+        'brand_domain' => env('APPSFLYER_BRAND_DOMAIN'),
+        // Fallback URLs when app is not installed (update these when apps are in stores)
+        'android_url' => env('APPSFLYER_ANDROID_URL', 'https://mamchef.com'),
+        'ios_url' => env('APPSFLYER_IOS_URL', 'https://mamchef.com'),
+    ],
 
 ];

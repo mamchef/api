@@ -8,12 +8,17 @@ use App\Models\Referral;
 use App\Models\ReferralCode;
 use App\Models\User;
 use App\Models\UserTransaction;
+use App\Services\Interfaces\AppsFlyerServiceInterface;
 use App\Services\Interfaces\ReferralCodeServiceInterface;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ReferralCodeService implements ReferralCodeServiceInterface
 {
+    public function __construct(
+        private readonly AppsFlyerServiceInterface $appsFlyerService
+    ) {
+    }
 
     /** @inheritDoc */
     public function getReferralCodeByCode(string $code): ReferralCode
@@ -58,13 +63,31 @@ class ReferralCodeService implements ReferralCodeServiceInterface
     /** @inheritDoc */
     public function getUserReferralCode(int $userId): ReferralCode
     {
-        return ReferralCode::query()->firstOrCreate(
-            [
-                'referrable_id' => $userId,
-                'referrable_type' => User::class],
-            [
-                'code' => self::generateCodeForReferral(),
-            ]);
+        $referralCode = ReferralCode::query()->where('referrable_id', $userId)
+            ->where('referrable_type', User::class)
+            ->first();
+
+        if ($referralCode) {
+            // Generate deep link if not already set
+            if (!$referralCode->deep_link_url) {
+                $deepLinkUrl = $this->appsFlyerService->generateReferralDeepLink($referralCode->code);
+                if ($deepLinkUrl) {
+                    $referralCode->update(['deep_link_url' => $deepLinkUrl]);
+                }
+            }
+            return $referralCode;
+        }
+
+        // Create new referral code
+        $code = self::generateCodeForReferral();
+        $deepLinkUrl = $this->appsFlyerService->generateReferralDeepLink($code);
+
+        return ReferralCode::query()->create([
+            'referrable_id' => $userId,
+            'referrable_type' => User::class,
+            'code' => $code,
+            'deep_link_url' => $deepLinkUrl,
+        ]);
     }
 
 

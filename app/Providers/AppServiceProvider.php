@@ -18,6 +18,7 @@ use App\Services\Interfaces\ChefStoreServiceInterface;
 use App\Services\Interfaces\FoodOptionGroupServiceInterface;
 use App\Services\Interfaces\FoodOptionServiceInterface;
 use App\Services\Interfaces\FoodServiceInterface;
+use App\Services\Interfaces\AppsFlyerServiceInterface;
 use App\Services\Interfaces\NotificationsServiceInterface;
 use App\Services\Interfaces\OrderServiceInterface;
 use App\Services\Interfaces\ReferralCodeServiceInterface;
@@ -28,6 +29,7 @@ use App\Services\Interfaces\User\UserAuthServiceInterface;
 use App\Services\Interfaces\User\UserProfileServiceInterface;
 use App\Services\Interfaces\User\UserServiceInterface;
 use App\Services\Interfaces\UserTransactionServiceInterface;
+use App\Services\AppsFlyerService;
 use App\Services\NotificationService;
 use App\Services\OrderService;
 use App\Services\ReferralCodeService;
@@ -72,6 +74,7 @@ class AppServiceProvider extends ServiceProvider
         TagServiceInterface::class => TagService::class,
         UserTransactionServiceInterface::class => UserTransactionService::class,
         ReferralCodeServiceInterface::class => ReferralCodeService::class,
+        AppsFlyerServiceInterface::class => AppsFlyerService::class,
     ];
 
     /**

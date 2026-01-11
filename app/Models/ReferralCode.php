@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property int $referrable_id
  * @property string $referrable_type
  * @property string $code
+ * @property string|null $deep_link_url
  * @property Carbon $created_at
  * @property Carbon $updated_at
  *
