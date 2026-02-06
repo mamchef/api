@@ -105,7 +105,6 @@ Route::get('/test-stripe-chef', function () {
 
 
 Route::get('/test-notification', function () {
-    return;
     // Send a test notification to user ID 1
     $chef = \App\Models\Chef::find(1);
     $chef->notify(new \App\Notifications\Chef\StripeOnboardingNotification('testttt'));
