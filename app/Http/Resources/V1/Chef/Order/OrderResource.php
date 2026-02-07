@@ -29,7 +29,7 @@ class OrderResource extends BaseResource
         }
 
         if ($userName) {
-            $address  = 'customer :'.$userName;
+            $address['name']  = 'customer :'.$userName;
         }
 
         return [
