@@ -23,14 +23,13 @@ class OrderResource extends BaseResource
 
         $userName = $order->user->getFullName();
         $userPhone = $order->user->phone_number;
-        $address = $order->delivery_address_snapshot['address'] ?? null;
-
+        $address['address'] = $order->delivery_address_snapshot['address'] ?? null;
         if ($userPhone){
-            $address  = $userPhone . ', ' . $address;
+            $address['city']  = 'phone :' .$userPhone;
         }
 
         if ($userName) {
-            $address  = $userName . ', ' . $address;
+            $address  = 'customer :'.$userName;
         }
 
         return [
@@ -45,9 +44,7 @@ class OrderResource extends BaseResource
             "created_at" => $order->created_at,
             "user_notes" => $order->user_notes,
             "chef_notes" => $order->chef_notes,
-            "delivery_address_snapshot" => [
-                'address' => $address,
-            ],
+            "delivery_address_snapshot" => $address,
             "estimated_ready_time" => $order->estimated_ready_time,
             "user" => [
                 'id'=> $order->user->id,
