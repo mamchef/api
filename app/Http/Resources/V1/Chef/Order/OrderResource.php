@@ -20,6 +20,20 @@ class OrderResource extends BaseResource
         foreach ($order->items as $item) {
             $orderItems[] = $this->prePareOrderItems($item);
         }
+
+        $userName = $order->user->getFullName();
+        $userPhone = $order->user->phone_number;
+        $address = $order->delivery_address_snapshot['address'] ?? null;
+
+        if ($userPhone){
+            $address  = $userPhone . ', ' . $address;
+        }
+
+        if ($userName) {
+            $address  = $userName . ', ' . $address;
+        }
+
+        $order->delivery_address_snapshot['address'] = $address;
         return [
             "id" => $order->id,
             "order_number" => $order->order_number,
