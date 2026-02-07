@@ -34,7 +34,10 @@ class OrderResource extends BaseResource
             "chef_notes" => $order->chef_notes,
             "delivery_address_snapshot" => $order->delivery_address_snapshot,
             "estimated_ready_time" => $order->estimated_ready_time,
-            "user" => $order->user,
+            "user" => [
+                'id'=> $order->user->id,
+                'name'=>$order->user->getFullName(),
+            ],
             "items" => $orderItems,
             "status_history" => $order->statusHistories,
             'chef_payout_transferred_at' => $order->chef_payout_transferred_at,

@@ -20,6 +20,8 @@ class ActiveOrdersResource extends BaseResource
         foreach ($order->items as $item) {
             $orderItems[] = $this->prePareOrderItems($item);
         }
+
+
         return [
             "id" => $order->id,
             "order_number" => $order->order_number,
@@ -33,7 +35,10 @@ class ActiveOrdersResource extends BaseResource
             "chef_notes" => $order->chef_notes,
             "delivery_address_snapshot" => $order->delivery_address_snapshot,
             "estimated_ready_time" => $order->estimated_ready_time,
-            "user" => $order->user,
+            "user" => [
+                'id'=> $order->user->id,
+                'name'=>$order->user->getFullName(),
+            ],
             "items" => $orderItems,
         ];
     }
