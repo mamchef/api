@@ -45,7 +45,9 @@ class OrderResource extends BaseResource
             "created_at" => $order->created_at,
             "user_notes" => $order->user_notes,
             "chef_notes" => $order->chef_notes,
-            "delivery_address_snapshot" => $order->delivery_address_snapshot,
+            "delivery_address_snapshot" => [
+                'address' => $address,
+            ],
             "estimated_ready_time" => $order->estimated_ready_time,
             "user" => [
                 'id'=> $order->user->id,
