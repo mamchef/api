@@ -33,7 +33,6 @@ class OrderResource extends BaseResource
             $address  = $userName . ', ' . $address;
         }
 
-        $order->delivery_address_snapshot['address'] = $address;
         return [
             "id" => $order->id,
             "order_number" => $order->order_number,
