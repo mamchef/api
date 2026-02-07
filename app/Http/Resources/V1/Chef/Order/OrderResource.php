@@ -25,11 +25,11 @@ class OrderResource extends BaseResource
         $userPhone = $order->user->phone_number;
         $address['address'] = $order->delivery_address_snapshot['address'] ?? null;
         if ($userPhone){
-            $address['city']  = 'phone :' .$userPhone;
+            $address['city_name']  = 'Phone: ' .$userPhone;
         }
 
         if ($userName) {
-            $address['name']  = 'customer :'.$userName;
+            $address['name']  = $userName;
         }
 
         return [
