@@ -28,7 +28,7 @@ class OrderResource extends BaseResource
 
         if (in_array($order->status,OrderStatusEnum::activeStatuses())){
             $userName =  $order->user->getFullName();
-            $userPhone = $order->user->phone_number;
+            $userPhone = $order->user->country_code . $order->user->phone_number;
         }
 
         $user = [
