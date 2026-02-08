@@ -6,6 +6,7 @@ use App\Http\Controllers\DocuSignController;
 use App\Models\Chef;
 use App\Models\Food;
 use App\Models\Order;
+use App\Notifications\Order\Chef\NewOrderNotification;
 use App\Services\DocuSignService;
 use App\Services\Interfaces\Chef\ChefProfileServiceInterface;
 use Illuminate\Http\Request;
@@ -107,7 +108,8 @@ Route::get('/test-stripe-chef', function () {
 Route::get('/test-notification', function () {
     // Send a test notification to user ID 1
     $chef = \App\Models\Chef::find(1);
-    $chef->notify(new \App\Notifications\Chef\StripeOnboardingNotification('testttt'));
+    $order = Order::query()->first();
+    $chef->notify(new NewOrderNotification($order));
     return response()->json(['message' => 'Notification sent']);
 });
 

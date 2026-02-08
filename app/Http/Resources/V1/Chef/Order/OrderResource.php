@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1\Chef\Order;
 
+use App\Enums\Order\OrderStatusEnum;
 use App\Http\Resources\V1\BaseResource;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -21,16 +22,21 @@ class OrderResource extends BaseResource
             $orderItems[] = $this->prePareOrderItems($item);
         }
 
+
         $userName = $order->user->getFullName();
-        $userPhone = $order->user->phone_number;
-        $address['address'] = $order->delivery_address_snapshot['address'] ?? null;
-        if ($userPhone){
-            $address['city_name']  = 'Phone: ' .$userPhone;
+        $userPhone = null;
+
+        if (in_array($order->status,OrderStatusEnum::activeStatuses())){
+            $userPhone = $order->user->phone_number;
         }
 
-        if ($userName) {
-            $address['name']  = $userName;
-        }
+        $user = [
+            'id' => $order->user->id,
+            'name' => $userName,
+            'phone' => $userPhone,
+        ];
+
+
 
         return [
             "id" => $order->id,
@@ -44,12 +50,9 @@ class OrderResource extends BaseResource
             "created_at" => $order->created_at,
             "user_notes" => $order->user_notes,
             "chef_notes" => $order->chef_notes,
-            "delivery_address_snapshot" => $address,
+            "delivery_address_snapshot" => $order->delivery_address_snapshot,
             "estimated_ready_time" => $order->estimated_ready_time,
-            "user" => [
-                'id'=> $order->user->id,
-                'name'=>$order->user->getFullName(),
-            ],
+            "user" => $user,
             "items" => $orderItems,
             "status_history" => $order->statusHistories,
             'chef_payout_transferred_at' => $order->chef_payout_transferred_at,
