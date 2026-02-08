@@ -23,10 +23,11 @@ class OrderResource extends BaseResource
         }
 
 
-        $userName = $order->user->getFullName();
+        $userName = null;
         $userPhone = null;
 
         if (in_array($order->status,OrderStatusEnum::activeStatuses())){
+            $userName =  $order->user->getFullName();
             $userPhone = $order->user->phone_number;
         }
 
